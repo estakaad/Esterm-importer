@@ -1,11 +1,10 @@
 import xml.etree.ElementTree as ET
-import json
 
 
 #Find words and their languages of single concept
 def extract_words(root):
+  words = []
   for term in root.findall(".//languageGrp"):
-    #Returns list of words with values and languages
     for lang in term.findall(".//language"):
       if lang.attrib["type"] == "fr":
         lang_name="fra"
@@ -17,11 +16,13 @@ def extract_words(root):
     for term in term.findall(".//term"):
       word = {"value": term.text, "lang": lang_name}
       words.append(word)
+
   return words
 
 
 #Find definitions and their languages of single concept
 def extract_definitions(root):
+  definitions = []
   for elem in root.findall(".//*[@type]"):
     if elem.attrib["type"] == "Definitsioon":
       definition_word = elem.text
@@ -32,28 +33,18 @@ def extract_definitions(root):
       return definitions
 
 
-#Create dictionary which contains a list of definitions and a list of words
-def create_concept(dataset_code, definitions, words):
-  concept = {
-    "datasetCode": dataset_code,
-    "definitions": definitions,
-    "words": words
-    }
-  return concept
+#Extract all concepts
+def extract_concepts(root, dataset_code):
+  concepts = []
+  for concept in root.findall("./conceptGrp"):
+    words = extract_words(concept)
+    definitions = extract_definitions(concept)
 
+    concept = {
+      "datasetCode": dataset_code,
+      "definitions": definitions,
+      "words": words
+      }
+    concepts.append(concept)
 
-tree = ET.parse("test.xml")
-root = tree.getroot()
-
-concept = {}
-dataset_code = "mlt"
-words = []
-definitions = []
-
-
-words = extract_words(root)
-definitions = extract_definitions(root)
-
-concept = create_concept(dataset_code, definitions, words)
-
-print(concept)
+  return concepts
