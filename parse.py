@@ -29,7 +29,7 @@ def extract_definitions(root):
       for elem in root.findall(".//*[@type]"):
         if elem.attrib["type"] == "et":
           definition = {"value": definition_word, "lang": "est", "definitionTypeCode": "definitsioon" }
-      definitions.append(definition)
+          definitions.append(definition)
       return definitions
 
 
@@ -39,7 +39,6 @@ def extract_concepts(root, dataset_code):
   for concept in root.findall("./conceptGrp"):
     words = extract_words(concept)
     definitions = extract_definitions(concept)
-
     concept = {
       "datasetCode": dataset_code,
       "definitions": definitions,
