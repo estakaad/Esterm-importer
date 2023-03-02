@@ -6,12 +6,20 @@ def extract_words(root):
   words = []
   for term in root.findall(".//languageGrp"):
     for lang in term.findall(".//language"):
-      if lang.attrib["type"] == "fr":
+      if lang.attrib["lang"] == "FR":
         lang_name="fra"
-      if lang.attrib["type"] == "en":
+      if lang.attrib["lang"] == "EN-GB":
         lang_name="eng"
-      if lang.attrib["type"] == "et":
+      if lang.attrib["lang"] == "ET":
         lang_name="est"
+      if lang.attrib["lang"] == "FI":
+        lang_name="fin"
+      if lang.attrib["lang"] == "RU":
+        lang_name="rus"
+      if lang.attrib["lang"] == "XO":
+        lang_name="xho"
+      if lang.attrib["lang"] == "DE":
+        lang_name="deu"
 
     for term in term.findall(".//term"):
       word = {"value": term.text, "lang": lang_name}
@@ -47,3 +55,16 @@ def extract_concepts(root, dataset_code):
     concepts.append(concept)
 
   return concepts
+
+
+#Return list of all unique languages present in XML
+def find_all_languages(root):
+  all_languages = []
+  for term in root.findall(".//languageGrp"):
+    for lang in term.findall(".//language"):
+      all_languages.append(lang.attrib["lang"])
+
+  set_res = set(all_languages)
+  unique_languages = (list(set_res))
+
+  return unique_languages
