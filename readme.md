@@ -11,4 +11,3 @@ Mis sel programmil viga on?
 - Tervet Multitermi faili parsida ei suutnud, kuskil tuli viga ette, aga ma ei lahendanud seda.
 - Programm ei kontrolli, kas termin on juba baasis või mitte.
 - Programm ei arvesta homonüümiaga.
-- Terminite ja definitsioonide keelte tuvastamise lahendus on poolik, kuigi pealtnäha ajab asja ära.
