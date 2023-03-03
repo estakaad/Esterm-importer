@@ -10,3 +10,4 @@ Mida see programm teeb?
 Mis sel programmil viga on?
 - Programm ei kontrolli, kas termin on juba baasis või mitte.
 - Programm ei arvesta homonüümiaga.
+- Definitsioonide parsimine on puudulik, kuna ei käsitle ette tulevaid alamelemente.
