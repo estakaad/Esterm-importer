@@ -21,4 +21,4 @@ parameters = {"crudRoleDataset": "mlt"}
 
 for concept in concepts:
     #print(concept)
-    api_requests.save_term(concept,headers,parameters)
+    api_requests.save_term(concept, headers, parameters)
