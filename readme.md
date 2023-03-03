@@ -8,6 +8,5 @@ Mida see programm teeb?
 4. Itereerib üle nende dictionary'de ja postitab neist igaühe Ekilexi API abil Ekilexi testbaasi terminikogusse Multitermi baas	("crudRoleDataset": "mlt").
 
 Mis sel programmil viga on?
-- Tervet Multitermi faili parsida ei suutnud, kuskil tuli viga ette, aga ma ei lahendanud seda.
 - Programm ei kontrolli, kas termin on juba baasis või mitte.
 - Programm ei arvesta homonüümiaga.
