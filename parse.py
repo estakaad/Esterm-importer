@@ -27,7 +27,7 @@ def match_language(lang):
   return lang_name
 
 
-#Find words and their languages of single concept
+#Return list of words and the languages they're in (for one concept)
 def extract_words(root):
   words = []
   for term in root.findall(".//languageGrp"):
@@ -42,7 +42,7 @@ def extract_words(root):
   return words
 
 
-#Find definitions and their languages of single concept
+#Return list of definitions and the languages they're in (for one concept)
 def extract_definitions(root):
   definitions = []
   for term in root.findall(".//languageGrp"):
@@ -58,7 +58,7 @@ def extract_definitions(root):
     return definitions
 
 
-#Extract all concepts
+#Combine words and definitions to return the list of all concepts
 def extract_concepts(root, dataset_code):
   concepts = []
   for concept in root.findall("./conceptGrp"):
