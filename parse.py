@@ -21,6 +21,7 @@ def match_language(lang):
 
   return lang_name
 
+
 #Find words and their languages of single concept
 def extract_words(root):
   words = []
@@ -38,20 +39,16 @@ def extract_words(root):
 
 #Find definitions and their languages of single concept
 def extract_definitions(root):
-    definitions = []
-    for term in root.findall(".//languageGrp"):
+  definitions = []
+  for term in root.findall(".//languageGrp"):
+    for lang in term.findall(".//language"):
+      lang_name = match_language(lang)
 
-      for lang in term.findall(".//language"):
-        lang_name = match_language(lang)
-
-      for elem in root.findall(".//*[@type]"):
-          if elem.attrib["type"] == "Definitsioon":
-              definition_word = ET.tostring(elem, encoding='utf8', method='xml')
-
-      if definition_word:
+    for elem in term.findall(".//*[@type]"):
+      if elem.attrib["type"] == "Definitsioon":
+        definition_word = ET.tostring(elem, encoding='utf8', method='xml')
         definition = {"value": definition_word, "lang": lang_name, "definitionTypeCode": "definitsioon" }
-
-      definitions.append(definition)
+        definitions.append(definition)
 
     return definitions
 
@@ -84,3 +81,10 @@ def find_all_languages(root):
   unique_languages = (list(set_res))
 
   return unique_languages
+
+tree = ET.parse("test.xml")
+root = tree.getroot()
+
+dataset_code = "mlt"
+
+extract_concepts(root, dataset_code)
