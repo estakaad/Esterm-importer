@@ -1,11 +1,11 @@
 import xml.etree.ElementTree as ET
 import re
+import json
 
 
 #Find term's or definition's languages and match it with
 #the language abbreviation used in API
 def match_language(lang):
-  print(lang.attrib["lang"])
   if lang.attrib["lang"] == "FR":
     lang_name="fra"
   if lang.attrib["lang"] == "EN-GB":
@@ -23,7 +23,7 @@ def match_language(lang):
     lang_name="xho"
   if lang.attrib["lang"] == "DE":
     lang_name="deu"
-  print(lang_name)
+
   return lang_name
 
 
@@ -52,6 +52,7 @@ def extract_definitions(root):
     for elem in term.findall(".//*[@type]"):
       if elem.attrib["type"] == "Definitsioon":
         definition_word = ET.tostring(elem, encoding='utf8', method='xml')
+        definition_word = json.dumps(definition_word.decode("utf-8"))
         definition = {"value": definition_word, "lang": lang_name, "definitionTypeCode": "definitsioon" }
         definitions.append(definition)
 
@@ -69,7 +70,6 @@ def extract_concepts(root, dataset_code):
       "definitions": definitions,
       "words": words
       }
-    print(concept)
     concepts.append(concept)
 
   return concepts
@@ -86,3 +86,12 @@ def find_all_languages(root):
   unique_languages = (list(set_res))
 
   return unique_languages
+
+
+
+tree = ET.parse("test.xml")
+root = tree.getroot()
+
+dataset_code = "mlt"
+
+extract_concepts(root, dataset_code)
