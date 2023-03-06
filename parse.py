@@ -86,12 +86,3 @@ def find_all_languages(root):
   unique_languages = (list(set_res))
 
   return unique_languages
-
-
-
-tree = ET.parse("test.xml")
-root = tree.getroot()
-
-dataset_code = "mlt"
-
-extract_concepts(root, dataset_code)
