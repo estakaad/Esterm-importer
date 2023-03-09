@@ -4,7 +4,9 @@ import xml.etree.ElementTree as ET
 import json
 import api_requests
 from dotenv.main import load_dotenv
+import logging
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s', filename="import")
 
 tree = ET.parse("test.xml")
 root = tree.getroot()

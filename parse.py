@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import re
 import json
+import logging
 
 
 #Find term's or definition's languages and match it with
@@ -70,6 +71,8 @@ def extract_concepts(root, dataset_code):
       "definitions": definitions,
       "words": words
       }
+    logging.info("Concept / Definitions / Value: {c}".format(c=concept.get("definitions")))
+    logging.info("Concept / Word / Value: {c}".format(c=concept.get("words")[0]))
     concepts.append(concept)
 
   return concepts
@@ -88,10 +91,3 @@ def find_all_languages(root):
   return unique_languages
 
 
-
-tree = ET.parse("test.xml")
-root = tree.getroot()
-
-dataset_code = "mlt"
-
-extract_concepts(root, dataset_code)
