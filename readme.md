@@ -10,3 +10,4 @@ Mida see programm teeb?
 Mis sel programmil viga on?
 - Programm ei kontrolli, kas termin on juba baasis või mitte.
 - Programm ei arvesta homonüümiaga.
+- Definitsioonidest ei lähe impordil midagi kaduma, kuid need sisaldavad üleliigseid tag'e jmt.

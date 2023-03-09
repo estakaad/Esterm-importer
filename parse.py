@@ -89,5 +89,3 @@ def find_all_languages(root):
   unique_languages = (list(set_res))
 
   return unique_languages
-
-
