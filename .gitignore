@@ -1,6 +1,7 @@
 #Data
 *.xml
 *.json
+/data
 
 #Logs
 *.log
