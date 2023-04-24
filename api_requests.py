@@ -18,6 +18,6 @@ def save_term(term, headers, parameters):
     except requests.exceptions.Timeout as errt:
         logging.exception("Timeout error {e}".format(e=errt))
     except requests.exceptions.RequestException as err:
-        logging.exception("Unknnown error {e}".format(e=e))
+        logging.exception("Unknown error {e}".format(e=e))
 
     return res

@@ -10,10 +10,8 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s', filename="import")
 
 parser = ET.XMLParser(encoding="UTF-8")
-
 tree = ET.parse("test.xml", parser=parser)
 root = tree.getroot()
-
 dataset_code = "mlt"
 
 concepts = parse.extract_concepts(root, "mlt")

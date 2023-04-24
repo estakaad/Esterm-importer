@@ -1,8 +1,5 @@
 import xml.etree.ElementTree as ET
-import re
 import json
-import logging
-
 
 #Find term's or definition's languages and match it with
 #the language abbreviation used in API
@@ -24,11 +21,10 @@ def match_language(lang):
     lang_name="xho"
   if lang.attrib["lang"] == "DE":
     lang_name="deu"
-
   return lang_name
 
 
-#Return list of words and the languages they're in (for one concept)
+#Find words and their languages of single concept
 def extract_words(root):
   words = []
   for term in root.findall(".//languageGrp"):
@@ -49,18 +45,20 @@ def extract_definitions(root):
   for term in root.findall(".//languageGrp"):
     for lang in term.findall(".//language"):
       lang_name = match_language(lang)
+      print(lang_name)
 
     for elem in term.findall(".//*[@type]"):
       if elem.attrib["type"] == "Definitsioon":
         definition_word = ET.tostring(elem, encoding='utf8', method='xml')
+        print(definition_word)
         definition_word = json.dumps(definition_word.decode("utf-8"))
-        definition = {"value": definition_word, "lang": lang_name, "definitionTypeCode": "definitsioon" }
+        definition = {"value": definition_word, "lang": lang_name, "definitionTypeCode": "definitsioon"}
         definitions.append(definition)
 
     return definitions
 
 
-#Combine words and definitions to return the list of all concepts
+#Extract all concepts
 def extract_concepts(root, dataset_code):
   concepts = []
   for concept in root.findall("./conceptGrp"):
@@ -71,8 +69,6 @@ def extract_concepts(root, dataset_code):
       "definitions": definitions,
       "words": words
       }
-    logging.info("Concept / Definitions / Value: {c}".format(c=concept.get("definitions")))
-    logging.info("Concept / Word / Value: {c}".format(c=concept.get("words")[0]))
     concepts.append(concept)
 
   return concepts
