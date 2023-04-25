@@ -69,7 +69,6 @@ def extract_concepts(root, dataset_code):
                 # Get the value of the <language> element and
                 # add it to the dictionary for the term
                 term_dict["lang"] = match_language(languageGrp.find("language").attrib["lang"])
-                print(term_dict)
                 # Add the term dictionary to the list of terms
                 term_list.append(term_dict)
 
