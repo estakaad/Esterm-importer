@@ -5,10 +5,7 @@ import json
 import api_requests
 import os
 from dotenv import load_dotenv
-#import logging
 
-
-#logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s', filename="import")
 
 parser = ET.XMLParser(encoding="UTF-8")
 tree = ET.parse("test.xml", parser=parser)

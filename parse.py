@@ -7,7 +7,7 @@ logging.basicConfig(
     filename="import_log.log",
     filemode="w",
     format="%(asctime)s - %(levelname)s - %(message)s",
-    level=logging.INFO
+    level=logging.DEBUG
 )
 
 
@@ -35,6 +35,10 @@ def match_language(lang):
 
 
 def extract_concepts(root, dataset_code):
+
+    all_concepts = root.findall('.//conceptGrp')
+    logging.info("Number of concepts: %s", len(all_concepts))
+
     concepts = []
 
     # Loop through each <conceptGrp> element
@@ -56,9 +60,6 @@ def extract_concepts(root, dataset_code):
             # Create a dictionary for the definition
             definition_dict = {}
 
-            # Create a dictionary for the term
-            #term_dict = {}
-
             for termGrp in languageGrp.findall("./termGrp"):
                 term_dict = {}
 
@@ -71,7 +72,6 @@ def extract_concepts(root, dataset_code):
                 print(term_dict)
                 # Add the term dictionary to the list of terms
                 term_list.append(term_dict)
-                #print(str(len(term_list)))
 
             concept_dict["words"] = term_list
 
@@ -102,6 +102,8 @@ def extract_concepts(root, dataset_code):
 
         # Add the concept dictionary to the output list
         concepts.append(concept_dict)
+
+        logging.debug("Number of concepts parsed: %s", len(concepts))
 
     return concepts
 
