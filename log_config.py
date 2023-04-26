@@ -1,18 +1,26 @@
 import logging
+import os
+import datetime
 import sys
 
 def get_logger():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-    # Log messages to file
-    file_handler = logging.FileHandler('import_log.log', mode='a')
+    # Create folder for logs if it doesn't exist
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+
+    # Create file handler
+    now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    file_name = f'logs/import_log_{now}.log'
+    file_handler = logging.FileHandler(file_name, mode='a')
     file_handler.setLevel(logging.DEBUG)
     file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(file_formatter)
     logger.addHandler(file_handler)
 
-    # Log messages to console
+    # Create console handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.DEBUG)
     console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
