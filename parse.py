@@ -1,14 +1,8 @@
 import xml.etree.ElementTree as ET
 import json
-import logging
+import log_config
 
-# Configure the logging module
-logging.basicConfig(
-    filename="import_log.log",
-    filemode="w",
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    level=logging.DEBUG
-)
+logger = log_config.get_logger()
 
 
 # Find term"s or definition"s languages and match it with
@@ -37,14 +31,14 @@ def match_language(lang):
 def extract_concepts(root, dataset_code):
 
     all_concepts = root.findall('.//conceptGrp')
-    logging.info("Number of concepts: %s", len(all_concepts))
+    logger.info("Number of concepts: %s", len(all_concepts))
 
     concepts = []
 
     # Loop through each <conceptGrp> element
     for conceptGrp in root.findall("./conceptGrp"):
 
-        logging.debug("Processing conceptGrp")
+        logger.debug("Processing conceptGrp")
 
         # Create a dictionary for the concept
         concept_dict = {}
@@ -55,7 +49,7 @@ def extract_concepts(root, dataset_code):
 
         # Loop through each <languageGrp> element
         for languageGrp in conceptGrp.findall("./languageGrp"):
-            logging.debug("Processing languageGrp")
+            logger.debug("Processing languageGrp")
 
             # Create a dictionary for the definition
             definition_dict = {}
@@ -96,13 +90,13 @@ def extract_concepts(root, dataset_code):
         if definition_list:
             concept_dict["definitions"] = definition_list
 
-        logging.info("Added definitions: %s", definition_list)
-        logging.info("Added words: %s", term_list)
+        logger.info("Added definitions: %s", definition_list)
+        logger.info("Added words: %s", term_list)
 
         # Add the concept dictionary to the output list
         concepts.append(concept_dict)
 
-        logging.debug("Number of concepts parsed: %s", len(concepts))
+        logger.debug("Number of concepts parsed: %s", len(concepts))
 
     return concepts
 
