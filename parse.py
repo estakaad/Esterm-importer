@@ -1,37 +1,16 @@
 import xml.etree.ElementTree as ET
 import json
 import log_config
+import xml_helpers
+import api_requests
 
 logger = log_config.get_logger()
 
 
-# Find term"s or definition"s languages and match it with
-# the language abbreviation used in API
-def match_language(lang):
-    if lang == "FR":
-        lang_name = "fra"
-    if lang == "EN-GB":
-        lang_name = "eng"
-    if lang == "ET":
-        lang_name = "est"
-    if lang == "FI":
-        lang_name = "fin"
-    if lang == "RU":
-        lang_name = "rus"
-    if lang == "XO":
-        lang_name = "xho"
-    # Actually no idea what language is XH
-    if lang == "XH":
-        lang_name = "xho"
-    if lang == "DE":
-        lang_name = "deu"
-    return lang_name
-
-
-def extract_concepts(root, dataset_code):
+def extract_concepts(root, dataset_code, header, parameters):
 
     all_concepts = root.findall('.//conceptGrp')
-    logger.info("Number of concepts: %s", len(all_concepts))
+    logger.info("Number of concepts in XML: %s", len(all_concepts))
 
     concepts = []
 
@@ -62,7 +41,7 @@ def extract_concepts(root, dataset_code):
                 term_dict["value"] = termGrp.find("./term").text
                 # Get the value of the <language> element and
                 # add it to the dictionary for the term
-                term_dict["lang"] = match_language(languageGrp.find("language").attrib["lang"])
+                term_dict["lang"] = xml_helpers.match_language(languageGrp.find("language").attrib["lang"])
                 # Add the term dictionary to the list of terms
                 term_list.append(term_dict)
 
@@ -76,7 +55,7 @@ def extract_concepts(root, dataset_code):
                     descrip = descripGrp.find("descrip")
                     descrip_value = ET.tostring(descrip, encoding="unicode", method="text")
                     definition_dict["value"] = descrip_value
-                    definition_dict["lang"] = match_language(languageGrp.find("language").attrib["lang"])
+                    definition_dict["lang"] = xml_helpers.match_language(languageGrp.find("language").attrib["lang"])
                     definition_dict["definitionTypeCode"] = "definitsioon"
 
             # Add the definition dictionary to the list of definitions
@@ -93,22 +72,13 @@ def extract_concepts(root, dataset_code):
         logger.info("Added definitions: %s", definition_list)
         logger.info("Added words: %s", term_list)
 
+
         # Add the concept dictionary to the output list
         concepts.append(concept_dict)
 
-        logger.debug("Number of concepts parsed: %s", len(concepts))
+        logger.info("Number of concepts parsed: %s", len(concepts))
+
+        api_requests.save_term(concept_dict, header, parameters)
+
 
     return concepts
-
-
-# Return list of all unique languages present in XML
-def find_all_languages(root):
-    all_languages = []
-    for term in root.findall(".//languageGrp"):
-        for lang in term.findall(".//language"):
-            all_languages.append(lang.attrib["lang"])
-
-    set_res = set(all_languages)
-    unique_languages = (list(set_res))
-
-    return unique_languages

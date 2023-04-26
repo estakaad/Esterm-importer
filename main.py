@@ -12,13 +12,10 @@ tree = ET.parse("test.xml", parser=parser)
 root = tree.getroot()
 dataset_code = "mlt"
 
-concepts = parse.extract_concepts(root, dataset_code)
-
 load_dotenv()
 api_key = os.environ.get("API_KEY")
 
-headers = {"ekilex-api-key": api_key}
+header = {"ekilex-api-key": api_key}
 parameters = {"crudRoleDataset": dataset_code}
 
-for concept in concepts:
-    api_requests.save_term(concept, headers, parameters)
+parse.extract_concepts(root, dataset_code, header, parameters)

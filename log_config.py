@@ -5,7 +5,7 @@ import sys
 
 def get_logger():
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     # Create folder for logs if it doesn't exist
     if not os.path.exists('logs'):

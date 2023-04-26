@@ -1,23 +1,29 @@
 import requests
-import logging
+import log_config
 
 
-def save_term(term, headers, parameters):
+logger = log_config.get_logger()
+
+logger.handlers = []
+logger.propagate = False
+
+def save_term(concept, headers, parameters):
 
     try:
         res = requests.post(
             "https://ekitest.tripledev.ee/ekilex/api/term-meaning/save",
             params=parameters,
-            json=term,
+            json=concept,
             headers=headers, timeout=3)
         res.raise_for_status()
+        logger.info("https://ekitest.tripledev.ee/ekilex/api/term-meaning/save - %s", concept)
     except requests.exceptions.HTTPError as errh:
-        logging.exception("Http error {e}".format(e=errh))
+        logger.exception("Http error {e}".format(e=errh))
     except requests.exceptions.ConnectionError as errc:
-        logging.exception("Error connecting {e}".format(e=errc))
+        logger.exception("Error connecting {e}".format(e=errc))
     except requests.exceptions.Timeout as errt:
-        logging.exception("Timeout error {e}".format(e=errt))
+        logger.exception("Timeout error {e}".format(e=errt))
     except requests.exceptions.RequestException as err:
-        logging.exception("Unknown error {e}".format(e=e))
+        logger.exception("Unknown error {e}".format(e=e))
 
     return res
