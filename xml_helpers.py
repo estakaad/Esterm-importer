@@ -32,3 +32,15 @@ def find_all_languages(root):
     unique_languages = (list(set_res))
 
     return unique_languages
+
+
+def find_all_description_types(root):
+    all_description_types = []
+    for term in root.findall(".//descripGrp"):
+        for description_type in term.findall(".//descrip"):
+            all_description_types.append(description_type.attrib["type"])
+
+    set_res = set(all_description_types)
+    unique_description_types = (list(set_res))
+
+    return unique_description_types
