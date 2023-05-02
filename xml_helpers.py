@@ -1,3 +1,13 @@
+import xml.etree.ElementTree as ET
+import log_config
+
+
+logger = log_config.get_logger()
+
+logger.handlers = []
+logger.propagate = False
+
+
 # Find term"s or definition"s languages and match it with
 # the language abbreviation used in API
 def match_language(lang):
@@ -44,3 +54,62 @@ def find_all_description_types(root):
     unique_description_types = (list(set_res))
 
     return unique_description_types
+
+def find_all_transaction_types(root):
+    all_transacGrp_types = []
+    for term in root.findall(".//transacGrp"):
+        for transaction_type in term.findall(".//transac"):
+            all_transacGrp_types.append(transaction_type.attrib["type"])
+
+    set_res = set(all_transacGrp_types)
+    unique_transaction_types = (list(set_res))
+
+    return unique_transaction_types
+
+def is_concept_aviation_related(root):
+    sub_categories_list = ['Aeronavigatsioonilised kaardid', 'Lennukõlblikkus', 'Lennuliikluse korraldamine',
+                      'Lennumeteoroloogia', 'Lennunduse (rahvusvaheline) reguleerimine', 'Lennundusjulgestus',
+                      'Lennundusohutus', 'Lennundusside (telekommunikatsioon)',
+                      'Lennundusspetsialistid, nende load ja pädevused', 'Lennundusspetsialistide koolitus',
+                      'Lennundusspetsialistide tervisekontroll', 'Lennundusteave', 'Lennureeglid', 'Lennutegevus',
+                      'Lennuväljad ja kopteriväljakud', 'Lennuõnnetused ja –intsidendid',
+                      'Ohtlike ainete/kaupade õhuvedu', 'Otsing ja päästmine',
+                      'Protseduuride lihtsustamine lennunduses', 'Reisijatevedu ja –teenindamine', 'Õhusõidukid',
+                      'Õhusõidukite keskkonnakõlblikkus (müra, emissioonid)',
+                      'Õhusõidukite riikkondsus ja registreerimistunnused']
+
+    all_concepts = root.findall('.//conceptGrp')
+
+    concepts = []
+
+    # Loop through each <conceptGrp> element
+    for conceptGrp in root.findall("./conceptGrp"):
+
+        # Check whether "Valdkonnaviide" contains value "TR8" (Lenoch classificator for aero transport)
+        domain_references = root.findall(".//descrip[@type='Valdkonnaviide']")
+
+        for i in domain_references:
+            if "TR8" in ET.tostring(i, encoding="unicode", method="text"):
+                logger.info("This is aviation concept, because \"Valdkonnaviide\" contains \"TR8\"")
+            else:
+                logger.info("This is not aviation concept, because \"Valdkonnaviide\" does not contain \"TR8\"")
+
+        # Check whether "Alamvaldkond_" contains value which is present in the list of aviation sub categories
+        sub_categories = root.findall(".//descrip[@type='Alamvaldkond_']")
+
+        for s in sub_categories:
+            sub_category = ET.tostring(s, encoding="unicode", method="text").strip()
+            if sub_category in sub_categories_list:
+                logger.info("This is aviation concept, because %s is a relevant sub category.", sub_category)
+            else:
+                logger.info("This is not aviation concept, because %s is not a relevant sub category.", sub_category)
+
+        # Check whether "Tunnus" has value "LENNUNDUS"
+        features = root.findall(".//descrip[@type='Tunnus']")
+
+        for f in features:
+            feature = ET.tostring(f, encoding="unicode", method="text").strip()
+            if "LENNUNDUS" in feature:
+                logger.info("This is aviation concept, it has LENNUNDUS for \"Tunnus\"")
+            else:
+                logger.info("This is not an aviation concept, it does not have LENNUNDUS for \"Tunnus\"")

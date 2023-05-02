@@ -19,6 +19,7 @@ def extract_concepts(root, dataset_code, header, parameters):
 
         logger.debug("Processing conceptGrp")
 
+
         # Create a dictionary for the concept
         concept_dict = {}
 
@@ -62,6 +63,14 @@ def extract_concepts(root, dataset_code, header, parameters):
             if definition_dict:
                 definition_list.append(definition_dict)
 
+        for descripGrp in conceptGrp.findall("./descripGrp"):
+            descrip_type = descripGrp.find("descrip").attrib["type"]
+            if descrip_type == "Päritolu":
+                descrip = descripGrp.find("descrip")
+                descrip_value = ET.tostring(descrip, encoding="unicode", method="text")
+                if descrip_value:
+                    print(descrip_value)
+
         # Add datasetCode to the concept dictionary
         concept_dict["datasetCode"] = dataset_code
 
@@ -78,7 +87,8 @@ def extract_concepts(root, dataset_code, header, parameters):
 
         logger.info("Number of concepts parsed: %s", len(concepts))
 
-        api_requests.save_term(concept_dict, header, parameters)
+
+        #api_requests.save_term(concept_dict, header, parameters)
 
 
     return concepts
