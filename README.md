@@ -1,4 +1,4 @@
-# Multiterm
+# Estermi terminikogu importer
 
 Mida see programm teeb?
 
