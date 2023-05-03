@@ -66,7 +66,8 @@ def find_all_transaction_types(root):
 
     return unique_transaction_types
 
-def is_concept_aviation_related(root):
+# Return True, if the concept is an aviation concept.
+def is_concept_aviation_related(concept):
     sub_categories_list = ['Aeronavigatsioonilised kaardid', 'Lennukõlblikkus', 'Lennuliikluse korraldamine',
                       'Lennumeteoroloogia', 'Lennunduse (rahvusvaheline) reguleerimine', 'Lennundusjulgestus',
                       'Lennundusohutus', 'Lennundusside (telekommunikatsioon)',
@@ -78,38 +79,43 @@ def is_concept_aviation_related(root):
                       'Õhusõidukite keskkonnakõlblikkus (müra, emissioonid)',
                       'Õhusõidukite riikkondsus ja registreerimistunnused']
 
-    all_concepts = root.findall('.//conceptGrp')
+    # Check whether "Valdkonnaviide" contains value "TR8" (Lenoch classificator for aero transport)
+    domain_references = concept.findall(".//descrip[@type='Valdkonnaviide']")
 
-    concepts = []
+    for i in domain_references:
+        if "TR8" in ET.tostring(i, encoding="unicode", method="text"):
+            logger.debug("This is aviation concept, because \"Valdkonnaviide\" contains \"TR8\"")
+            return True
+        else:
+            logger.debug("This is not aviation concept, because \"Valdkonnaviide\" does not contain \"TR8\"")
 
-    # Loop through each <conceptGrp> element
-    for conceptGrp in root.findall("./conceptGrp"):
+    # Check whether "Alamvaldkond_" contains value which is present in the list of aviation sub categories
+    sub_categories = concept.findall(".//descrip[@type='Alamvaldkond_']")
 
-        # Check whether "Valdkonnaviide" contains value "TR8" (Lenoch classificator for aero transport)
-        domain_references = root.findall(".//descrip[@type='Valdkonnaviide']")
+    for s in sub_categories:
+        sub_category = ET.tostring(s, encoding="unicode", method="text").strip()
+        if sub_category in sub_categories_list:
+            logger.debug("This is aviation concept, because %s is a relevant sub category.", sub_category)
+            return True
+        else:
+            logger.debug("This is not aviation concept, because %s is not a relevant sub category.", sub_category)
 
-        for i in domain_references:
-            if "TR8" in ET.tostring(i, encoding="unicode", method="text"):
-                logger.info("This is aviation concept, because \"Valdkonnaviide\" contains \"TR8\"")
-            else:
-                logger.info("This is not aviation concept, because \"Valdkonnaviide\" does not contain \"TR8\"")
+    # Check whether "Tunnus" has value "LENNUNDUS"
+    features = concept.findall(".//descrip[@type='Tunnus']")
 
-        # Check whether "Alamvaldkond_" contains value which is present in the list of aviation sub categories
-        sub_categories = root.findall(".//descrip[@type='Alamvaldkond_']")
+    for f in features:
+        feature = ET.tostring(f, encoding="unicode", method="text").strip()
+        if "LENNUNDUS" in feature:
+            logger.debug("This is aviation concept, it has LENNUNDUS for \"Tunnus\"")
+            return True
+        else:
+            logger.debug("This is not an aviation concept, it has %s for \"Tunnus\"", feature)
+            return False
 
-        for s in sub_categories:
-            sub_category = ET.tostring(s, encoding="unicode", method="text").strip()
-            if sub_category in sub_categories_list:
-                logger.info("This is aviation concept, because %s is a relevant sub category.", sub_category)
-            else:
-                logger.info("This is not aviation concept, because %s is not a relevant sub category.", sub_category)
 
-        # Check whether "Tunnus" has value "LENNUNDUS"
-        features = root.findall(".//descrip[@type='Tunnus']")
-
-        for f in features:
-            feature = ET.tostring(f, encoding="unicode", method="text").strip()
-            if "LENNUNDUS" in feature:
-                logger.info("This is aviation concept, it has LENNUNDUS for \"Tunnus\"")
-            else:
-                logger.info("This is not an aviation concept, it does not have LENNUNDUS for \"Tunnus\"")
+# Returns True if the concept element is actually a source.
+def is_element_source(concept):
+    for languageGrp in concept.findall("./languageGrp"):
+        if languageGrp.find("language").attrib["type"] == "Allikas":
+            logger.info("This concept element is a source, not a concept.")
+            return True
