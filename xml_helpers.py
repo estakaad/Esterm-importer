@@ -113,9 +113,25 @@ def is_concept_aviation_related(concept):
             return False
 
 
-# Returns True if the concept element is actually a source.
-def is_element_source(concept):
+# Returns concept type (concept, source, domain)
+def concept_type(concept):
+    concept_type = "concept"
     for languageGrp in concept.findall("./languageGrp"):
         if languageGrp.find("language").attrib["type"] == "Allikas":
-            logger.info("This concept element is a source, not a concept.")
-            return True
+            concept_type = "source"
+        elif languageGrp.find("language").attrib["type"] == "Valdkond":
+            concept_type = "domain"
+    return concept_type
+
+
+# Find all attribute "type" values for element "language"
+def find_all_language_types(root):
+    all_language_types = []
+    for term in root.findall(".//languageGrp"):
+        for language_type in term.findall(".//language"):
+            all_language_types.append(language_type.attrib["type"])
+
+    set_lang_types = set(all_language_types)
+    unique_language_types = (list(set_lang_types))
+
+    return unique_language_types

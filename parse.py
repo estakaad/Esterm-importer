@@ -15,15 +15,14 @@ def import_concepts(root, header):
     esterm_concepts = []
     aviation_concepts = []
     sources = 0
+    domains = 0
 
     # Loop through each <conceptGrp> element
     for conceptGrp in root.findall("./conceptGrp"):
 
         logger.debug("Processing conceptGrp")
 
-        if xml_helpers.is_element_source(conceptGrp):
-            sources += 1
-        else:
+        if xml_helpers.concept_type(conceptGrp) == "concept":
             # Create a dictionary for the concept
             concept_dict = {}
 
@@ -87,17 +86,25 @@ def import_concepts(root, header):
             else:
                 esterm_concepts.append(concept_dict)
 
-            logger.info("Number of Esterm concepts parsed: %s", len(esterm_concepts))
-            logger.info("Number of aviation concepts parsed: %s", len(aviation_concepts))
-            logger.info("Number of sources parsed: %s", str(sources))
-
-            if len(esterm_concepts) + len(aviation_concepts) + sources == len(all_concepts):
-                logger.info("Number of elements parsed is equal to total number of concept elements.")
-            else:
-                logger.info("Number of elements parsed is not equal to total number (%s) of concept elements.", str(len(all_concepts)))
-
             parameters = {"crudRoleDataset": concept_dict["datasetCode"]}
+            api_requests.save_term(concept_dict, header, parameters)
 
-            #api_requests.save_term(concept_dict, header, parameters)
+        if xml_helpers.concept_type(conceptGrp) == "source":
+            logger.info("This concept element is a source, not a concept.")
+            sources += 1
+        if xml_helpers.concept_type(conceptGrp) == "domain":
+            logger.info("This concept element is a domain, not a concept.")
+            domains += 1
+
+        logger.info("Number of Esterm concepts parsed: %s", len(esterm_concepts))
+        logger.info("Number of aviation concepts parsed: %s", len(aviation_concepts))
+        logger.info("Number of sources parsed: %s", str(sources))
+        logger.info("Number of domains parsed: %s", str(domains))
+
+        if len(esterm_concepts) + len(aviation_concepts) + sources + domains == len(all_concepts):
+            logger.info("Number of elements parsed is equal to total number of concept elements.")
+        else:
+            logger.info("Number of elements parsed is not equal to total number (%s) of concept elements.",
+                        str(len(all_concepts)))
 
     return True
