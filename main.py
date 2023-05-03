@@ -13,7 +13,9 @@ root = tree.getroot()
 
 load_dotenv()
 api_key = os.environ.get("API_KEY")
+aviation = os.environ.get("AVI")
+esterm = os.environ.get("ESTERM")
 
 header = {"ekilex-api-key": api_key}
 
-parse.import_concepts(root, header)
+parse.import_concepts(root, header, aviation, esterm)
