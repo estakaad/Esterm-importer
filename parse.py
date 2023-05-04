@@ -49,6 +49,15 @@ def import_concepts(root, header, aviation_dataset, esterm_dataset):
                         definition_dict["lang"] = xml_helpers.match_language(languageGrp.find("language").attrib["lang"])
                         definition_dict["definitionTypeCode"] = "definitsioon"
 
+                for descripGrp in languageGrp.findall("./descripGrp"):
+                    descrip_type = descripGrp.find("descrip").attrib["type"]
+                    if descrip_type == "Definitsioon":
+                        descrip = descripGrp.find("descrip")
+                        descrip_value = ET.tostring(descrip, encoding="unicode", method="text")
+                        definition_dict["value"] = descrip_value
+                        definition_dict["lang"] = xml_helpers.match_language(languageGrp.find("language").attrib["lang"])
+                        definition_dict["definitionTypeCode"] = "definitsioon"
+
                 if definition_dict:
                     definition_list.append(definition_dict)
 
