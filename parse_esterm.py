@@ -61,15 +61,7 @@ def parse_mtf(xml_data):
                     valdkonnaviide = valdkonnaviide.strip()
                     if valdkonnaviide:
                         concept.domains.append(Domain(valdkonnaviide))
-            elif descrip.get('type') == 'Definitsioon':
-                languageGrp = descrip.getparent().getparent().xpath('languageGrp')[0]
-                lang = languageGrp.xpath('language')[0].get('lang')
-                definition_text = descrip.text.strip() if descrip.text is not None else 'testing'
-                concept.definitions.append(Definition(
-                    value=definition_text,
-                    lang=lang if lang is not None else 'testing',
-                    definitionTypeCode='definitsioon'
-                ))
+
             elif descrip.get('type') == 'Märkus':
                 concept.notes.append(Note(
                     value=descrip_text,
@@ -107,6 +99,13 @@ def parse_mtf(xml_data):
                         word.notes.append(descrip_text)
                     elif descrip_type == 'Kontekst':
                         word.usage.append(descrip_text)
+                    elif descrip_type == 'Definitsioon':
+                        definition_text = descrip_text.strip() if descrip_text is not None else 'testing'
+                        concept.definitions.append(Definition(
+                            value=definition_text,
+                            lang=lang if lang is not None else 'testing',
+                            definitionTypeCode='definitsioon'
+                        ))
                 concept.words.append(word)
 
         concepts.append(concept)
