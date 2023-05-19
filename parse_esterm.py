@@ -3,6 +3,7 @@ import json
 import re
 import xml_helpers
 from dataclasses import dataclass, field
+import uuid
 
 @dataclass
 class Domain:
@@ -42,19 +43,37 @@ class Word:
 
 @dataclass
 class Concept:
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     domains: list = field(default_factory=list)
     definitions: list = field(default_factory=list)
     notes: list = field(default_factory=list)
     forum: list = field(default_factory=list)
     words: list = field(default_factory=list)
 
-def parse_mtf(xml_data):
-    root = etree.fromstring(xml_data)
+
+def parse_mtf(root):
     concepts = []
+    sources = []
+    aviation_concepts = []
+    added_concepts_ids = set()
+
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         concept = Concept()
+
+        if concept.id in added_concepts_ids:
+            print(f"Concept with id {concept.id} is already added!")
+            continue
+
+        if conceptGrp.xpath("languageGrp/language[@type='Allikas']"):
+            list_to_append = sources
+        elif xml_helpers.is_concept_aviation_related(conceptGrp):
+            list_to_append = aviation_concepts
+        else:
+            list_to_append = concepts
+
         for descrip in conceptGrp.xpath('descripGrp/descrip'):
             descrip_text = etree.tostring(descrip, encoding="unicode", method="text") if descrip.text is not None else 'testing'
+            # ... continue parsing as you've done ...
             if descrip.get('type') == 'Valdkonnaviide':
                 for valdkonnaviide in descrip_text.split(';'):
                     valdkonnaviide = valdkonnaviide.strip()
@@ -98,11 +117,12 @@ def parse_mtf(xml_data):
                         word.notes.append(descrip_text)
                     elif descrip_type == 'Kontekst':
                         word.usage.append(descrip_text)
+                    elif descrip_type == 'Allikas':
+                        print('allikas')
                     elif descrip_type == 'Definitsioon':
                         definition_text = descrip_text.strip() if descrip_text is not None else 'testing'
-                        if descripGrp.xpath('descrip/xref'):  # Check if xref exists within the descrip element
-                            source = descripGrp.xpath('descrip/xref')[
-                                0].text  # Get the text content of the xref element
+                        if descripGrp.xpath('descrip/xref'):
+                            source = descripGrp.xpath('descrip/xref')[0].text
                         else:
                             source = 'testallikas'
                         concept.definitions.append(Definition(
@@ -114,23 +134,41 @@ def parse_mtf(xml_data):
 
                 concept.words.append(word)
 
-        concepts.append(concept)
-    return concepts
+        list_to_append.append(concept)
+
+        added_concepts_ids.add(concept.id)
+
+    return concepts, sources, aviation_concepts
 
 
-def print_concepts_to_json(concepts):
-    concepts_json = json.dumps([concept.__dict__ for concept in concepts], default=lambda o: o.__dict__, indent=4, ensure_ascii=False)
-    #print(concepts_json)
-    with open('concepts.json', 'w', encoding='utf8') as json_file:
-        json_file.write(concepts_json)
+def print_concepts_to_json(concepts, sources, aviation_concepts):
+    print(str(len(concepts)))
+    print(str(len(sources)))
+    print(str(len(aviation_concepts)))
+    for concept_list, filename in [(concepts, 'concepts.json'),
+                                   (sources, 'sources.json'),
+                                   (aviation_concepts, 'aviation_concepts.json')]:
+        concepts_json = json.dumps(
+            [concept.__dict__ for concept in concept_list],
+            default=lambda o: o.__dict__,
+            indent=4,
+            ensure_ascii=False
+        )
+        with open(filename, 'w', encoding='utf8') as json_file:
+            json_file.write(concepts_json)
+
 
 def read_xml_file(file_path):
     with open(file_path, 'rb') as file:
         xml_content = file.read().decode('utf-8', errors='ignore')
-    # Remove encoding declaration
     xml_content = re.sub('\<\?xml.*\?\>', '', xml_content)
     return xml_content
 
-xml_data = read_xml_file('test.xml')
-concepts = parse_mtf(xml_data)
-print_concepts_to_json(concepts)
+with open('esterm.xml', 'rb') as file:
+    xml_content = file.read()
+
+parser = etree.XMLParser(encoding='UTF-16')
+root = etree.fromstring(xml_content, parser=parser)
+
+concepts, sources, aviation_concepts = parse_mtf(root)
+print_concepts_to_json(concepts, sources, aviation_concepts)
