@@ -1,9 +1,7 @@
 from lxml import etree
-from dataclasses import dataclass, field
 import json
 import re
 import xml_helpers
-
 from dataclasses import dataclass, field
 
 @dataclass
@@ -15,6 +13,7 @@ class Definition:
     value: str
     lang: str
     definitionTypeCode: str
+    source: str
 
 @dataclass
 class Note:
@@ -101,16 +100,22 @@ def parse_mtf(xml_data):
                         word.usage.append(descrip_text)
                     elif descrip_type == 'Definitsioon':
                         definition_text = descrip_text.strip() if descrip_text is not None else 'testing'
+                        if descripGrp.xpath('descrip/xref'):  # Check if xref exists within the descrip element
+                            source = descripGrp.xpath('descrip/xref')[
+                                0].text  # Get the text content of the xref element
+                        else:
+                            source = 'testallikas'
                         concept.definitions.append(Definition(
-                            value=definition_text,
-                            lang=lang if lang is not None else 'testing',
-                            definitionTypeCode='definitsioon'
+                            value=descrip_text.split('[')[0].strip(),
+                            lang=xml_helpers.match_language(lang) if lang is not None else 'testing',
+                            definitionTypeCode='definitsioon',
+                            source=source
                         ))
+
                 concept.words.append(word)
 
         concepts.append(concept)
     return concepts
-
 
 
 def print_concepts_to_json(concepts):
