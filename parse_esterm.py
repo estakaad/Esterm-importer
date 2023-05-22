@@ -2,6 +2,7 @@ from lxml import etree
 import json
 import re
 import xml_helpers
+from typing import List, Optional
 from dataclasses import dataclass, field
 import uuid
 
@@ -35,11 +36,11 @@ class Usage:
 class Word:
     value: str
     lang: str
-    value_state_code: str
     is_public: int
     word_type: str
-    usage: list = field(default_factory=list)  # Added usage field
-    notes: list = field(default_factory=list)  # Added notes field
+    value_state_code: Optional[str] = None
+    usage: List[str] = field(default_factory=list)
+    notes: List[str] = field(default_factory=list)
 
 @dataclass
 class Concept:
@@ -73,7 +74,6 @@ def parse_mtf(root):
 
         for descrip in conceptGrp.xpath('descripGrp/descrip'):
             descrip_text = etree.tostring(descrip, encoding="unicode", method="text") if descrip.text is not None else 'testing'
-            # ... continue parsing as you've done ...
             if descrip.get('type') == 'Valdkonnaviide':
                 for valdkonnaviide in descrip_text.split(';'):
                     valdkonnaviide = valdkonnaviide.strip()
@@ -99,17 +99,34 @@ def parse_mtf(root):
         for languageGrp in conceptGrp.xpath('languageGrp'):
             lang = languageGrp.xpath('language')[0].get('lang') if languageGrp.xpath('language') else 'testing'
 
-            for termGrp in languageGrp.xpath('termGrp'):
+            termGrps = languageGrp.xpath('termGrp')
+
+            for termGrp in termGrps:
                 term = termGrp.xpath('term')[0].text if termGrp.xpath('term') else 'testing'
-                value_state_code = termGrp.xpath('descripGrp/descrip[@type="Keelenditüüp"]')[0].text \
-                    if termGrp.xpath('descripGrp/descrip[@type="Keelenditüüp"]') else 'testing'
+                if termGrp.xpath('descripGrp/descrip[@type="Keelenditüüp"]'):
+                    term_text = termGrp.xpath('descripGrp/descrip[@type="Keelenditüüp"]')[0].text
+                    value_state_code = None
+                    if term_text == 'eelistermin' and len(termGrps) > 1:
+                        value_state_code = 'eelistatud'
+                    elif term_text == 'sünonüüm':
+                        value_state_code = 'mööndav'
+                    elif term_text == 'variant':
+                        value_state_code = 'variant - seda ignoreerime'
+                    elif term_text == 'endine':
+                        value_state_code = 'endine'
+                    elif term_text == 'väldi':
+                        value_state_code = 'väldi'
+                else:
+                    value_state_code = 'testing - vist pole väärtust'
+
                 word = Word(
                     value=term,
                     lang=xml_helpers.match_language(lang),
-                    value_state_code=value_state_code,
                     is_public=1,
-                    word_type='testing'
+                    word_type='testing',
+                    value_state_code=value_state_code
                 )
+
                 for descripGrp in termGrp.xpath('descripGrp'):
                     descrip_type = descripGrp.xpath('descrip/@type')[0]
                     descrip_text = descripGrp.xpath('descrip')[0].text
