@@ -5,6 +5,7 @@ import xml_helpers
 from typing import List, Optional
 from dataclasses import dataclass, field
 import uuid
+import os
 
 @dataclass
 class Domain:
@@ -204,6 +205,9 @@ def print_concepts_to_json(concepts, sources, aviation_concepts):
     print(str(len(concepts)))
     print(str(len(sources)))
     print(str(len(aviation_concepts)))
+    output_folder = "output"
+    os.makedirs(output_folder, exist_ok=True)
+
     for concept_list, filename in [(concepts, 'concepts.json'),
                                    (sources, 'sources.json'),
                                    (aviation_concepts, 'aviation_concepts.json')]:
@@ -213,8 +217,9 @@ def print_concepts_to_json(concepts, sources, aviation_concepts):
             indent=4,
             ensure_ascii=False
         )
-        with open(filename, 'w', encoding='utf8') as json_file:
+        with open(os.path.join(output_folder, filename), 'w', encoding='utf8') as json_file:
             json_file.write(concepts_json)
+
 
 
 def read_xml_file(file_path):
@@ -223,7 +228,7 @@ def read_xml_file(file_path):
     xml_content = re.sub('\<\?xml.*\?\>', '', xml_content)
     return xml_content
 
-with open('esterm.xml', 'rb') as file:
+with open('input/esterm.xml', 'rb') as file:
     xml_content = file.read()
 
 parser = etree.XMLParser(encoding='UTF-16')

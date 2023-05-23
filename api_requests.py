@@ -22,7 +22,6 @@ def save_term(json_file_path, header, parameters):
                 json=concept,
                 headers=header, timeout=3)
             res.raise_for_status()
-            print(res.status_code)
             logger.info("https://ekitest.tripledev.ee/ekilex/api/term-meaning/save - %s", concept)
         except requests.exceptions.HTTPError as errh:
             logger.exception("Http error {e}".format(e=errh))

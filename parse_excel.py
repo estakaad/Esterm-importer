@@ -1,15 +1,19 @@
 import pandas as pd
 import json
 from pathlib import Path
-from dotenv import load_dotenv
-import os
+
 
 # Import kalanduse terminikogu
 dataset_code = 'kala'
 
 script_dir = Path(__file__).resolve().parent
+input_dir = script_dir / 'input'
+output_dir = script_dir / 'output'
 
-df = pd.read_excel(script_dir / 'kalandus.xlsx', engine='openpyxl')
+input_file = input_dir / 'kalandus.xlsx'
+output_file = output_dir / 'output.json'
+
+df = pd.read_excel(input_file, engine='openpyxl')
 
 groups = df.groupby('E_ID')
 
@@ -36,5 +40,7 @@ for group_name, group_df in groups:
         'words': words,
     })
 
-with open(script_dir / 'output.json', 'w', encoding='utf-8') as f:
+output_dir.mkdir(parents=True, exist_ok=True)
+
+with open(output_file, 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=4)

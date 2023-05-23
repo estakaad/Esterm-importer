@@ -1,7 +1,6 @@
 import xml.etree.ElementTree as ET
 import log_config
 
-
 logger = log_config.get_logger()
 
 logger.handlers = []
@@ -65,6 +64,7 @@ def find_all_transaction_types(root):
     unique_transaction_types = (list(set_res))
 
     return unique_transaction_types
+
 
 # Return True, if the concept is an aviation concept.
 def is_concept_aviation_related(concept):
@@ -135,3 +135,13 @@ def find_all_language_types(root):
     unique_language_types = (list(set_lang_types))
 
     return unique_language_types
+
+
+def find_max_number_of_definitions(root):
+    # Find all elements with attribute "type" and value "definitsioon"
+    elements = root.findall(".//*[@type='definitsioon']")
+
+    # Iterate through the elements and print their tag name and text content
+    for element in elements:
+        print(element.tag, element.text)
+

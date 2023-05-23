@@ -5,7 +5,7 @@ import sys
 
 def get_logger():
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     if not os.path.exists('logs'):
         os.mkdir('logs')
