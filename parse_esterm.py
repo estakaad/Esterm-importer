@@ -97,13 +97,13 @@ def parse_mtf(root):
                 ))
 
 
-        word = parse_words(conceptGrp, concept)
+            word = parse_words(conceptGrp, concept)
 
-        concept.words.append(word)
+            concept.words.append(word)
 
-        list_to_append.append(concept)
+            list_to_append.append(concept)
 
-        added_concepts_ids.add(concept.id)
+            added_concepts_ids.add(concept.id)
 
     return concepts, sources, aviation_concepts
 
