@@ -121,22 +121,20 @@ def parse_words(conceptGrp, concept):
 
     for languageGrp in conceptGrp.xpath('languageGrp'):
 
-        word = Word(
-            value='term',
-            lang='est',
-            is_public=True)
-
-        # Get word (term) language and assign as attribute lang
-        lang = languageGrp.xpath('language')[0].get('lang')
-        word.lang = xml_helpers.match_language(lang)
-
         termGrps = languageGrp.xpath('termGrp')
 
-        # Parse termGrp elements of one languageGrp
         for termGrp in termGrps:
-            # Get term value itself and assign as attribute value
+
+            word = Word(
+                value='term',
+                lang='est',
+                is_public=True)
+
+            # Get word (term) language and assign as attribute lang
+            lang = languageGrp.xpath('language')[0].get('lang')
+            word.lang = xml_helpers.match_language(lang)
             word.value = termGrp.xpath('term')[0].text
-            #
+
             # Parse descripGrp elements of languageGrp element
             for descripGrp in termGrp.xpath('descripGrp'):
                 descrip_type = descripGrp.xpath('descrip/@type')[0]
@@ -201,7 +199,7 @@ def parse_words(conceptGrp, concept):
                         source=source
                     ))
 
-        words.append(word)
+            words.append(word)
 
     return words, definitions
 
