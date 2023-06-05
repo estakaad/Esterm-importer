@@ -163,31 +163,8 @@ def parse_words(conceptGrp, concept):
                     elif descrip_text == 'väldi':
                         word.value_state_code = 'väldi'
 
-                if descrip_type == 'Märkus':
-                    if descrip_text.startswith(('SÜNONÜÜM: ', 'ENDINE: ', 'VARIANT: ')):
-                        # Add the note to the words with 'mööndav' or 'endine' value_state_codes
-                        if 'SÜNONÜÜM: ' in descrip_text and 'mööndav' in words:
-                            words['mööndav'].notes.append(descrip_text)
-                        elif 'ENDINE: ' in descrip_text and 'endine' in words:
-                            words['endine'].notes.append(descrip_text)
-                    else:
-                        word.notes.append(descrip_text)
-
-
-            for descripGrp in termGrp.xpath('descripGrp'):
-                descrip_type = descripGrp.xpath('descrip/@type')[0]
-                descrip_text = descripGrp.xpath('descrip')[0].text
-                # Kui /mtf/conceptGrp/languageGrp/termGrp/descripGrp/descrip[@type="Märkus"] alguses on
-                # 'SÜNONÜÜM: ', 'VARIANT: ' või 'ENDINE: ', siis tuleb see salvestada selle termGrp
-                # elemendi märkuseks, mille keelenditüüp Estermis on 'SÜNONÜÜM', 'VARIANT' või 'ENDINE'
-                if descrip_type == 'Märkus':
-                    word.notes.append(descrip_text)
-                elif descrip_type == 'Kontekst':
-                    word.usage.append(descrip_text)
-                elif descrip_type == 'Allikas':
-                    print('Allikas')
-                elif descrip_type == 'Definitsioon':
-                    definition_text = descrip_text.strip() if descrip_text is not None else 'testing'
+                if descrip_type == 'Definitsioon':
+                    #definition_text = descrip_text.strip() if descrip_text is not None else 'testing'
                     if descripGrp.xpath('descrip/xref'):
                         source = descripGrp.xpath('descrip/xref')[0].text
                     else:
@@ -198,6 +175,22 @@ def parse_words(conceptGrp, concept):
                         definitionTypeCode='definitsioon',
                         source=source
                     ))
+
+                if descrip_type == 'Kontekst':
+                    word.usage.append(descrip_text)
+
+                if descrip_type == 'Allikas':
+                    print('Allikas')
+
+                if descrip_type == 'Märkus':
+                    # if descrip_text.startswith(('SÜNONÜÜM: ', 'ENDINE: ', 'VARIANT: ')):
+                    #     # Add the note to the words with 'mööndav' or 'endine' value_state_codes
+                    #     if 'SÜNONÜÜM: ' in descrip_text and 'mööndav' in words:
+                    #         words['mööndav'].notes.append(descrip_text)
+                    #     elif 'ENDINE: ' in descrip_text and 'endine' in words:
+                    #         words['endine'].notes.append(descrip_text)
+                    # else:
+                        word.notes.append(descrip_text)
 
             words.append(word)
 
