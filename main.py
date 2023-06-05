@@ -1,17 +1,16 @@
-import os
-import parse
-import xml.etree.ElementTree as ET
-import json
 import api_requests
 import os
 from dotenv import load_dotenv
-import xml_helpers
+import parse_esterm
 
-# parser = ET.XMLParser(encoding="UTF-8")
-# tree = ET.parse("test.xml", parser=parser)
-# root = tree.getroot()
 
-json_output = 'output.json'
+# Transform the external term base to JSON
+# Transform Esterm
+parse_esterm.transform_esterm_to_json()
+
+# Save the concepts in output.json to Ekilex
+
+#json_output = 'output\output.json'
 
 load_dotenv()
 api_key = os.environ.get("API_KEY")
@@ -21,4 +20,4 @@ crud_role_dataset = os.environ.get("KALANDUS")
 header = {"ekilex-api-key": api_key}
 parameters = {"crudRoleDataset": crud_role_dataset}
 
-api_requests.save_term(json_output, header, parameters)
+#api_requests.save_term(json_output, header, parameters)
