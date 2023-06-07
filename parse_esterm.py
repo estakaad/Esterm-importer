@@ -39,6 +39,7 @@ def parse_mtf(root):
                     domain = domain.strip()
                     if domain:
                         concept.domains.append(data_classes.Domain(domain))
+                        logger.info('Added domain: %s', domain)
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 concept.notes.append(data_classes.Note(
@@ -46,17 +47,20 @@ def parse_mtf(root):
                     lang='est',
                     is_public=1
                 ))
+                logger.info('Added note: %s', descrip_element_value)
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
                 concept.forum.append(data_classes.Forum(
                     value=descrip_element_value
                 ))
+                logger.info('Added tööleht to forum: %s', descrip_element_value)
             # Get concept context and add its value to the concept usage list
             elif descrip_element.get('type') == 'Kontekst':
                 concept.usage.append(data_classes.Usage(
                     value=descrip_element_value,
                     is_public=1
                 ))
+                logger.info('Added kontekst to usage: %s', descrip_element_value)
 
         # Concept level data is parsed, now to parsing word (term) level data
         words, definitions = parse_words(conceptGrp, concept)
@@ -68,7 +72,7 @@ def parse_mtf(root):
             concept.definitions.append(definition)
 
         list_to_append.append(concept)
-
+        logger.info('Concept has been added to the list of concepts.')
     return concepts, sources, aviation_concepts
 
 
@@ -126,9 +130,11 @@ def parse_words(conceptGrp, concept):
 
 # Write aviation concepts, all other concepts and sources of the concepts to three separate JSON files
 def print_concepts_to_json(concepts, sources, aviation_concepts):
-    print(str(len(concepts)))
-    print(str(len(sources)))
-    print(str(len(aviation_concepts)))
+
+    logger.debug('Number of concepts: %s', str(len(concepts)))
+    logger.debug('Number of aviation concepts: %s', str(len(aviation_concepts)))
+    logger.debug('Number of sources: %s', str(len(sources)))
+
     output_folder = 'output'
     os.makedirs(output_folder, exist_ok=True)
 
@@ -143,7 +149,7 @@ def print_concepts_to_json(concepts, sources, aviation_concepts):
         )
         with open(os.path.join(output_folder, filename), 'w', encoding='utf8') as json_file:
             json_file.write(concepts_json)
-
+            logger.info('Finished writing concepts %s.', filename)
 
 def transform_esterm_to_json():
 # Opening the file, parsing, writing JSON files
@@ -155,3 +161,5 @@ def transform_esterm_to_json():
 
     concepts, sources, aviation_concepts = parse_mtf(root)
     print_concepts_to_json(concepts, sources, aviation_concepts)
+
+    logger.info('Finished transforming Esterm XML file to JSON files.')

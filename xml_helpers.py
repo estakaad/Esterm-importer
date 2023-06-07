@@ -155,36 +155,45 @@ def parse_word_types(descrip_text):
         return 'l'
 
 def parse_value_state_codes(descrip_text, termGrps):
+    code = None
     # Kui keelenditüüp on 'eelistermin' ja languageGrp element sisaldab rohkem kui üht termGrp elementi,
     # tuleb Ekilexis väärtusoleku väärtuseks salvestada 'eelistatud'
     if descrip_text == 'eelistermin' and len(termGrps) > 1:
-        return 'eelistatud'
+        code = 'eelistatud'
     # Kui keelenditüüp on 'sünonüüm' ja termin on kohanimi, tuleb Ekilexis väärtusolekuks
     # salvestada 'mööndav'. Kui keelenditüüp on 'sünonüüm' ja termin ei ole kohanimi, siis Ekilexis ?
     elif descrip_text == 'sünonüüm':
-        return 'mööndav'
+        code =  'mööndav'
     # Kui keelenditüüp on 'variant', siis Ekilexis väärtusolekut ega keelenditüüpi ei salvestata.
     elif descrip_text == 'variant':
-        return None
+        code =  None
     # Kui keelenditüüp on 'endine', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'endine'
     elif descrip_text == 'endine':
-        return 'endine'
+        code =  'endine'
     # Kui keelenditüüp on 'väldi', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'väldi'
     elif descrip_text == 'väldi':
-        return 'väldi'
+        code =  'väldi'
     else:
         return None
+    logger.info('Value state code is %s.', code)
+
+    return code
 
 
 def parse_definition(descrip_text, descripGrp, lang):
     if descripGrp.xpath('descrip/xref'):
         source = descripGrp.xpath('descrip/xref')[0].text
+        logger.info('Definiton source: %s', source)
     else:
         source = None
 
-    return data_classes.Definition(
+    definition = data_classes.Definition(
         value=descrip_text.split('[')[0].strip(),
         lang=match_language(lang),
         definitionTypeCode='definitsioon',
         source=source
     )
+
+    logger.info('Added definition: %s', definition.value)
+
+    return definition
