@@ -4,9 +4,6 @@ import data_classes
 
 logger = log_config.get_logger()
 
-logger.handlers = []
-logger.propagate = False
-
 
 # Find term"s or definition"s languages and match it with
 # the language abbreviation used in API

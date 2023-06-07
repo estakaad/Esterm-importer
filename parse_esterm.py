@@ -3,6 +3,10 @@ import json
 import xml_helpers
 import os
 import data_classes
+import log_config
+
+
+logger = log_config.get_logger()
 
 
 # Parse the whole Esterm XML and return aviation concepts, all other concepts and the sources of the concepts
@@ -13,6 +17,7 @@ def parse_mtf(root):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         concept = data_classes.Concept()
+        logger.info("Created concept object")
 
         if xml_helpers.type_of_concept(conceptGrp) == 'source':
             list_to_append = sources
