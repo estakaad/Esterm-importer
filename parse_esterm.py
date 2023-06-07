@@ -5,50 +5,51 @@ import xml_helpers
 from typing import List, Optional
 from dataclasses import dataclass, field
 import os
+import data_classes
 
-@dataclass
-class Domain:
-    value: str
-
-@dataclass
-class Definition:
-    value: str
-    lang: str
-    definitionTypeCode: str
-    source: str
-
-@dataclass
-class Note:
-    value: str
-    lang: str
-    is_public: int
-
-@dataclass
-class Forum:
-    value: str
-
-@dataclass
-class Usage:
-    value: str
-    is_public: int
-
-@dataclass
-class Word:
-    value: str
-    lang: str
-    is_public: int
-    word_type: Optional[str] = None
-    value_state_code: Optional[str] = None
-    usage: List[str] = field(default_factory=list)
-    notes: List[str] = field(default_factory=list)
-
-@dataclass
-class Concept:
-    domains: list = field(default_factory=list)
-    definitions: list = field(default_factory=list)
-    notes: list = field(default_factory=list)
-    forum: list = field(default_factory=list)
-    words: list = field(default_factory=list)
+# @dataclass
+# class Domain:
+#     value: str
+#
+# @dataclass
+# class Definition:
+#     value: str
+#     lang: str
+#     definitionTypeCode: str
+#     source: str
+#
+# @dataclass
+# class Note:
+#     value: str
+#     lang: str
+#     is_public: int
+#
+# @dataclass
+# class Forum:
+#     value: str
+#
+# @dataclass
+# class Usage:
+#     value: str
+#     is_public: int
+#
+# @dataclass
+# class Word:
+#     value: str
+#     lang: str
+#     is_public: int
+#     word_type: Optional[str] = None
+#     value_state_code: Optional[str] = None
+#     usage: List[str] = field(default_factory=list)
+#     notes: List[str] = field(default_factory=list)
+#
+# @dataclass
+# class Concept:
+#     domains: list = field(default_factory=list)
+#     definitions: list = field(default_factory=list)
+#     notes: list = field(default_factory=list)
+#     forum: list = field(default_factory=list)
+#     words: list = field(default_factory=list)
 
 
 # Parse the whole Esterm XML and return aviation concepts, all other concepts and the sources of the concepts
@@ -58,14 +59,14 @@ def parse_mtf(root):
     aviation_concepts = []
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        concept = Concept()
+        concept = data_classes.Concept()
 
-        # Decide whether the concept will be added to the general list of concepts, list of aviation concepts or
-        # list of sources
-        if conceptGrp.xpath('languageGrp/language[@type="Allikas"]'):
+        if xml_helpers.type_of_concept(conceptGrp) == 'source':
             list_to_append = sources
-        elif xml_helpers.is_concept_aviation_related(conceptGrp):
+        elif xml_helpers.type_of_concept(conceptGrp) == 'aviation':
             list_to_append = aviation_concepts
+        elif xml_helpers.type_of_concept(conceptGrp) == 'general':
+            list_to_append = concepts
         else:
             list_to_append = concepts
 
@@ -79,22 +80,22 @@ def parse_mtf(root):
                 for domain in descrip_element_value.split(';'):
                     domain = domain.strip()
                     if domain:
-                        concept.domains.append(Domain(domain))
+                        concept.domains.append(data_classes.Domain(domain))
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
-                concept.notes.append(Note(
+                concept.notes.append(data_classes.Note(
                     value=descrip_element_value,
                     lang='est',
                     is_public=1
                 ))
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
-                concept.forum.append(Forum(
+                concept.forum.append(data_classes.Forum(
                     value=descrip_element_value
                 ))
             # Get concept context and add its value to the concept usage list
             elif descrip_element.get('type') == 'Kontekst':
-                concept.usage.append(Usage(
+                concept.usage.append(data_classes.Usage(
                     value=descrip_element_value,
                     is_public=1
                 ))
@@ -125,7 +126,7 @@ def parse_words(conceptGrp, concept):
 
         for termGrp in termGrps:
 
-            word = Word(
+            word = data_classes.Word(
                 value='term',
                 lang='est',
                 is_public=True)
@@ -140,41 +141,26 @@ def parse_words(conceptGrp, concept):
                 descrip_type = descripGrp.xpath('descrip/@type')[0]
                 descrip_text = descripGrp.xpath('descrip')[0].text
 
+                # Parse word type as value state code or word type
                 if descrip_type == 'Keelenditüüp':
 
-                    # Kui keelenditüüp on 'eelistermin' ja languageGrp element sisaldab rohkem kui üht termGrp elementi,
-                    # tuleb Ekilexis väärtusoleku väärtuseks salvestada 'eelistatud'
-                    if descrip_text == 'eelistermin' and len(termGrps) > 1:
-                        word.value_state_code = 'eelistatud'
-                    # Kui keelenditüüp on 'lühend', tuleb Ekilexis keelenditüübi väärtuseks salvestada 'lühend'
-                    elif descrip_text == 'lühend':
-                        word.word_type = 'l'
-                    # Kui keelenditüüp on 'sünonüüm' ja termin on kohanimi, tuleb Ekilexis väärtusolekuks
-                    # salvestada 'mööndav'. Kui keelenditüüp on 'sünonüüm' ja termin ei ole kohanimi, siis Ekilexis ?
-                    elif descrip_text == 'sünonüüm':
-                        word.value_state_code = 'mööndav'
-                    # Kui keelenditüüp on 'variant', siis Ekilexis väärtusolekut ega keelenditüüpi ei salvestata.
-                    elif descrip_text == 'variant':
-                        word.value_state_code = None
-                    # Kui keelenditüüp on 'endine', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'endine'
-                    elif descrip_text == 'endine':
-                        word.value_state_code = 'endine'
-                    # Kui keelenditüüp on 'väldi', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'väldi'
-                    elif descrip_text == 'väldi':
-                        word.value_state_code = 'väldi'
+                    if xml_helpers.is_type_word_type(descrip_text):
+                        word.word_type = xml_helpers.parse_word_types(descrip_text)
+                    else:
+                        word.value_state_code = xml_helpers.parse_value_state_codes(descrip_text, termGrps)
 
                 if descrip_type == 'Definitsioon':
-                    #definition_text = descrip_text.strip() if descrip_text is not None else 'testing'
-                    if descripGrp.xpath('descrip/xref'):
-                        source = descripGrp.xpath('descrip/xref')[0].text
-                    else:
-                        source = 'Testallikas'
-                    definitions.append(Definition(
-                        value=descrip_text.split('[')[0].strip(),
-                        lang=xml_helpers.match_language(lang) if lang is not None else 'testing',
-                        definitionTypeCode='definitsioon',
-                        source=source
-                    ))
+                    definitions.append(xml_helpers.parse_definition(descrip_text,descripGrp, lang))
+                #     if descripGrp.xpath('descrip/xref'):
+                #         source = descripGrp.xpath('descrip/xref')[0].text
+                #     else:
+                #         source = 'Testallikas'
+                #     definitions.append(Definition(
+                #         value=descrip_text.split('[')[0].strip(),
+                #         lang=xml_helpers.match_language(lang) if lang is not None else 'testing',
+                #         definitionTypeCode='definitsioon',
+                #         source=source
+                #     ))
 
                 if descrip_type == 'Kontekst':
                     word.usage.append(descrip_text)
@@ -183,14 +169,7 @@ def parse_words(conceptGrp, concept):
                     print('Allikas')
 
                 if descrip_type == 'Märkus':
-                    # if descrip_text.startswith(('SÜNONÜÜM: ', 'ENDINE: ', 'VARIANT: ')):
-                    #     # Add the note to the words with 'mööndav' or 'endine' value_state_codes
-                    #     if 'SÜNONÜÜM: ' in descrip_text and 'mööndav' in words:
-                    #         words['mööndav'].notes.append(descrip_text)
-                    #     elif 'ENDINE: ' in descrip_text and 'endine' in words:
-                    #         words['endine'].notes.append(descrip_text)
-                    # else:
-                        word.notes.append(descrip_text)
+                    word.notes.append(descrip_text)
 
             words.append(word)
 

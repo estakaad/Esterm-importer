@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import log_config
+import data_classes
 
 logger = log_config.get_logger()
 
@@ -113,15 +114,17 @@ def is_concept_aviation_related(concept):
             return False
 
 
-# Returns concept type (concept, source, domain)
-def concept_type(concept):
-    concept_type = "concept"
-    for languageGrp in concept.findall("./languageGrp"):
-        if languageGrp.find("language").attrib["type"] == "Allikas":
-            concept_type = "source"
-        elif languageGrp.find("language").attrib["type"] == "Valdkond":
-            concept_type = "domain"
-    return concept_type
+# Decide whether the concept will be added to the general list of concepts, list of aviation concepts or
+# list of sources
+def type_of_concept(conceptGrp):
+    if conceptGrp.xpath('languageGrp/language[@type="Allikas"]'):
+        type_of_concept = 'source'
+    elif is_concept_aviation_related(conceptGrp):
+        type_of_concept = 'aviation'
+    else:
+        type_of_concept = 'general'
+
+    return type_of_concept
 
 
 # Find all attribute "type" values for element "language"
@@ -145,3 +148,46 @@ def find_max_number_of_definitions(root):
     for element in elements:
         print(element.tag, element.text)
 
+
+def is_type_word_type(descrip_text):
+    if descrip_text == 'lühend':
+        return True
+
+def parse_word_types(descrip_text):
+    if descrip_text == 'lühend':
+        return 'l'
+
+def parse_value_state_codes(descrip_text, termGrps):
+    # Kui keelenditüüp on 'eelistermin' ja languageGrp element sisaldab rohkem kui üht termGrp elementi,
+    # tuleb Ekilexis väärtusoleku väärtuseks salvestada 'eelistatud'
+    if descrip_text == 'eelistermin' and len(termGrps) > 1:
+        return 'eelistatud'
+    # Kui keelenditüüp on 'sünonüüm' ja termin on kohanimi, tuleb Ekilexis väärtusolekuks
+    # salvestada 'mööndav'. Kui keelenditüüp on 'sünonüüm' ja termin ei ole kohanimi, siis Ekilexis ?
+    elif descrip_text == 'sünonüüm':
+        return 'mööndav'
+    # Kui keelenditüüp on 'variant', siis Ekilexis väärtusolekut ega keelenditüüpi ei salvestata.
+    elif descrip_text == 'variant':
+        return None
+    # Kui keelenditüüp on 'endine', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'endine'
+    elif descrip_text == 'endine':
+        return 'endine'
+    # Kui keelenditüüp on 'väldi', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'väldi'
+    elif descrip_text == 'väldi':
+        return 'väldi'
+    else:
+        return None
+
+
+def parse_definition(descrip_text, descripGrp, lang):
+    if descripGrp.xpath('descrip/xref'):
+        source = descripGrp.xpath('descrip/xref')[0].text
+    else:
+        source = None
+
+    return data_classes.Definition(
+        value=descrip_text.split('[')[0].strip(),
+        lang=match_language(lang),
+        definitionTypeCode='definitsioon',
+        source=source
+    )
