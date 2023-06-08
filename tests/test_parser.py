@@ -17,11 +17,13 @@ class TestXmlHelpers(unittest.TestCase):
 
     def test_is_concept_aviation_related(self):
         test_cases = [
-            ('non_aviation_concept.xml', False)
+            ('tests/test_data/aviation_concept_ltb.xml', True),
+            ('tests/test_data/aviation_concept_alamvaldkond_lennuvaljad.xml', True),
+            ('tests/test_data/non_aviation_concept.xml', False),
         ]
         for xml_file, expected_result in test_cases:
             with self.subTest(xml_file=xml_file):
-                with open(f'input/esterm.xml', 'rb') as file:
+                with open(f'{xml_file}', 'rb') as file:
                     xml_content = file.read()
 
                     parser = ET.XMLParser(encoding='UTF-16')
@@ -29,6 +31,7 @@ class TestXmlHelpers(unittest.TestCase):
 
                     concept_element = root.find('./conceptGrp')
                     self.assertEqual(xml_helpers.is_concept_aviation_related(concept_element), expected_result)
+
 
 if __name__ == '__main__':
     unittest.main()
