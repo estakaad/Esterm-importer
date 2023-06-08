@@ -74,6 +74,8 @@ def parse_mtf(root):
         # Concept level data is parsed, now to parsing word (term) level data
         words, definitions = parse_words(conceptGrp, concept)
 
+        words = xml_helpers.update_notes(words)
+
         for word in words:
             concept.words.append(word)
 
@@ -120,7 +122,9 @@ def parse_words(conceptGrp, concept):
                         word.word_type = xml_helpers.parse_word_types(descrip_text)
                         logger.debug('Added word type: %s', word.word_type)
                     else:
-                        word.value_state_code = xml_helpers.parse_value_state_codes(descrip_text, termGrps)
+                        # Currently set the value state code in XML as value state code attribute value,
+                        # it will be updated afterwards
+                        word.value_state_code = descrip_text
                         logger.debug('Added word value state code: %s', word.value_state_code)
 
                 if descrip_type == 'Definitsioon':

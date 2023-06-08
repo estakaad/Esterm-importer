@@ -188,3 +188,31 @@ def parse_definition(descrip_text, descripGrp, lang):
     logger.info('Added definition - definition value: %s, language: %s, source %s', definition.value, definition.lang, definition.source)
 
     return definition
+
+# Kui /mtf/conceptGrp/languageGrp/termGrp/descripGrp/descrip[@type="Märkus"] alguses on
+# "SÜNONÜÜM: ", "VARIANT: " või "ENDINE: ", siis tuleb see salvestada selle termGrp
+# elemendi märkuseks, mille keelenditüüp Estermis on "SÜNONÜÜM", "VARIANT" või "ENDINE"
+def update_notes(words):
+    prefix_to_state_code = {
+        "SÜNONÜÜM: ": "sünonüüm",
+        "VARIANT: ": "variant",
+        "ENDINE: ": "endine",
+    }
+
+    notes_to_move = {code: [] for code in prefix_to_state_code.values()}
+
+    for word in words:
+        for note in word.notes[:]:
+            for prefix, state_code in prefix_to_state_code.items():
+                if note.startswith(prefix):
+                    cleaned_note = note.replace(prefix, "", 1)
+                    notes_to_move[state_code].append(cleaned_note)
+                    word.notes.remove(note)
+                    logger.debug('Removed note from word: %s', word.value)
+    for word in words:
+        if word.value_state_code in notes_to_move:
+            word.notes.extend(notes_to_move[word.value_state_code])
+            logger.debug('Added note to word: %s', word.value)
+
+    return words
+
