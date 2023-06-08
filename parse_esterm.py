@@ -91,9 +91,10 @@ def parse_words(conceptGrp, concept):
 
     words = []
     definitions = []
+    is_public = xml_helpers.are_terms_public(conceptGrp)
+    logger.debug('Is concept public? %s', is_public)
 
     for languageGrp in conceptGrp.xpath('languageGrp'):
-
         termGrps = languageGrp.xpath('termGrp')
 
         for termGrp in termGrps:
@@ -101,7 +102,7 @@ def parse_words(conceptGrp, concept):
             word = data_classes.Word(
                 value='term',
                 lang='est',
-                is_public=True)
+                is_public=is_public)
 
             # Get word (term) language and assign as attribute lang
             lang = languageGrp.xpath('language')[0].get('lang')
@@ -141,6 +142,7 @@ def parse_words(conceptGrp, concept):
 
     # Remove and add notes if necessary
     words = xml_helpers.update_notes(words)
+
     for word in words:
         count = sum(1 for w in words if w.lang == word.lang)
         word.value_state_code = xml_helpers.parse_value_state_codes(word.value_state_code, count)

@@ -217,3 +217,11 @@ def update_notes(words):
 
     return words
 
+
+def are_terms_public(conceptGrp):
+    if conceptGrp.xpath('system[@type="entryClass"]')[0].text == 'töös':
+        return 0
+    elif conceptGrp.xpath('system[@type="entryClass"]')[0].text == 'määramata':
+        return 0
+    elif conceptGrp.xpath('system[@type="entryClass"]')[0].text == 'avalik':
+        return 1
