@@ -146,11 +146,11 @@ def parse_word_types(descrip_text):
     if descrip_text == 'lühend':
         return 'l'
 
-def parse_value_state_codes(descrip_text, termGrps):
+def parse_value_state_codes(descrip_text, count):
     code = None
     # Kui keelenditüüp on 'eelistermin' ja languageGrp element sisaldab rohkem kui üht termGrp elementi,
     # tuleb Ekilexis väärtusoleku väärtuseks salvestada 'eelistatud'
-    if descrip_text == 'eelistermin' and len(termGrps) > 1:
+    if descrip_text == 'eelistermin' and count > 1:
         code = 'eelistatud'
     # Kui keelenditüüp on 'sünonüüm' ja termin on kohanimi, tuleb Ekilexis väärtusolekuks
     # salvestada 'mööndav'. Kui keelenditüüp on 'sünonüüm' ja termin ei ole kohanimi, siis Ekilexis ?

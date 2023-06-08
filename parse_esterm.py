@@ -139,8 +139,11 @@ def parse_words(conceptGrp, concept):
 
             words.append(word)
 
-        # Remove and add notes if necessary
+    # Remove and add notes if necessary
     words = xml_helpers.update_notes(words)
+    for word in words:
+        count = sum(1 for w in words if w.lang == word.lang)
+        word.value_state_code = xml_helpers.parse_value_state_codes(word.value_state_code, count)
 
     logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
                 'word value state code: %s',
