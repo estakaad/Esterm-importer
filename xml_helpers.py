@@ -167,6 +167,7 @@ def parse_value_state_codes(descrip_text, termGrps):
         code = 'väldi'
     else:
         return None
+
     logger.debug('Value state code: %s.', code)
 
     return code

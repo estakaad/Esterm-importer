@@ -74,8 +74,6 @@ def parse_mtf(root):
         # Concept level data is parsed, now to parsing word (term) level data
         words, definitions = parse_words(conceptGrp, concept)
 
-        words = xml_helpers.update_notes(words)
-
         for word in words:
             concept.words.append(word)
 
@@ -140,11 +138,15 @@ def parse_words(conceptGrp, concept):
                     word.notes.append(descrip_text)
 
             words.append(word)
-            logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
-                        'word value state code: %s',
-                        word.value, word.lang, word.is_public, word.word_type, word.value_state_code)
-            logger.info('Added word usage: %s', str(word.usage))
-            logger.info('Added word notes: %s', str(word.notes))
+
+        # Remove and add notes if necessary
+    words = xml_helpers.update_notes(words)
+
+    logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
+                'word value state code: %s',
+                word.value, word.lang, word.is_public, word.word_type, word.value_state_code)
+    logger.info('Added word usage: %s', str(word.usage))
+    logger.info('Added word notes: %s', str(word.notes))
 
     return words, definitions
 
