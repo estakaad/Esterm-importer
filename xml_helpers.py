@@ -20,7 +20,6 @@ def match_language(lang):
         lang_name = "rus"
     if lang == "XO":
         lang_name = "xho"
-    # Actually no idea what language is XH
     if lang == "XH":
         lang_name = "xho"
     if lang == "DE":
@@ -79,13 +78,9 @@ def is_concept_aviation_related(concept):
 
     # Check whether "Valdkonnaviide" contains value "TR8" (Lenoch classificator for aero transport)
     domain_references = concept.findall(".//descrip[@type='Valdkonnaviide']")
-
-    for i in domain_references:
-        if "TR8" in ET.tostring(i, encoding="unicode", method="text"):
-            logger.debug("This is aviation concept, because \"Valdkonnaviide\" contains \"TR8\"")
-            return True
-        else:
-            logger.debug("This is not aviation concept, because \"Valdkonnaviide\" does not contain \"TR8\"")
+    if any("TR8" in ET.tostring(i, encoding="unicode", method="text") for i in domain_references):
+        logger.debug("This is aviation concept, because \"Valdkonnaviide\" contains \"TR8\"")
+        return True
 
     # Check whether "Alamvaldkond_" contains value which is present in the list of aviation sub categories
     sub_categories = concept.findall(".//descrip[@type='Alamvaldkond_']")
@@ -95,21 +90,18 @@ def is_concept_aviation_related(concept):
         if sub_category in sub_categories_list:
             logger.debug("This is aviation concept, because %s is a relevant sub category.", sub_category)
             return True
-        else:
-            logger.debug("This is not aviation concept, because %s is not a relevant sub category.", sub_category)
+    if sub_categories:
+        logger.debug("This is not aviation concept, none of the sub categories matched")
 
     # Check whether "Tunnus" has value "LENNUNDUS"
     features = concept.findall(".//descrip[@type='Tunnus']")
 
-    for f in features:
-        feature = ET.tostring(f, encoding="unicode", method="text").strip()
-        if "LENNUNDUS" in feature:
-            logger.debug("This is aviation concept, it has LENNUNDUS for \"Tunnus\"")
-            return True
-        else:
-            logger.debug("This is not an aviation concept, it has %s for \"Tunnus\"", feature)
-            return False
+    if any("LENNUNDUS" in ET.tostring(f, encoding="unicode", method="text").strip() for f in features):
+        logger.debug("This is aviation concept, it has LENNUNDUS for \"Tunnus\"")
+        return True
+    logger.debug("This is not an aviation concept, none of the conditions matched")
 
+    return False
 
 # Decide whether the concept will be added to the general list of concepts, list of aviation concepts or
 # list of sources
@@ -120,7 +112,7 @@ def type_of_concept(conceptGrp):
         type_of_concept = 'aviation'
     else:
         type_of_concept = 'general'
-
+    logger.debug('Type of concept: %s', type_of_concept)
     return type_of_concept
 
 
@@ -163,19 +155,19 @@ def parse_value_state_codes(descrip_text, termGrps):
     # Kui keelenditüüp on 'sünonüüm' ja termin on kohanimi, tuleb Ekilexis väärtusolekuks
     # salvestada 'mööndav'. Kui keelenditüüp on 'sünonüüm' ja termin ei ole kohanimi, siis Ekilexis ?
     elif descrip_text == 'sünonüüm':
-        code =  'mööndav'
+        code = 'mööndav'
     # Kui keelenditüüp on 'variant', siis Ekilexis väärtusolekut ega keelenditüüpi ei salvestata.
     elif descrip_text == 'variant':
-        code =  None
+        code = None
     # Kui keelenditüüp on 'endine', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'endine'
     elif descrip_text == 'endine':
-        code =  'endine'
+        code = 'endine'
     # Kui keelenditüüp on 'väldi', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'väldi'
     elif descrip_text == 'väldi':
-        code =  'väldi'
+        code = 'väldi'
     else:
         return None
-    logger.info('Value state code is %s.', code)
+    logger.debug('Value state code: %s.', code)
 
     return code
 
@@ -183,7 +175,6 @@ def parse_value_state_codes(descrip_text, termGrps):
 def parse_definition(descrip_text, descripGrp, lang):
     if descripGrp.xpath('descrip/xref'):
         source = descripGrp.xpath('descrip/xref')[0].text
-        logger.info('Definiton source: %s', source)
     else:
         source = None
 
@@ -194,6 +185,6 @@ def parse_definition(descrip_text, descripGrp, lang):
         source=source
     )
 
-    logger.info('Added definition: %s', definition.value)
+    logger.info('Added definition - definition value: %s, language: %s, source %s', definition.value, definition.lang, definition.source)
 
     return definition

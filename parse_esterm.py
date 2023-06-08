@@ -17,16 +17,22 @@ def parse_mtf(root):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         concept = data_classes.Concept()
-        logger.info("Created concept object")
+        logger.info("Started parsing concept.")
 
-        if xml_helpers.type_of_concept(conceptGrp) == 'source':
+        type_of_concept = xml_helpers.type_of_concept(conceptGrp)
+
+        if type_of_concept == 'source':
             list_to_append = sources
-        elif xml_helpers.type_of_concept(conceptGrp) == 'aviation':
+            logger.debug('Concept will be added to the list of sources.')
+        elif type_of_concept == 'aviation':
             list_to_append = aviation_concepts
-        elif xml_helpers.type_of_concept(conceptGrp) == 'general':
+            logger.debug('Concept will be added to the list of aviaton concepts.')
+        elif type_of_concept == 'general':
             list_to_append = concepts
+            logger.debug('Concept will be added to the general list of concepts.')
         else:
             list_to_append = concepts
+            logger.debug('Concept will be added to the general list of concepts.')
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):
@@ -39,7 +45,7 @@ def parse_mtf(root):
                     domain = domain.strip()
                     if domain:
                         concept.domains.append(data_classes.Domain(domain))
-                        logger.info('Added domain: %s', domain)
+                        logger.debug('Added domain: %s', domain)
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 concept.notes.append(data_classes.Note(
@@ -47,21 +53,24 @@ def parse_mtf(root):
                     lang='est',
                     is_public=1
                 ))
-                logger.info('Added note: %s', descrip_element_value)
+                logger.debug('Added note: %s', descrip_element_value)
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
                 concept.forum.append(data_classes.Forum(
                     value=descrip_element_value
                 ))
-                logger.info('Added tööleht to forum: %s', descrip_element_value)
+                logger.debug('Added tööleht to forum: %s', descrip_element_value)
             # Get concept context and add its value to the concept usage list
             elif descrip_element.get('type') == 'Kontekst':
                 concept.usage.append(data_classes.Usage(
                     value=descrip_element_value,
                     is_public=1
                 ))
-                logger.info('Added kontekst to usage: %s', descrip_element_value)
+                logger.debug('Added kontekst to usage: %s', descrip_element_value)
 
+        logger.info('Added concept domains: %s', str(concept.domains))
+        logger.info('Added concept notes: %s', str(concept.notes))
+        logger.info('Added concept forum: %s', str(concept.forum))
         # Concept level data is parsed, now to parsing word (term) level data
         words, definitions = parse_words(conceptGrp, concept)
 
@@ -72,7 +81,8 @@ def parse_mtf(root):
             concept.definitions.append(definition)
 
         list_to_append.append(concept)
-        logger.info('Concept has been added to the list of concepts.')
+        logger.info('Finished parsing concept.')
+
     return concepts, sources, aviation_concepts
 
 
@@ -108,8 +118,10 @@ def parse_words(conceptGrp, concept):
 
                     if xml_helpers.is_type_word_type(descrip_text):
                         word.word_type = xml_helpers.parse_word_types(descrip_text)
+                        logger.debug('Added word type: %s', word.word_type)
                     else:
                         word.value_state_code = xml_helpers.parse_value_state_codes(descrip_text, termGrps)
+                        logger.debug('Added word value state code: %s', word.value_state_code)
 
                 if descrip_type == 'Definitsioon':
                     definitions.append(xml_helpers.parse_definition(descrip_text,descripGrp, lang))
@@ -124,6 +136,11 @@ def parse_words(conceptGrp, concept):
                     word.notes.append(descrip_text)
 
             words.append(word)
+            logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
+                        'word value state code: %s',
+                        word.value, word.lang, word.is_public, word.word_type, word.value_state_code)
+            logger.info('Added word usage: %s', str(word.usage))
+            logger.info('Added word notes: %s', str(word.notes))
 
     return words, definitions
 
@@ -149,7 +166,7 @@ def print_concepts_to_json(concepts, sources, aviation_concepts):
         )
         with open(os.path.join(output_folder, filename), 'w', encoding='utf8') as json_file:
             json_file.write(concepts_json)
-            logger.info('Finished writing concepts %s.', filename)
+            logger.info('Finished writing concepts: %s.', filename)
 
 def transform_esterm_to_json():
 # Opening the file, parsing, writing JSON files
