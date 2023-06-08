@@ -8,6 +8,7 @@ logger = log_config.get_logger()
 # Find term"s or definition"s languages and match it with
 # the language abbreviation used in API
 def match_language(lang):
+    lang_name = 'est'
     if lang == "FR":
         lang_name = "fra"
     if lang == "EN-GB":
