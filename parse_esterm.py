@@ -45,7 +45,6 @@ def parse_mtf(root):
                     domain = domain.strip()
                     if domain:
                         concept.domains.append(data_classes.Domain(domain))
-                        logger.debug('Added domain: %s', domain)
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 concept.notes.append(data_classes.Note(
@@ -95,6 +94,18 @@ def parse_words(conceptGrp, concept):
     logger.debug('Is concept public? %s', is_public)
 
     for languageGrp in conceptGrp.xpath('languageGrp'):
+
+        # Handle definitions which are on the languageGrp level, not on the termGrp level
+        for descripGrp in languageGrp.xpath('descripGrp[descrip/@type="Definitsioon"]'):
+
+            lang_grp = languageGrp.xpath('language')[0].get('lang')
+            logger.debug('def language: %s', lang_grp)
+            lang_grp = xml_helpers.match_language(lang_grp)
+            logger.debug(('def language after matching: %s', lang_grp))
+
+            descrip_text = descripGrp.xpath('descrip')[0].text
+            definitions.append(xml_helpers.parse_definition(descrip_text,descripGrp,lang_grp))
+
         termGrps = languageGrp.xpath('termGrp')
 
         for termGrp in termGrps:
@@ -105,8 +116,8 @@ def parse_words(conceptGrp, concept):
                 is_public=is_public)
 
             # Get word (term) language and assign as attribute lang
-            lang = languageGrp.xpath('language')[0].get('lang')
-            word.lang = xml_helpers.match_language(lang)
+            lang_term = languageGrp.xpath('language')[0].get('lang')
+            word.lang = xml_helpers.match_language(lang_term)
             word.value = termGrp.xpath('term')[0].text
 
             # Parse descripGrp elements of languageGrp element
@@ -127,7 +138,7 @@ def parse_words(conceptGrp, concept):
                         logger.debug('Added word value state code: %s', word.value_state_code)
 
                 if descrip_type == 'Definitsioon':
-                    definitions.append(xml_helpers.parse_definition(descrip_text,descripGrp, lang))
+                    definitions.append(xml_helpers.parse_definition(descrip_text,descripGrp, xml_helpers.match_language(lang_term)))
 
                 if descrip_type == 'Kontekst':
                     word.usage.append(descrip_text)

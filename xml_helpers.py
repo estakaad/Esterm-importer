@@ -182,7 +182,7 @@ def parse_definition(descrip_text, descripGrp, lang):
 
     definition = data_classes.Definition(
         value=descrip_text.split('[')[0].strip(),
-        lang=match_language(lang),
+        lang=lang,
         definitionTypeCode='definitsioon',
         source=source
     )
