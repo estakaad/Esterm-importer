@@ -183,11 +183,10 @@ def parse_definition(descrip_text, descripGrp, lang):
     definition = data_classes.Definition(
         value=descrip_text.split('[')[0].strip(),
         lang=lang,
-        definitionTypeCode='definitsioon',
-        source=source
+        definitionTypeCode='definitsioon'
     )
 
-    logger.info('Added definition - definition value: %s, language: %s, source %s', definition.value, definition.lang, definition.source)
+    logger.info('Added definition - definition value: %s, language: %s', definition.value, definition.lang)
 
     return definition
 
@@ -212,8 +211,8 @@ def update_notes(words):
                     word.notes.remove(note)
                     logger.debug('Removed note from word: %s', word.value)
     for word in words:
-        if word.value_state_code in notes_to_move:
-            word.notes.extend(notes_to_move[word.value_state_code])
+        if word.lexemeValueStateCode in notes_to_move:
+            word.notes.extend(notes_to_move[word.lexemeValueStateCode])
             logger.debug('Added note to word: %s', word.value)
 
     return words
@@ -226,3 +225,5 @@ def are_terms_public(conceptGrp):
         return 0
     elif conceptGrp.xpath('system[@type="entryClass"]')[0].text == 'avalik':
         return 1
+
+

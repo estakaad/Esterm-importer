@@ -44,24 +44,24 @@ def parse_mtf(root):
                 for domain in descrip_element_value.split(';'):
                     domain = domain.strip()
                     if domain:
-                        concept.domains.append(data_classes.Domain(domain))
+                        concept.domains.append(data_classes.Domain(code=domain, origin='lenoch'))
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 concept.notes.append(data_classes.Note(
                     value=descrip_element_value,
                     lang='est',
-                    is_public=1
+                    publicity=True
                 ))
                 if descrip_element_value:
                     logger.debug('Added note: %s', descrip_element_value)
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
-                concept.forum.append(data_classes.Forum(
+                concept.forums.append(data_classes.Forums(
                     value=descrip_element_value
                 ))
                 if descrip_element_value:
                     logger.debug('Added tööleht to forum: %s', descrip_element_value)
-            # Get concept context and add its value to the concept usage list
+            # Get concept context and add its value to the concept usage list NB - or notes !?!?
             elif descrip_element.get('type') == 'Kontekst':
                 concept.usage.append(data_classes.Usage(
                     value=descrip_element_value,
@@ -73,8 +73,8 @@ def parse_mtf(root):
         logger.info('Added concept domains: %s', str(concept.domains))
         if concept.notes:
             logger.info('Added concept notes: %s', str(concept.notes))
-        if concept.forum:
-            logger.info('Added concept forum: %s', str(concept.forum))
+        if concept.forums:
+            logger.info('Added concept forum: %s', str(concept.forums))
         # Concept level data is parsed, now to parsing word (term) level data
         words, definitions = parse_words(conceptGrp, concept)
 
@@ -118,7 +118,7 @@ def parse_words(conceptGrp, concept):
             word = data_classes.Word(
                 value='term',
                 lang='est',
-                is_public=is_public)
+                lexemePublicity=is_public)
 
             # Get word (term) language and assign as attribute lang
             lang_term = languageGrp.xpath('language')[0].get('lang')
@@ -139,8 +139,8 @@ def parse_words(conceptGrp, concept):
                     else:
                         # Currently set the value state code in XML as value state code attribute value,
                         # it will be updated afterwards
-                        word.value_state_code = descrip_text
-                        logger.debug('Added word value state code: %s', word.value_state_code)
+                        word.lexemeValueStateCode = descrip_text
+                        logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
                 if descrip_type == 'Definitsioon':
                     definitions.append(xml_helpers.parse_definition(descrip_text,descripGrp, xml_helpers.match_language(lang_term)))
@@ -161,11 +161,11 @@ def parse_words(conceptGrp, concept):
 
     for word in words:
         count = sum(1 for w in words if w.lang == word.lang)
-        word.value_state_code = xml_helpers.parse_value_state_codes(word.value_state_code, count)
+        word.lexemeValueStateCode = xml_helpers.parse_value_state_codes(word.lexemeValueStateCode, count)
 
         logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
                     'word value state code: %s',
-                    word.value, word.lang, word.is_public, word.word_type, word.value_state_code)
+                    word.value, word.lang, word.lexemePublicity, word.word_type, word.lexemeValueStateCode)
         if word.usage:
             logger.info('Added word usage: %s', str(word.usage))
         if word.notes:

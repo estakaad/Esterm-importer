@@ -4,23 +4,23 @@ from typing import List, Optional
 
 @dataclass
 class Domain:
-    value: str
+    code: str
+    origin: str
 
 @dataclass
 class Definition:
     value: str
     lang: str
     definitionTypeCode: str
-    source: str
 
 @dataclass
 class Note:
     value: str
     lang: str
-    is_public: int
+    publicity: bool
 
 @dataclass
-class Forum:
+class Forums:
     value: str
 
 @dataclass
@@ -32,9 +32,9 @@ class Usage:
 class Word:
     value: str
     lang: str
-    is_public: int
+    lexemeValueStateCode: Optional[str] = None
+    lexemePublicity: Optional[bool] = True
     word_type: Optional[str] = None
-    value_state_code: Optional[str] = None
     usage: List[str] = field(default_factory=list)
     notes: List[str] = field(default_factory=list)
 
