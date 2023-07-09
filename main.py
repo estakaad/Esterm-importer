@@ -1,25 +1,23 @@
-import os
-import parse
-import xml.etree.ElementTree as ET
-import json
 import api_requests
-from dotenv.main import load_dotenv
-import logging
+import os
+from dotenv import load_dotenv
+import parse_esterm
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s', filename="import")
 
-tree = ET.parse("test.xml")
-root = tree.getroot()
+# Transform the external term base to JSON
+# Transform Esterm
+parse_esterm.transform_esterm_to_json()
 
-dataset_code = "mlt"
+# Save the concepts in output.json to Ekilex
 
-concepts = parse.extract_concepts(root, "mlt")
+#json_output = 'output\output.json'
+#
+# load_dotenv()
+# api_key = os.environ.get("API_KEY")
+# parameters = {}
+# crud_role_dataset = os.environ.get("KALANDUS")
+#
+# header = {"ekilex-api-key": api_key}
+# parameters = {"crudRoleDataset": crud_role_dataset}
 
-load_dotenv()
-api_key=os.environ.get('API_KEY')
-
-headers = {"ekilex-api-key": api_key}
-parameters = {"crudRoleDataset": "mlt"}
-
-for concept in concepts:
-    api_requests.save_term(concept, headers, parameters)
+#api_requests.save_term(json_output, header, parameters)
