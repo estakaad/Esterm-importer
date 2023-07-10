@@ -48,7 +48,7 @@ def parse_mtf(root):
             # Get concept notes and add to the list of concept notes. !?!?! MIS KEELES?
             elif descrip_element.get('type') == 'Märkus':
                 concept.notes.append(data_classes.Note(
-                    value=descrip_element_value,
+                    value=xml_helpers.get_description_value(descrip_element),
                     lang='est',
                     publicity=True
                 ))
@@ -57,7 +57,7 @@ def parse_mtf(root):
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
                 concept.forums.append(data_classes.Forum(
-                    value=descrip_element_value.strip()
+                    value=descrip_element_value
                 ))
                 if descrip_element_value:
                     logger.debug('Added tööleht to forums: %s', descrip_element_value)
@@ -129,7 +129,7 @@ def parse_words(conceptGrp, concept):
             # Parse descripGrp elements of languageGrp element
             for descripGrp in termGrp.xpath('descripGrp'):
                 descrip_type = descripGrp.xpath('descrip/@type')[0]
-                descrip_text = descripGrp.xpath('descrip')[0].text
+                descrip_text = xml_helpers.get_description_value(descripGrp)
 
                 # Parse word type as value state code or word type
                 if descrip_type == 'Keelenditüüp':
@@ -149,7 +149,7 @@ def parse_words(conceptGrp, concept):
                 if descrip_type == 'Kontekst':
                     word.usages.append(
                         data_classes.Usage(
-                            value=descrip_text,
+                            value=''.join(descripGrp.itertext()),
                             lang=xml_helpers.match_language(lang_term),
                             publicity=True)
                     )

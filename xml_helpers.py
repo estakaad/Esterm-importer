@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import log_config
 import data_classes
 
+
 logger = log_config.get_logger()
 
 
@@ -228,3 +229,11 @@ def are_terms_public(conceptGrp):
         return False
     elif conceptGrp.xpath('system[@type="entryClass"]')[0].text == 'avalik':
         return True
+
+
+def get_description_value(descrip_element):
+    descrip_element_value = ET.tostring(descrip_element, encoding='utf-8', method='xml').decode()  # Convert bytes to string
+    start = descrip_element_value.index('>') + 1  # Find the end of the opening tag
+    end = descrip_element_value.rindex('<')  # Find the beginning of the closing tag
+    note_value = descrip_element_value[start:end]  # Slice the string
+    return note_value
