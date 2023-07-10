@@ -20,13 +20,20 @@ class Note:
     publicity: bool
 
 @dataclass
-class Forums:
+class lexemeNote:
+    value: str
+    lang: str
+    publicity: bool
+
+@dataclass
+class Forum:
     value: str
 
 @dataclass
 class Usage:
     value: str
-    is_public: int
+    lang: str
+    publicity: bool
 
 @dataclass
 class Word:
@@ -34,14 +41,15 @@ class Word:
     lang: str
     lexemeValueStateCode: Optional[str] = None
     lexemePublicity: Optional[bool] = True
-    word_type: Optional[str] = None
-    usage: List[str] = field(default_factory=list)
-    notes: List[str] = field(default_factory=list)
+    wordTypeCodes: List[str] = field(default_factory=list)
+    usages: List[Usage] = field(default_factory=list)
+    lexemeNotes: List[lexemeNote] = field(default_factory=list)
 
 @dataclass
 class Concept:
-    domains: list = field(default_factory=list)
-    definitions: list = field(default_factory=list)
-    notes: list = field(default_factory=list)
-    forum: list = field(default_factory=list)
-    words: list = field(default_factory=list)
+    datasetCode: str
+    domains: List[Domain] = field(default_factory=list)
+    definitions: List[Definition] = field(default_factory=list)
+    notes: List[Note] = field(default_factory=list)
+    forums: List[Forum] = field(default_factory=list)
+    words: List[Word] = field(default_factory=list)

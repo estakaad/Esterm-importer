@@ -16,7 +16,7 @@ def parse_mtf(root):
     aviation_concepts = []
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        concept = data_classes.Concept()
+        concept = data_classes.Concept(datasetCode='termapi')
         logger.info("Started parsing concept.")
 
         type_of_concept = xml_helpers.type_of_concept(conceptGrp)
@@ -45,7 +45,7 @@ def parse_mtf(root):
                     domain = domain.strip()
                     if domain:
                         concept.domains.append(data_classes.Domain(code=domain, origin='lenoch'))
-            # Get concept notes and add to the list of concept notes.
+            # Get concept notes and add to the list of concept notes. !?!?! MIS KEELES?
             elif descrip_element.get('type') == 'Märkus':
                 concept.notes.append(data_classes.Note(
                     value=descrip_element_value,
@@ -56,19 +56,20 @@ def parse_mtf(root):
                     logger.debug('Added note: %s', descrip_element_value)
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
-                concept.forums.append(data_classes.Forums(
-                    value=descrip_element_value
+                concept.forums.append(data_classes.Forum(
+                    value=descrip_element_value.strip()
                 ))
                 if descrip_element_value:
-                    logger.debug('Added tööleht to forum: %s', descrip_element_value)
-            # Get concept context and add its value to the concept usage list NB - or notes !?!?
+                    logger.debug('Added tööleht to forums: %s', descrip_element_value)
+            # Get concept context and add its value to the concept usage list NB - or notes !?!? MIS KEELES?
             elif descrip_element.get('type') == 'Kontekst':
-                concept.usage.append(data_classes.Usage(
+                concept.notes.append(data_classes.Note(
                     value=descrip_element_value,
-                    is_public=1
+                    lang='est',
+                    publicity=True
                 ))
                 if descrip_element_value:
-                    logger.debug('Added kontekst to usage: %s', descrip_element_value)
+                    logger.debug('Added kontekst to notes: %s', descrip_element_value)
 
         logger.info('Added concept domains: %s', str(concept.domains))
         if concept.notes:
@@ -109,7 +110,7 @@ def parse_words(conceptGrp, concept):
             logger.debug(('def language after matching: %s', lang_grp))
 
             descrip_text = descripGrp.xpath('descrip')[0].text
-            definitions.append(xml_helpers.parse_definition(descrip_text,descripGrp,lang_grp))
+            definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, lang_grp))
 
         termGrps = languageGrp.xpath('termGrp')
 
@@ -143,16 +144,21 @@ def parse_words(conceptGrp, concept):
                         logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
                 if descrip_type == 'Definitsioon':
-                    definitions.append(xml_helpers.parse_definition(descrip_text,descripGrp, xml_helpers.match_language(lang_term)))
+                    definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, xml_helpers.match_language(lang_term)))
 
                 if descrip_type == 'Kontekst':
-                    word.usage.append(descrip_text)
+                    word.usages.append(
+                        data_classes.Usage(
+                            value=descrip_text,
+                            lang=xml_helpers.match_language(lang_term),
+                            publicity=True)
+                    )
 
                 if descrip_type == 'Allikas':
                     print('Allikas')
 
                 if descrip_type == 'Märkus':
-                    word.notes.append(descrip_text)
+                    word.lexemeNotes.append(descrip_text)
 
             words.append(word)
 
@@ -165,11 +171,11 @@ def parse_words(conceptGrp, concept):
 
         logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
                     'word value state code: %s',
-                    word.value, word.lang, word.lexemePublicity, word.word_type, word.lexemeValueStateCode)
-        if word.usage:
-            logger.info('Added word usage: %s', str(word.usage))
-        if word.notes:
-            logger.info('Added word notes: %s', str(word.notes))
+                    word.value, word.lang, word.lexemePublicity, word.wordTypeCodes, word.lexemeValueStateCode)
+        if word.usages:
+            logger.info('Added word usage: %s', str(word.usages))
+        if word.lexemeNotes:
+            logger.info('Added word notes: %s', str(word.lexemeNotes))
 
     return words, definitions
 

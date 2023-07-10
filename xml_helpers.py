@@ -52,6 +52,7 @@ def find_all_description_types(root):
 
     return unique_description_types
 
+
 def find_all_transaction_types(root):
     all_transacGrp_types = []
     for term in root.findall(".//transacGrp"):
@@ -147,6 +148,7 @@ def parse_word_types(descrip_text):
     if descrip_text == 'lühend':
         return 'l'
 
+
 def parse_value_state_codes(descrip_text, count):
     code = None
     # Kui keelenditüüp on 'eelistermin' ja languageGrp element sisaldab rohkem kui üht termGrp elementi,
@@ -190,6 +192,7 @@ def parse_definition(descrip_text, descripGrp, lang):
 
     return definition
 
+
 # Kui /mtf/conceptGrp/languageGrp/termGrp/descripGrp/descrip[@type="Märkus"] alguses on
 # "SÜNONÜÜM: ", "VARIANT: " või "ENDINE: ", siis tuleb see salvestada selle termGrp
 # elemendi märkuseks, mille keelenditüüp Estermis on "SÜNONÜÜM", "VARIANT" või "ENDINE"
@@ -203,16 +206,16 @@ def update_notes(words):
     notes_to_move = {code: [] for code in prefix_to_state_code.values()}
 
     for word in words:
-        for note in word.notes[:]:
+        for lexemeNote in word.lexemeNotes[:]:
             for prefix, state_code in prefix_to_state_code.items():
-                if note.startswith(prefix):
-                    cleaned_note = note.replace(prefix, "", 1)
+                if lexemeNote.startswith(prefix):
+                    cleaned_note = lexemeNote.replace(prefix, "", 1)
                     notes_to_move[state_code].append(cleaned_note)
-                    word.notes.remove(note)
+                    word.lexemeNotes.remove(lexemeNote)
                     logger.debug('Removed note from word: %s', word.value)
     for word in words:
         if word.lexemeValueStateCode in notes_to_move:
-            word.notes.extend(notes_to_move[word.lexemeValueStateCode])
+            word.lexemeNotes.extend(notes_to_move[word.lexemeValueStateCode])
             logger.debug('Added note to word: %s', word.value)
 
     return words
@@ -220,10 +223,8 @@ def update_notes(words):
 
 def are_terms_public(conceptGrp):
     if conceptGrp.xpath('system[@type="entryClass"]')[0].text == 'töös':
-        return 0
+        return False
     elif conceptGrp.xpath('system[@type="entryClass"]')[0].text == 'määramata':
-        return 0
+        return False
     elif conceptGrp.xpath('system[@type="entryClass"]')[0].text == 'avalik':
-        return 1
-
-
+        return True
