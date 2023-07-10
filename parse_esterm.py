@@ -151,14 +151,15 @@ def parse_words(conceptGrp, concept):
                         data_classes.Usage(
                             value=''.join(descripGrp.itertext()),
                             lang=xml_helpers.match_language(lang_term),
-                            publicity=True)
+                            publicity=word.lexemePublicity)
                     )
 
                 if descrip_type == 'Allikas':
                     print('Allikas')
 
                 if descrip_type == 'Märkus':
-                    word.lexemeNotes.append(descrip_text)
+                    word.lexemeNotes.append(
+                        data_classes.lexemeNote(value=descrip_text, lang=word.lang, publicity=word.lexemePublicity))
 
             words.append(word)
 

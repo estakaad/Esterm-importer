@@ -209,9 +209,10 @@ def update_notes(words):
     for word in words:
         for lexemeNote in word.lexemeNotes[:]:
             for prefix, state_code in prefix_to_state_code.items():
-                if lexemeNote.startswith(prefix):
-                    cleaned_note = lexemeNote.replace(prefix, "", 1)
-                    notes_to_move[state_code].append(cleaned_note)
+                if lexemeNote.value.startswith(prefix):
+                    cleaned_note = lexemeNote.value.replace(prefix, "", 1)
+                    lexemeNote.value = cleaned_note # Update the note value in place
+                    notes_to_move[state_code].append(lexemeNote)
                     word.lexemeNotes.remove(lexemeNote)
                     logger.debug('Removed note from word: %s', word.value)
     for word in words:
@@ -220,6 +221,7 @@ def update_notes(words):
             logger.debug('Added note to word: %s', word.value)
 
     return words
+
 
 
 def are_terms_public(conceptGrp):
