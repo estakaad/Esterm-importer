@@ -150,7 +150,7 @@ def parse_words(conceptGrp, concept):
                     else:
                         # Currently set the value state code in XML as value state code attribute value,
                         # it will be updated afterwards
-                        word.lexemeValueStateCode = descrip_text
+                        word.lexemeValueStateCode = descrip_text.split(">")[1].split("<")[0]
                         logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
                 if descrip_type == 'Definitsioon':
@@ -179,6 +179,7 @@ def parse_words(conceptGrp, concept):
 
     for word in words:
         count = sum(1 for w in words if w.lang == word.lang)
+        #print(count, ' - ', word)
         word.lexemeValueStateCode = xml_helpers.parse_value_state_codes(word.lexemeValueStateCode, count)
 
         logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
