@@ -212,6 +212,7 @@ def update_notes(words):
         "SÜNONÜÜM: ": "sünonüüm",
         "VARIANT: ": "variant",
         "ENDINE: ": "endine",
+        "VÄLDI: ": "väldi"
     }
 
     notes_to_move = {code: [] for code in prefix_to_state_code.values()}

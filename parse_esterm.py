@@ -170,8 +170,9 @@ def parse_words(conceptGrp, concept):
                     print('Allikas')
 
                 if descrip_type == 'Märkus':
+                    #print(''.join(descripGrp.itertext()).strip())
                     word.lexemeNotes.append(
-                        data_classes.lexemeNote(value=descrip_text, lang=word.lang, publicity=word.lexemePublicity))
+                        data_classes.lexemeNote(value=''.join(descripGrp.itertext()).strip(), lang=word.lang, publicity=word.lexemePublicity))
 
             words.append(word)
 
