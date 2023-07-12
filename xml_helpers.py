@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import log_config
 import data_classes
+from lxml import etree
 
 
 logger = log_config.get_logger()
@@ -106,11 +107,14 @@ def is_concept_aviation_related(concept):
 
     return False
 
+
 # Decide whether the concept will be added to the general list of concepts, list of aviation concepts or
 # list of sources
 def type_of_concept(conceptGrp):
     if conceptGrp.xpath('languageGrp/language[@type="Allikas"]'):
         type_of_concept = 'source'
+    elif conceptGrp.xpath('languageGrp/language[@type="Valdkond"]'):
+        type_of_concept = 'domain'
     elif is_concept_aviation_related(conceptGrp):
         type_of_concept = 'aviation'
     else:
@@ -183,8 +187,13 @@ def parse_definition(descrip_text, descripGrp, lang):
     else:
         source = None
 
+    if '[' in descrip_text:
+        definition_text = descrip_text.split('[')[0].strip()
+    else:
+        definition_text = descrip_text.strip()
+
     definition = data_classes.Definition(
-        value=descrip_text.split('[')[0].strip(),
+        value=definition_text,
         lang=lang,
         definitionTypeCode='definitsioon'
     )
@@ -192,6 +201,7 @@ def parse_definition(descrip_text, descripGrp, lang):
     logger.info('Added definition - definition value: %s, language: %s', definition.value, definition.lang)
 
     return definition
+
 
 
 # Kui /mtf/conceptGrp/languageGrp/termGrp/descripGrp/descrip[@type="Märkus"] alguses on
@@ -234,8 +244,8 @@ def are_terms_public(conceptGrp):
 
 
 def get_description_value(descrip_element):
-    descrip_element_value = ET.tostring(descrip_element, encoding='utf-8', method='xml').decode()  # Convert bytes to string
-    start = descrip_element_value.index('>') + 1  # Find the end of the opening tag
-    end = descrip_element_value.rindex('<')  # Find the beginning of the closing tag
-    note_value = descrip_element_value[start:end]  # Slice the string
+    descrip_element_value = ET.tostring(descrip_element, encoding='utf-8', method='xml').decode()
+    start = descrip_element_value.index('>') + 1
+    end = descrip_element_value.rindex('<')
+    note_value = descrip_element_value[start:end]
     return note_value

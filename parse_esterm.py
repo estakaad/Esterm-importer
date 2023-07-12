@@ -14,6 +14,7 @@ def parse_mtf(root):
     concepts = []
     sources = []
     aviation_concepts = []
+    domain_entries = []
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         concept = data_classes.Concept(datasetCode='termapi')
@@ -24,9 +25,12 @@ def parse_mtf(root):
         if type_of_concept == 'source':
             list_to_append = sources
             logger.debug('Concept will be added to the list of sources.')
+        elif type_of_concept == 'domain':
+            list_to_append = domain_entries
+            logger.debug('Concept will be added to the list of domains.')
         elif type_of_concept == 'aviation':
             list_to_append = aviation_concepts
-            logger.debug('Concept will be added to the list of aviaton concepts.')
+            logger.debug('Concept will be added to the list of aviation concepts.')
         elif type_of_concept == 'general':
             list_to_append = concepts
             logger.debug('Concept will be added to the general list of concepts.')
@@ -61,6 +65,12 @@ def parse_mtf(root):
                 ))
                 if descrip_element_value:
                     logger.debug('Added tööleht to forums: %s', descrip_element_value)
+            elif descrip_element.get('type') == 'Sisemärkus':
+                concept.forums.append(data_classes.Forum(
+                    value=descrip_element_value
+                ))
+                if descrip_element_value:
+                    logger.debug('Added sisemärkus to forums: %s', descrip_element_value)
             # Get concept context and add its value to the concept usage list NB - or notes !?!? MIS KEELES?
             elif descrip_element.get('type') == 'Kontekst':
                 concept.notes.append(data_classes.Note(
@@ -88,7 +98,7 @@ def parse_mtf(root):
         list_to_append.append(concept)
         logger.info('Finished parsing concept.')
 
-    return concepts, sources, aviation_concepts
+    return concepts, sources, aviation_concepts, domain_entries
 
 
 # Parse word elements in one concept in XML
@@ -109,7 +119,7 @@ def parse_words(conceptGrp, concept):
             lang_grp = xml_helpers.match_language(lang_grp)
             logger.debug(('def language after matching: %s', lang_grp))
 
-            descrip_text = descripGrp.xpath('descrip')[0].text
+            descrip_text = ''.join(descripGrp.xpath('descrip')[0].itertext())
             definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, lang_grp))
 
         termGrps = languageGrp.xpath('termGrp')
@@ -144,7 +154,8 @@ def parse_words(conceptGrp, concept):
                         logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
                 if descrip_type == 'Definitsioon':
-                    definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, xml_helpers.match_language(lang_term)))
+                    #definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, xml_helpers.match_language(lang_term)))
+                    definitions.append(''.join(descripGrp.itertext()))
 
                 if descrip_type == 'Kontekst':
                     word.usages.append(
@@ -182,18 +193,20 @@ def parse_words(conceptGrp, concept):
 
 
 # Write aviation concepts, all other concepts and sources of the concepts to three separate JSON files
-def print_concepts_to_json(concepts, sources, aviation_concepts):
+def print_concepts_to_json(concepts, sources, aviation_concepts, domain_entries):
 
     logger.debug('Number of concepts: %s', str(len(concepts)))
     logger.debug('Number of aviation concepts: %s', str(len(aviation_concepts)))
     logger.debug('Number of sources: %s', str(len(sources)))
+    logger.debug('Number of domain entries: %s', str(len(domain_entries)))
 
     output_folder = 'output'
     os.makedirs(output_folder, exist_ok=True)
 
     for concept_list, filename in [(concepts, 'concepts.json'),
                                    (sources, 'sources.json'),
-                                   (aviation_concepts, 'aviation_concepts.json')]:
+                                   (aviation_concepts, 'aviation_concepts.json'),
+                                   (domain_entries, 'domains.json')]:
         concepts_json = json.dumps(
             [concept.__dict__ for concept in concept_list],
             default=lambda o: o.__dict__,
@@ -213,7 +226,7 @@ def transform_esterm_to_json():
     parser = etree.XMLParser(encoding='UTF-16')
     root = etree.fromstring(xml_content, parser=parser)
 
-    concepts, sources, aviation_concepts = parse_mtf(root)
-    print_concepts_to_json(concepts, sources, aviation_concepts)
+    concepts, sources, aviation_concepts, domain_entries = parse_mtf(root)
+    print_concepts_to_json(concepts, sources, aviation_concepts, domain_entries)
 
     logger.info('Finished transforming Esterm XML file to JSON files.')
