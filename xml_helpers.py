@@ -166,7 +166,7 @@ def parse_value_state_codes(descrip_text, count):
         code = 'mööndav'
     # Kui keelenditüüp on 'variant', siis Ekilexis väärtusolekut ega keelenditüüpi ei salvestata.
     elif descrip_text == 'variant':
-        code = None
+        code = 'variant'
     # Kui keelenditüüp on 'endine', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'endine'
     elif descrip_text == 'endine':
         code = 'endine'

@@ -140,17 +140,18 @@ def parse_words(conceptGrp, concept):
             for descripGrp in termGrp.xpath('descripGrp'):
                 descrip_type = descripGrp.xpath('descrip/@type')[0]
                 descrip_text = xml_helpers.get_description_value(descripGrp)
+                valuestatecode_or_wordtype = descrip_text.split(">")[1].split("<")[0]
 
                 # Parse word type as value state code or word type
                 if descrip_type == 'Keelenditüüp':
-
-                    if xml_helpers.is_type_word_type(descrip_text):
-                        word.word_type = xml_helpers.parse_word_types(descrip_text)
+                    #print(valuestatecode_or_wordtype)
+                    if xml_helpers.is_type_word_type(valuestatecode_or_wordtype):
+                        word.word_type = xml_helpers.parse_word_types(valuestatecode_or_wordtype)
                         logger.debug('Added word type: %s', word.word_type)
                     else:
                         # Currently set the value state code in XML as value state code attribute value,
                         # it will be updated afterwards
-                        word.lexemeValueStateCode = descrip_text.split(">")[1].split("<")[0]
+                        word.lexemeValueStateCode = valuestatecode_or_wordtype
                         logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
                 if descrip_type == 'Definitsioon':
