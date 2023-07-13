@@ -120,7 +120,13 @@ def parse_words(conceptGrp, concept):
             logger.debug(('def language after matching: %s', lang_grp))
 
             descrip_text = ''.join(descripGrp.xpath('descrip')[0].itertext())
-            definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, lang_grp))
+            # definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, lang_grp))
+            definitions.append(
+                data_classes.Definition(
+                    value=descrip_text,
+                    lang=lang_grp,
+                    definitionTypeCode='definitsioon')
+            )
 
         termGrps = languageGrp.xpath('termGrp')
 
