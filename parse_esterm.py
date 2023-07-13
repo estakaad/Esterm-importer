@@ -161,8 +161,12 @@ def parse_words(conceptGrp, concept):
                         logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
                 if descrip_type == 'Definitsioon':
-                    #definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, xml_helpers.match_language(lang_term)))
-                    definitions.append(''.join(descripGrp.itertext()))
+                    definitions.append(
+                        data_classes.Definition(
+                            value=''.join(descripGrp.xpath('descrip')[0].itertext()),
+                            lang=word.lang,
+                            definitionTypeCode='definitsioon')
+                        )
 
                 if descrip_type == 'Kontekst':
                     word.usages.append(
