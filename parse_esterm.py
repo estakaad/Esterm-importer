@@ -76,7 +76,7 @@ def parse_mtf(root):
                 concept.notes.append(data_classes.Note(
                     value=descrip_element_value,
                     lang='est',
-                    publicity=True
+                    publicity=xml_helpers.are_terms_public(conceptGrp)
                 ))
                 if descrip_element_value:
                     logger.debug('Added kontekst to notes: %s', descrip_element_value)
@@ -182,7 +182,7 @@ def parse_words(conceptGrp, concept):
                 if descrip_type == 'Märkus':
                     #print(''.join(descripGrp.itertext()).strip())
                     word.lexemeNotes.append(
-                        data_classes.lexemeNote(value=''.join(descripGrp.itertext()).strip(), lang=word.lang, publicity=word.lexemePublicity))
+                        data_classes.lexemeNote(value=''.join(descripGrp.itertext()).strip(), lang='est', publicity=word.lexemePublicity))
 
             words.append(word)
 
