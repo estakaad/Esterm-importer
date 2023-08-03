@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import log_config
 import data_classes
 from lxml import etree
+from langdetect import detect
 
 
 logger = log_config.get_logger()
@@ -14,6 +15,8 @@ def match_language(lang):
     if lang == "FR":
         lang_name = "fra"
     if lang == "EN-GB":
+        lang_name = "eng"
+    if lang == "EN":
         lang_name = "eng"
     if lang == "ET":
         lang_name = "est"
@@ -251,3 +254,20 @@ def get_description_value(descrip_element):
     end = descrip_element_value.rindex('<')
     note_value = descrip_element_value[start:end]
     return note_value
+
+
+def detect_language(note):
+    if 'on kehtetu' in note:
+        language = 'est'
+    elif 'on kursiivis' in note:
+        language = 'est'
+    elif 'esineb' in note:
+        language = 'est'
+    else:
+        try:
+            language = detect(note)
+            language = match_language(language.upper())
+        except:
+            language = 'est'
+
+    return language

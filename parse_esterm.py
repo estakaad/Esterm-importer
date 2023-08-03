@@ -152,8 +152,8 @@ def parse_words(conceptGrp, concept):
                 if descrip_type == 'Keelenditüüp':
                     #print(valuestatecode_or_wordtype)
                     if xml_helpers.is_type_word_type(valuestatecode_or_wordtype):
-                        word.word_type = xml_helpers.parse_word_types(valuestatecode_or_wordtype)
-                        logger.debug('Added word type: %s', word.word_type)
+                        word.wordTypeCodes.append(xml_helpers.parse_word_types(valuestatecode_or_wordtype))
+                        logger.debug('Added word type: %s', xml_helpers.parse_word_types(valuestatecode_or_wordtype))
                     else:
                         # Currently set the value state code in XML as value state code attribute value,
                         # it will be updated afterwards
@@ -180,9 +180,15 @@ def parse_words(conceptGrp, concept):
                     print('Allikas')
 
                 if descrip_type == 'Märkus':
-                    #print(''.join(descripGrp.itertext()).strip())
+                    note_value = ''.join(descripGrp.itertext()).strip()
+
+                    if word.lang == 'est':
+                        note_lang = 'est'
+                    else:
+                        note_lang = xml_helpers.detect_language(note_value)
+
                     word.lexemeNotes.append(
-                        data_classes.lexemeNote(value=''.join(descripGrp.itertext()).strip(), lang='est', publicity=word.lexemePublicity))
+                        data_classes.lexemeNote(value=note_value, lang=note_lang, publicity=word.lexemePublicity))
 
             words.append(word)
 
