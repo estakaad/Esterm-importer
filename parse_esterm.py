@@ -4,7 +4,7 @@ import xml_helpers
 import os
 import data_classes
 import log_config
-
+import re
 
 logger = log_config.get_logger()
 
@@ -161,11 +161,32 @@ def parse_words(conceptGrp, concept):
                         logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
                 if descrip_type == 'Definitsioon':
-                    definitions.append(
-                        data_classes.Definition(
-                            value=''.join(descripGrp.xpath('descrip')[0].itertext()),
-                            lang=word.lang,
-                            definitionTypeCode='definitsioon')
+                    descrip_text = ''.join(descripGrp.xpath('descrip')[0].itertext())
+
+                    # Check whether there are multiple definitions
+                    if re.search(r'\n\d\.', descrip_text):
+                        # Prepend a newline if the description text doesn't already start with one
+                        if not descrip_text.startswith('\n'):
+                            descrip_text = '\n' + descrip_text
+
+                        # Splitting the text content into separate definitions
+                        individual_definitions = [d.strip() for d in re.split(r'\n\d\.', descrip_text) if d.strip()]
+
+                        # Appending each definition separately
+                        for individual_definition in individual_definitions:
+                            definitions.append(
+                                data_classes.Definition(
+                                    value=individual_definition,
+                                    lang=word.lang,
+                                    definitionTypeCode='definitsioon')
+                            )
+                    else:
+                        # If there's only one definition, append it as is
+                        definitions.append(
+                            data_classes.Definition(
+                                value=descrip_text.strip(),
+                                lang=word.lang,
+                                definitionTypeCode='definitsioon')
                         )
 
                 if descrip_type == 'Kontekst':
