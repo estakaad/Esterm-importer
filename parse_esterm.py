@@ -56,6 +56,8 @@ def parse_mtf(root):
                     lang='est',
                     publicity=True
                 ))
+
+
                 if descrip_element_value:
                     logger.debug('Added note: %s', descrip_element_value)
             # Get concept tööleht and add its value to concept forum list.
@@ -197,8 +199,14 @@ def parse_words(conceptGrp, concept):
                             publicity=word.lexemePublicity)
                     )
 
-                if descrip_type == 'Allikas':
-                    print('Allikas')
+                if descrip_type == 'Allikaviide':
+                    source_links = ''.join(descripGrp.itertext()).strip()
+                    source_links = source_links.split('; ')
+
+                    for link in source_links:
+                        word.sourceLinks.append(
+                            data_classes.sourceLink(value=link)
+                        )
 
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip()

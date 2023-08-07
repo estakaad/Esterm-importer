@@ -271,3 +271,8 @@ def detect_language(note):
             language = 'est'
 
     return language
+
+
+# def extract_source_id(text):
+#
+#     return source_id
