@@ -273,20 +273,34 @@ def detect_language(note):
     return language
 
 
-def extract_definition_source_link(definition):
+def extract_definition_source_links(definition):
     pattern = r'\[([^\[\]]*)\]$'
     match = re.search(pattern, definition.value)
 
     if match:
-        # Extract source links
         links_text = match.group(1).strip()
         links = [item.strip() for item in links_text.split(';')]
 
-        # Append source links to the definition's sourceLinks
         for link in links:
             definition.sourceLinks.append(data_classes.sourceLink(value=link))
 
-        # Update the definition value to strip off the source link data
         definition.value = re.sub(pattern, '', definition.value).strip()
 
     return definition
+
+
+def extract_source_links_from_usage_value(value: str):
+    pattern = r'\[([^\[\]]*)\]\s*$'
+    match = re.search(pattern, value)
+
+    source_links = []
+
+    if match:
+        links_text = match.group(1)
+        links = [item.strip() for item in links_text.split(';')]
+
+        source_links = [data_classes.sourceLink(value=link) for link in links]
+
+        value = re.sub(pattern, '', value).strip()
+
+    return value, source_links

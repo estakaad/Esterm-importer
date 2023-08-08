@@ -57,23 +57,23 @@ def parse_mtf(root):
                     publicity=True
                 ))
 
-
                 if descrip_element_value:
                     logger.debug('Added note: %s', descrip_element_value)
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
                 concept.forums.append(data_classes.Forum(
-                    value=descrip_element_value
+                    value=descrip_element_value.replace("\n", "").replace("\t", "")
                 ))
                 if descrip_element_value:
-                    logger.debug('Added tööleht to forums: %s', descrip_element_value)
+                    logger.debug('Added tööleht to forums: %s', descrip_element_value.replace("\n", "").replace("\t", ""))
             elif descrip_element.get('type') == 'Sisemärkus':
                 concept.forums.append(data_classes.Forum(
                     value=descrip_element_value
                 ))
                 if descrip_element_value:
                     logger.debug('Added sisemärkus to forums: %s', descrip_element_value)
-            # Get concept context and add its value to the concept usage list NB - or notes !?!? MIS KEELES?
+            # Currently add "Kontekst" as concept notes and
+            # its language is always Estonian because we don't know any better
             elif descrip_element.get('type') == 'Kontekst':
                 concept.notes.append(data_classes.Note(
                     value=descrip_element_value,
