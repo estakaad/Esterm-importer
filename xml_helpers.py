@@ -332,7 +332,6 @@ def edit_note_with_multiple_languages(note):
     return note
 
 def edit_note_without_multiple_languages(note):
-    print(note)
     pattern = r'<xref Tlink=".*?">(.*?)</xref>'
     replacement = r"[\1]"
 

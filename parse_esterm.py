@@ -53,6 +53,8 @@ def parse_mtf(root):
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
 
+                # What if source is EKSPERT? Do expert names have to be removed? Currently they are.
+
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                 else:
@@ -213,15 +215,15 @@ def parse_words(conceptGrp, concept):
                     )
 
                 if descrip_type == 'Allikaviide':
-                    source_links = ''.join(descripGrp.itertext()).strip()
-                    source_links = source_links.split('; ')
+                    source_links_str = ''.join(descripGrp.itertext()).strip()
 
-                    for link in source_links:
-                        if link.startswith('[') and link.endswith(']'):
-                            link = link[1:-1]
+                    matches = re.findall(r'\[(.*?)\]', source_links_str)
+
+                    for link in matches:
+                        cleaned_link = re.sub(r'<xref Tlink=".*?">(.*?)</xref>', r'\1', link)
 
                         word.sourceLinks.append(
-                            data_classes.sourceLink(value=link)
+                            data_classes.sourceLink(value=cleaned_link)
                         )
 
                 if descrip_type == 'Märkus':
