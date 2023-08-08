@@ -313,19 +313,21 @@ def does_note_contain_multiple_languages(note):
     else:
         return False
 
+
 def edit_note_with_multiple_languages(note):
     # 1. Replace [<xref Tlink="some_value_here">VALUE_HERE</xref> ANYTHING_HERE]\n with
     # [<xref Tlink="some_value_here">VALUE_HERE</xref> ANYTHING_HERE].
-    pattern1 = r'(\[<xref Tlink=".*?">.*?</xref>.*?\])\s*\n'
+    pattern1 = r'(\[.*?\])\s*\n'
     replace1 = r'\1. '
-
     note = re.sub(pattern1, replace1, note)
 
     # 2. Replace [<xref Tlink="some_value_here">VALUE_HERE</xref> ANYTHING_HERE] with [VALUE_HERE ANYTHING_HERE]
-    pattern2 = r'\[<xref Tlink=".*?">(.*?)(</xref>(.*?))?\]'
-    replace2 = r"[\1\3]"
+    pattern2 = r'<xref Tlink=".*?">(.*?)</xref>'
+    replace2 = r"\1"
 
-    note = re.sub(pattern2, replace2, note)
+    # Loop until no more patterns are found
+    while re.search(pattern2, note):
+        note = re.sub(pattern2, replace2, note)
 
     return note
 
