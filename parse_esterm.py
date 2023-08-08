@@ -51,10 +51,12 @@ def parse_mtf(root):
                         concept.domains.append(data_classes.Domain(code=domain, origin='lenoch'))
             # Get concept notes and add to the list of concept notes. !?!?! MIS KEELES?
             elif descrip_element.get('type') == 'Märkus':
-                if xml_helpers.does_note_contain_multiple_languages(xml_helpers.get_description_value(descrip_element)):
-                    note_value = xml_helpers.edit_note_with_multiple_languages(xml_helpers.get_description_value(descrip_element))
+                raw_note_value = xml_helpers.get_description_value(descrip_element)
+
+                if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
+                    note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                 else:
-                    note_value = xml_helpers.get_description_value(descrip_element)
+                    note_value = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
 
                 concept.notes.append(data_classes.Note(
                     value=note_value,

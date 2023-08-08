@@ -314,14 +314,30 @@ def does_note_contain_multiple_languages(note):
         return False
 
 def edit_note_with_multiple_languages(note):
-    pattern2 = r'(\[<xref Tlink=\".*?\">.*?</xref>\])\n'
-    replace2 = r'\1. '
+    # 1. Replace [<xref Tlink="some_value_here">VALUE_HERE</xref> ANYTHING_HERE]\n with
+    # [<xref Tlink="some_value_here">VALUE_HERE</xref> ANYTHING_HERE].
+    pattern1 = r'(\[<xref Tlink=".*?">.*?</xref>.*?\])\s*\n'
+    replace1 = r'\1. '
+
+    note = re.sub(pattern1, replace1, note)
+
+    # 2. Replace [<xref Tlink="some_value_here">VALUE_HERE</xref> ANYTHING_HERE] with [VALUE_HERE ANYTHING_HERE]
+    pattern2 = r'\[<xref Tlink=".*?">(.*?)(</xref>(.*?))?\]'
+    replace2 = r"[\1\3]"
 
     note = re.sub(pattern2, replace2, note)
 
-    pattern1 = r'\[<xref Tlink=\".*?\">(.*?)</xref>\]'
-    replace1 = r"[\1]"
+    return note
 
-    note = re.sub(pattern1, replace1, note)
+def edit_note_without_multiple_languages(note):
+    print(note)
+    pattern = r'<xref Tlink=".*?">(.*?)</xref>'
+    replacement = r"[\1]"
+
+    note = re.sub(pattern, replacement, note)
+
+    pattern_date = r'\{.*?(\d{1,2}\.\d{1,2}\.\d{4})\}$'
+    replacement_date = r"{\1}"
+    note = re.sub(pattern_date, replacement_date, note)
 
     return note
