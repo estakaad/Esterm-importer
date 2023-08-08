@@ -88,6 +88,7 @@ def parse_mtf(root):
             logger.info('Added concept notes: %s', str(concept.notes))
         if concept.forums:
             logger.info('Added concept forum: %s', str(concept.forums))
+
         # Concept level data is parsed, now to parsing word (term) level data
         words, definitions = parse_words(conceptGrp, concept)
 
@@ -95,7 +96,7 @@ def parse_mtf(root):
             concept.words.append(word)
 
         for definition in definitions:
-            concept.definitions.append(definition)
+            concept.definitions.append(xml_helpers.extract_definition_source_link(definition))
 
         list_to_append.append(concept)
         logger.info('Finished parsing concept.')
