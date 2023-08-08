@@ -96,7 +96,7 @@ def parse_mtf(root):
             concept.words.append(word)
 
         for definition in definitions:
-            concept.definitions.append(xml_helpers.extract_definition_source_link(definition))
+            concept.definitions.append(xml_helpers.extract_definition_source_links(definition))
 
         list_to_append.append(concept)
         logger.info('Finished parsing concept.')
@@ -193,11 +193,13 @@ def parse_words(conceptGrp, concept):
                         )
 
                 if descrip_type == 'Kontekst':
+                    updated_value, source_links = xml_helpers.extract_source_links_from_usage_value(''.join(descripGrp.itertext()))
                     word.usages.append(
                         data_classes.Usage(
-                            value=''.join(descripGrp.itertext()),
+                            value=updated_value,
                             lang=xml_helpers.match_language(lang_term),
-                            publicity=word.lexemePublicity)
+                            publicity=word.lexemePublicity,
+                            sourceLinks=source_links)
                     )
 
                 if descrip_type == 'Allikaviide':
@@ -205,6 +207,9 @@ def parse_words(conceptGrp, concept):
                     source_links = source_links.split('; ')
 
                     for link in source_links:
+                        if link.startswith('[') and link.endswith(']'):
+                            link = link[1:-1]
+
                         word.sourceLinks.append(
                             data_classes.sourceLink(value=link)
                         )
