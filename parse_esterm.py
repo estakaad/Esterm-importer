@@ -67,8 +67,11 @@ def parse_mtf(root):
                 if descrip_element_value:
                     logger.debug('Added tööleht to forums: %s', descrip_element_value.replace("\n", "").replace("\t", ""))
             elif descrip_element.get('type') == 'Sisemärkus':
+                forum_note = re.sub(r"\{.*?\}", "", descrip_element_value)
+                forum_note = re.sub(r"]\n*\t*$", "]", forum_note)
+
                 concept.forums.append(data_classes.Forum(
-                    value=descrip_element_value
+                    value=forum_note
                 ))
                 if descrip_element_value:
                     logger.debug('Added sisemärkus to forums: %s', descrip_element_value)
@@ -216,6 +219,9 @@ def parse_words(conceptGrp, concept):
 
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip()
+
+                    note_value = re.sub(r"\{.*?\}", "", note_value)
+                    note_value = re.sub(r"]\n*\t*$", "]", note_value)
 
                     if word.lang == 'est':
                         note_lang = 'est'
