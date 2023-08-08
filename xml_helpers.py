@@ -304,3 +304,24 @@ def extract_source_links_from_usage_value(value: str):
         value = re.sub(pattern, '', value).strip()
 
     return value, source_links
+
+def does_note_contain_multiple_languages(note):
+    pattern = r'[A-Z]{2}:'
+
+    if re.search(pattern, note):
+        return True
+    else:
+        return False
+
+def edit_note_with_multiple_languages(note):
+    pattern2 = r'(\[<xref Tlink=\".*?\">.*?</xref>\])\n'
+    replace2 = r'\1. '
+
+    note = re.sub(pattern2, replace2, note)
+
+    pattern1 = r'\[<xref Tlink=\".*?\">(.*?)</xref>\]'
+    replace1 = r"[\1]"
+
+    note = re.sub(pattern1, replace1, note)
+
+    return note
