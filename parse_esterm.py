@@ -225,11 +225,12 @@ def parse_words(conceptGrp, concept):
                         word.sourceLinks.append(
                             data_classes.sourceLink(value=cleaned_link)
                         )
-
+                # If source link contains EKSPERT, then expert's name is not removed.
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip()
 
-                    note_value = re.sub(r"\{.*?\}", "", note_value)
+                    note_value = re.sub(r"<xref[^>]*>(.*?)<\/xref>", r"\1", note_value)
+
                     note_value = re.sub(r"]\n*\t*$", "]", note_value)
 
                     if word.lang == 'est':
