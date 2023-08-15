@@ -68,6 +68,7 @@ def parse_mtf(root):
 
                 if descrip_element_value:
                     logger.debug('Added note: %s', descrip_element_value)
+
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
                 concept.forums.append(data_classes.Forum(
@@ -75,6 +76,7 @@ def parse_mtf(root):
                 ))
                 if descrip_element_value:
                     logger.debug('Added tööleht to forums: %s', descrip_element_value.replace("\n", "").replace("\t", ""))
+
             elif descrip_element.get('type') == 'Sisemärkus':
                 forum_note = re.sub(r"\{.*?\}", "", descrip_element_value)
                 forum_note = re.sub(r"]\n*\t*$", "]", forum_note)
@@ -83,7 +85,8 @@ def parse_mtf(root):
                     value=forum_note
                 ))
                 if descrip_element_value:
-                    logger.debug('Added sisemärkus to forums: %s', descrip_element_value)
+                    logger.debug('Added sisemärkus to forums: %s', forum_note)
+
             # Currently add "Kontekst" as concept notes and
             # its language is always Estonian because we don't know any better
             elif descrip_element.get('type') == 'Kontekst':
@@ -225,13 +228,21 @@ def parse_words(conceptGrp, concept):
                         word.sourceLinks.append(
                             data_classes.sourceLink(value=cleaned_link)
                         )
+
                 # If source link contains EKSPERT, then expert's name is not removed.
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip()
 
+                    print('raw  ' + note_value)
+
                     note_value = re.sub(r"<xref[^>]*>(.*?)<\/xref>", r"\1", note_value)
 
                     note_value = re.sub(r"]\n*\t*$", "]", note_value)
+
+                    pattern = r'\[\{.*?\}(.+?)\]'
+                    note_value = re.sub(pattern, r'[\1]', note_value)
+
+                    print('final value: ' + note_value + '\n')
 
                     if word.lang == 'est':
                         note_lang = 'est'
