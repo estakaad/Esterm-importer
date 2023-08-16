@@ -9,7 +9,7 @@ class Domain:
 
 @dataclass
 class sourceLink:
-    #sourceId: int
+    sourceId: int
     value: str
 
 @dataclass

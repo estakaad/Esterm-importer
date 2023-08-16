@@ -291,7 +291,7 @@ def extract_definition_source_links(definition):
     return definition
 
 def remove_whitespace_before_numbers(value: str) -> str:
-    return re.sub(r'\s*(\d+[.)])', r'\1', value)
+    return re.sub(r'(?<=\S)\s*(\d+[.)])', r' \1', value)
 
 
 def extract_source_links_from_usage_value(value: str):
