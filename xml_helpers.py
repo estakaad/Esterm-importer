@@ -274,6 +274,8 @@ def detect_language(note):
 
 
 def extract_definition_source_links(definition):
+
+    dummy_id = 15845
     pattern = r'\[([^\[\]]*)\]$'
     match = re.search(pattern, definition.value)
 
@@ -282,14 +284,19 @@ def extract_definition_source_links(definition):
         links = [item.strip() for item in links_text.split(';')]
 
         for link in links:
-            definition.sourceLinks.append(data_classes.sourceLink(value=link))
+            definition.sourceLinks.append(data_classes.sourceLink(sourceId=dummy_id,value=link))
 
         definition.value = re.sub(pattern, '', definition.value).strip()
 
     return definition
 
+def remove_whitespace_before_numbers(value: str) -> str:
+    return re.sub(r'\s*(\d+[.)])', r'\1', value)
+
 
 def extract_source_links_from_usage_value(value: str):
+
+    dummy_id = 15845
     pattern = r'\[([^\[\]]*)\]\s*$'
     match = re.search(pattern, value)
 
@@ -299,9 +306,14 @@ def extract_source_links_from_usage_value(value: str):
         links_text = match.group(1)
         links = [item.strip() for item in links_text.split(';')]
 
-        source_links = [data_classes.sourceLink(value=link) for link in links]
+
+        source_links = [data_classes.sourceLink(sourceId=dummy_id, value=link) for link in links]
 
         value = re.sub(pattern, '', value).strip()
+
+    value = value.rstrip(';').strip()
+
+    value = remove_whitespace_before_numbers(value)
 
     return value, source_links
 

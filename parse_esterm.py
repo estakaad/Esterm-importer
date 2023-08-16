@@ -17,7 +17,7 @@ def parse_mtf(root):
     domain_entries = []
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        concept = data_classes.Concept(datasetCode='termapi')
+        concept = data_classes.Concept(datasetCode='apitestimi')
         logger.info("Started parsing concept.")
 
         type_of_concept = xml_helpers.type_of_concept(conceptGrp)
@@ -80,6 +80,7 @@ def parse_mtf(root):
             elif descrip_element.get('type') == 'Sisemärkus':
                 forum_note = re.sub(r"\{.*?\}", "", descrip_element_value)
                 forum_note = re.sub(r"]\n*\t*$", "]", forum_note)
+                forum_note = forum_note.strip()
 
                 concept.forums.append(data_classes.Forum(
                     value=forum_note
@@ -226,23 +227,23 @@ def parse_words(conceptGrp, concept):
                         cleaned_link = re.sub(r'<xref Tlink=".*?">(.*?)</xref>', r'\1', link)
 
                         word.sourceLinks.append(
-                            data_classes.sourceLink(value=cleaned_link)
+                            data_classes.sourceLink(sourceId=15845,value=cleaned_link)
                         )
 
                 # If source link contains EKSPERT, then expert's name is not removed.
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip()
 
-                    print('raw  ' + note_value)
-
+                    # Replace occurrences of the <xref> tag with its inner text content.
                     note_value = re.sub(r"<xref[^>]*>(.*?)<\/xref>", r"\1", note_value)
 
+                    # Clean up any whitespace after the closing square bracket.
                     note_value = re.sub(r"]\n*\t*$", "]", note_value)
 
-                    pattern = r'\[\{.*?\}(.+?)\]'
+                    # Strip off the whitespace around the content inside the square brackets,
+                    # and remove the curly brackets and their content.
+                    pattern = r'\[\{.*?\}\s*(.+?)\s*\]'
                     note_value = re.sub(pattern, r'[\1]', note_value)
-
-                    print('final value: ' + note_value + '\n')
 
                     if word.lang == 'est':
                         note_lang = 'est'
