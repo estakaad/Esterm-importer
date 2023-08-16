@@ -221,13 +221,16 @@ def parse_words(conceptGrp, concept):
                 if descrip_type == 'Allikaviide':
                     source_links_str = ''.join(descripGrp.itertext()).strip()
 
-                    matches = re.findall(r'\[(.*?)\]', source_links_str)
+                    potential_links = source_links_str.split(';')
 
-                    for link in matches:
-                        cleaned_link = re.sub(r'<xref Tlink=".*?">(.*?)</xref>', r'\1', link)
+                    for link in potential_links:
+                        link = link.strip()
+
+                        if link.startswith('[') and link.endswith(']'):
+                            link = link.strip('[]')
 
                         word.sourceLinks.append(
-                            data_classes.sourceLink(sourceId=15845,value=cleaned_link)
+                            data_classes.sourceLink(sourceId=15845, value=link)
                         )
 
                 # If source link contains EKSPERT, then expert's name is not removed.
