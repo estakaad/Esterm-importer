@@ -1,9 +1,10 @@
 import xml.etree.ElementTree as ET
 import log_config
-import data_classes
-from lxml import etree
 from langdetect import detect
 import re
+import concepts_import
+import json
+
 
 logger = log_config.get_logger()
 
@@ -195,7 +196,7 @@ def parse_definition(descrip_text, descripGrp, lang):
     else:
         definition_text = descrip_text.strip()
 
-    definition = data_classes.Definition(
+    definition = concepts_import.data_classes.Definition(
         value=definition_text,
         lang=lang,
         definitionTypeCode='definitsioon'
@@ -284,7 +285,7 @@ def extract_definition_source_links(definition):
         links = [item.strip() for item in links_text.split(';')]
 
         for link in links:
-            definition.sourceLinks.append(data_classes.sourceLink(sourceId=dummy_id,value=link))
+            definition.sourceLinks.append(concepts_import.data_classes.sourceLink(sourceId=dummy_id, value=link))
 
         definition.value = re.sub(pattern, '', definition.value).strip()
 
@@ -296,7 +297,6 @@ def remove_whitespace_before_numbers(value: str) -> str:
 
 def extract_source_links_from_usage_value(value: str):
 
-    dummy_id = 15845
     pattern = r'\[([^\[\]]*)\]\s*$'
     match = re.search(pattern, value)
 
@@ -307,7 +307,7 @@ def extract_source_links_from_usage_value(value: str):
         links = [item.strip() for item in links_text.split(';')]
 
 
-        source_links = [data_classes.sourceLink(sourceId=dummy_id, value=link) for link in links]
+        source_links = [concepts_import.data_classes.sourceLink(concepts_import.xml_helpers.find_source_by_name(link), value=link) for link in links]
 
         value = re.sub(pattern, '', value).strip()
 
@@ -356,3 +356,13 @@ def edit_note_without_multiple_languages(note):
     note = re.sub(pattern_date, replacement_date, note)
 
     return note
+
+
+def find_source_by_name(name):
+    with open('files/output/sources_with_ids.json', 'r', encoding='utf-8') as file:
+        sources = json.load(file)
+        for source in sources:
+            for prop in source['sourceProperties']:
+                if prop['type'] == 'SOURCE_NAME' and prop['valueText'] == name:
+                    return source['id']
+    return None

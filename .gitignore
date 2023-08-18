@@ -2,8 +2,8 @@
 *.xml
 *.json
 /data
-/input
-/output
+/files/input
+/files/output
 
 #Logs
 *.log

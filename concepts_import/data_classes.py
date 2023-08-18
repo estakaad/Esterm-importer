@@ -53,7 +53,7 @@ class Word:
     wordTypeCodes: List[str] = field(default_factory=list)
     usages: List[Usage] = field(default_factory=list)
     lexemeNotes: List[lexemeNote] = field(default_factory=list)
-    sourceLinks: List[sourceLink] = field(default_factory=list)
+    lexemeSourceLinks: List[sourceLink] = field(default_factory=list)
 
 @dataclass
 class Concept:

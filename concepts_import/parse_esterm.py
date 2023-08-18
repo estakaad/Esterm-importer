@@ -1,8 +1,9 @@
 from lxml import etree
 import json
-import xml_helpers
+from concepts_import import xml_helpers
 import os
-import data_classes
+from concepts_import import data_classes
+import concepts_import
 import log_config
 import re
 
@@ -17,7 +18,7 @@ def parse_mtf(root):
     domain_entries = []
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        concept = data_classes.Concept(datasetCode='apitestimi')
+        concept = concepts_import.data_classes.Concept(datasetCode='et1608')
         logger.info("Started parsing concept.")
 
         type_of_concept = xml_helpers.type_of_concept(conceptGrp)
@@ -48,7 +49,7 @@ def parse_mtf(root):
                 for domain in descrip_element_value.split(';'):
                     domain = domain.strip()
                     if domain:
-                        concept.domains.append(data_classes.Domain(code=domain, origin='lenoch'))
+                        concept.domains.append(concepts_import.data_classes.Domain(code=domain, origin='lenoch'))
             # Get concept notes and add to the list of concept notes. !?!?! MIS KEELES?
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
@@ -60,7 +61,7 @@ def parse_mtf(root):
                 else:
                     note_value = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
 
-                concept.notes.append(data_classes.Note(
+                concept.notes.append(concepts_import.data_classes.Note(
                     value=note_value,
                     lang='est',
                     publicity=True
@@ -71,7 +72,7 @@ def parse_mtf(root):
 
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
-                concept.forums.append(data_classes.Forum(
+                concept.forums.append(concepts_import.data_classes.Forum(
                     value=descrip_element_value.replace("\n", "").replace("\t", "")
                 ))
                 if descrip_element_value:
@@ -82,7 +83,7 @@ def parse_mtf(root):
                 forum_note = re.sub(r"]\n*\t*$", "]", forum_note)
                 forum_note = forum_note.strip()
 
-                concept.forums.append(data_classes.Forum(
+                concept.forums.append(concepts_import.data_classes.Forum(
                     value=forum_note
                 ))
                 if descrip_element_value:
@@ -91,7 +92,7 @@ def parse_mtf(root):
             # Currently add "Kontekst" as concept notes and
             # its language is always Estonian because we don't know any better
             elif descrip_element.get('type') == 'Kontekst':
-                concept.notes.append(data_classes.Note(
+                concept.notes.append(concepts_import.data_classes.Note(
                     value=descrip_element_value,
                     lang='est',
                     publicity=xml_helpers.are_terms_public(conceptGrp)
@@ -141,7 +142,7 @@ def parse_words(conceptGrp, concept):
             descrip_text = ''.join(descripGrp.xpath('descrip')[0].itertext())
             # definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, lang_grp))
             definitions.append(
-                data_classes.Definition(
+                concepts_import.data_classes.Definition(
                     value=descrip_text,
                     lang=lang_grp,
                     definitionTypeCode='definitsioon')
@@ -151,7 +152,7 @@ def parse_words(conceptGrp, concept):
 
         for termGrp in termGrps:
 
-            word = data_classes.Word(
+            word = concepts_import.data_classes.Word(
                 value='term',
                 lang='est',
                 lexemePublicity=is_public)
@@ -194,7 +195,7 @@ def parse_words(conceptGrp, concept):
                         # Appending each definition separately
                         for individual_definition in individual_definitions:
                             definitions.append(
-                                data_classes.Definition(
+                                concepts_import.data_classes.Definition(
                                     value=individual_definition,
                                     lang=word.lang,
                                     definitionTypeCode='definitsioon')
@@ -202,7 +203,7 @@ def parse_words(conceptGrp, concept):
                     else:
                         # If there's only one definition, append it as is
                         definitions.append(
-                            data_classes.Definition(
+                            concepts_import.data_classes.Definition(
                                 value=descrip_text.strip(),
                                 lang=word.lang,
                                 definitionTypeCode='definitsioon')
@@ -211,7 +212,7 @@ def parse_words(conceptGrp, concept):
                 if descrip_type == 'Kontekst':
                     updated_value, source_links = xml_helpers.extract_source_links_from_usage_value(''.join(descripGrp.itertext()))
                     word.usages.append(
-                        data_classes.Usage(
+                        concepts_import.data_classes.Usage(
                             value=updated_value,
                             lang=xml_helpers.match_language(lang_term),
                             publicity=word.lexemePublicity,
@@ -229,8 +230,8 @@ def parse_words(conceptGrp, concept):
                         if link.startswith('[') and link.endswith(']'):
                             link = link.strip('[]')
 
-                        word.sourceLinks.append(
-                            data_classes.sourceLink(sourceId=15845, value=link)
+                        word.lexemeSourceLinks.append(
+                            concepts_import.data_classes.sourceLink(concepts_import.xml_helpers.find_source_by_name(link), value=link)
                         )
 
                 # If source link contains EKSPERT, then expert's name is not removed.
@@ -254,7 +255,7 @@ def parse_words(conceptGrp, concept):
                         note_lang = xml_helpers.detect_language(note_value)
 
                     word.lexemeNotes.append(
-                        data_classes.lexemeNote(value=note_value, lang=note_lang, publicity=word.lexemePublicity))
+                        concepts_import.data_classes.lexemeNote(value=note_value, lang=note_lang, publicity=word.lexemePublicity))
 
             words.append(word)
 
@@ -277,19 +278,17 @@ def parse_words(conceptGrp, concept):
     return words, definitions
 
 
-# Write aviation concepts, all other concepts and sources of the concepts to three separate JSON files
-def print_concepts_to_json(concepts, sources, aviation_concepts, domain_entries):
+# Write aviation concepts, all other concepts and domains to separate JSON files
+def print_concepts_to_json(concepts, aviation_concepts, domain_entries):
 
     logger.debug('Number of concepts: %s', str(len(concepts)))
     logger.debug('Number of aviation concepts: %s', str(len(aviation_concepts)))
-    logger.debug('Number of sources: %s', str(len(sources)))
     logger.debug('Number of domain entries: %s', str(len(domain_entries)))
 
-    output_folder = 'output'
+    output_folder = 'files/output'
     os.makedirs(output_folder, exist_ok=True)
 
     for concept_list, filename in [(concepts, 'concepts.json'),
-                                   (sources, 'sources.json'),
                                    (aviation_concepts, 'aviation_concepts.json'),
                                    (domain_entries, 'domains.json')]:
         concepts_json = json.dumps(
@@ -305,13 +304,13 @@ def print_concepts_to_json(concepts, sources, aviation_concepts, domain_entries)
 
 def transform_esterm_to_json():
 # Opening the file, parsing, writing JSON files
-    with open('input/esterm.xml', 'rb') as file:
+    with open('files/input/esterm.xml', 'rb') as file:
         xml_content = file.read()
 
     parser = etree.XMLParser(encoding='UTF-16')
     root = etree.fromstring(xml_content, parser=parser)
 
     concepts, sources, aviation_concepts, domain_entries = parse_mtf(root)
-    print_concepts_to_json(concepts, sources, aviation_concepts, domain_entries)
+    print_concepts_to_json(concepts, aviation_concepts, domain_entries)
 
     logger.info('Finished transforming Esterm XML file to JSON files.')
