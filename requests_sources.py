@@ -22,27 +22,23 @@ parameters = {"crudRoleDataset": crud_role_dataset}
 def get_existing_source_id(source):
     value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
 
-    first_word = re.search(r'\b\w+\b', value_texts[0])
-    if not first_word:
-        logger.warning(f"No suitable word found in the valueText for source {value_texts[0]}")
-        return None
+    for value_text in value_texts:
+        endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_text}"
+        response = requests.get(endpoint, headers=header, params=parameters)
 
-    search_value = '*' + first_word.group() + '*'
-    endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{search_value}"
-    response = requests.get(endpoint, headers=header, params=parameters)
-
-    if response.status_code >= 200 and response.status_code < 300:
-        try:
-            response_data = response.json()
-            for source_response in response_data:
-                if set(value_texts).issubset(set(source_response['sourceNames'])):
-                    return source_response['id']
-        except (json.JSONDecodeError, IndexError):
-            logger.warning(f"Failed to retrieve the ID of the source {value_texts[0]}. "
-                           f"Response text: {response.text}")
-    else:
-        logger.warning(f"Received non-200 response when retrieving the ID of the source {value_texts[0]}. "
-                       f"Status code: {response.status_code}, Response text: {response.text}")
+        if response.status_code >= 200 and response.status_code < 300:
+            try:
+                response_data = response.json()
+                for source_response in response_data:
+                    # Check if all elements in value_texts are present in source_response['sourceNames']
+                    if all(text in source_response['sourceNames'] for text in value_texts):
+                        return source_response['id']
+            except (json.JSONDecodeError, IndexError):
+                logger.warning(f"Failed to retrieve the ID of the source {value_texts[0]}. "
+                               f"Response text: {response.text}")
+        else:
+            logger.warning(f"Received non-200 response when retrieving the ID of the source {value_texts[0]}. "
+                           f"Status code: {response.status_code}, Response text: {response.text}")
     return None
 
 
