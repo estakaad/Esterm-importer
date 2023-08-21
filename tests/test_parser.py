@@ -1,6 +1,6 @@
 import unittest
 from xml.etree import ElementTree as ET
-from concepts_import import xml_helpers
+import xml_helpers
 
 
 class TestXmlHelpers(unittest.TestCase):

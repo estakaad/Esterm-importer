@@ -2,7 +2,6 @@ import xml.etree.ElementTree as ET
 import log_config
 from langdetect import detect
 import re
-import concepts_import
 import json
 
 
@@ -196,7 +195,7 @@ def parse_definition(descrip_text, descripGrp, lang):
     else:
         definition_text = descrip_text.strip()
 
-    definition = concepts_import.data_classes.Definition(
+    definition = data_classes.Definition(
         value=definition_text,
         lang=lang,
         definitionTypeCode='definitsioon'
@@ -276,7 +275,6 @@ def detect_language(note):
 
 def extract_definition_source_links(definition):
 
-    dummy_id = 15845
     pattern = r'\[([^\[\]]*)\]$'
     match = re.search(pattern, definition.value)
 
@@ -285,7 +283,8 @@ def extract_definition_source_links(definition):
         links = [item.strip() for item in links_text.split(';')]
 
         for link in links:
-            definition.sourceLinks.append(concepts_import.data_classes.sourceLink(sourceId=dummy_id, value=link))
+            definition.sourceLinks.append(
+                data_classes.sourceLink(sourceId=xml_helpers.find_source_by_name(link), value=link))
 
         definition.value = re.sub(pattern, '', definition.value).strip()
 
@@ -307,7 +306,7 @@ def extract_source_links_from_usage_value(value: str):
         links = [item.strip() for item in links_text.split(';')]
 
 
-        source_links = [concepts_import.data_classes.sourceLink(concepts_import.xml_helpers.find_source_by_name(link), value=link) for link in links]
+        source_links = [data_classes.sourceLink(xml_helpers.find_source_by_name(link), value=link) for link in links]
 
         value = re.sub(pattern, '', value).strip()
 
