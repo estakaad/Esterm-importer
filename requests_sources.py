@@ -82,5 +82,5 @@ def assign_ids_to_all_sources(input_file, output_file):
                 ordered_source = OrderedDict([('id', source_id)] + list(source.items()))
                 new_data.append(ordered_source)
 
-    with open(output_file, 'w') as f:
-        json.dump(new_data, f, indent=4)
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(new_data, f, ensure_ascii=False, indent=4)

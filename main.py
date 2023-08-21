@@ -3,13 +3,13 @@ import parse_sources
 import requests_sources
 
 # Export sources from XML input/esterm.xml. Returns sources files/output/sources.json
-file = parse_sources.export_sources_from_xml('files/input/esterm.xml')
+#file = parse_sources.export_sources_from_xml('files/input/esterm.xml')
 
 
 # Get ID-s of existing sources. If source doesn't exist yet, create it and get its ID.
 # Add the sources and their ID-s to file output/sources_with_ids.json
 
-requests_sources.check_sources_from_ekilex(file)
+requests_sources.assign_ids_to_all_sources('files/output/sources.json', 'files/output/sources_with_ids.json')
 
 # Export concepts from XML
 #concepts = parse_concepts.transform_esterm_to_json()
