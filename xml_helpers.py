@@ -3,7 +3,7 @@ import log_config
 from langdetect import detect
 import re
 import json
-
+import data_classes
 
 logger = log_config.get_logger()
 
@@ -284,7 +284,7 @@ def extract_definition_source_links(definition):
 
         for link in links:
             definition.sourceLinks.append(
-                data_classes.sourceLink(sourceId=xml_helpers.find_source_by_name(link), value=link))
+                data_classes.sourceLink(sourceId=find_source_by_name(link), value=link))
 
         definition.value = re.sub(pattern, '', definition.value).strip()
 
@@ -306,7 +306,7 @@ def extract_source_links_from_usage_value(value: str):
         links = [item.strip() for item in links_text.split(';')]
 
 
-        source_links = [data_classes.sourceLink(xml_helpers.find_source_by_name(link), value=link) for link in links]
+        source_links = [data_classes.sourceLink(find_source_by_name(link), value=link) for link in links]
 
         value = re.sub(pattern, '', value).strip()
 

@@ -2,7 +2,6 @@ import requests
 import json
 from dotenv import load_dotenv
 import os
-import re
 import log_config
 from collections import OrderedDict
 
@@ -21,10 +20,11 @@ parameters = {"crudRoleDataset": crud_role_dataset}
 
 def get_existing_source_id(source):
     value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
+    endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/search"
 
     for value_text in value_texts:
-        endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_text}"
-        response = requests.get(endpoint, headers=header, params=parameters)
+        params = {"crudRoleDataset": crud_role_dataset, "query": value_text}
+        response = requests.get(endpoint, headers=header, params=params)
 
         if response.status_code >= 200 and response.status_code < 300:
             try:
@@ -60,23 +60,58 @@ def create_source(source):
     return None
 
 
-# Try getting existing source's ID, if source doesn't exist, create a new one and return its ID
+# Try getting existing source's ID, if source doesn't exist, create a new one and return its ID.
+# If source already existed, return False. If source was created, return True.
 def get_or_create_source(source):
     existing_id = get_existing_source_id(source)
     if existing_id:
-        return existing_id
-    return create_source(source)
+        return existing_id, False
+    new_id = create_source(source)
+    return new_id, True
 
 
-def assign_ids_to_all_sources(input_file, output_file):
+def assign_ids_to_all_sources(input_file):
+
+    sources_with_ids_file = 'files/output/sources_with_ids.json'
+    ids_of_created_sources_file = 'files/output/ids_of_created_sources.json'
+    updated_sources = []
+    ids_of_created_sources = []
+
     with open(input_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
-        new_data = []
         for source in data:
-            source_id = get_or_create_source(source)
+            source_id, was_created = get_or_create_source(source)
             if source_id:
                 ordered_source = OrderedDict([('id', source_id)] + list(source.items()))
-                new_data.append(ordered_source)
+                updated_sources.append(ordered_source)
+                if was_created:
+                    ids_of_created_sources.append(source_id)
 
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(new_data, f, ensure_ascii=False, indent=4)
+    # Create a file with ID-s added to sources
+    with open(sources_with_ids_file, 'w', encoding='utf-8') as f:
+        json.dump(updated_sources, f, ensure_ascii=False, indent=4)
+
+    # Create a file with list of ID-s of created sources
+    with open(ids_of_created_sources_file, 'w', encoding='utf-8') as f:
+        json.dump(ids_of_created_sources, f, ensure_ascii=False, indent=4)
+
+
+def delete_created_sources(file):
+    with open(file, 'r', encoding='utf-8') as file:
+        source_ids = json.load(file)
+
+    endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/delete"
+
+    for source_id in source_ids:
+        params = {
+            'sourceId': source_id,
+            'crudRoleDataset': crud_role_dataset
+        }
+
+        response = requests.delete(endpoint, headers=header, params=params)
+
+        if response.status_code >= 200 and response.status_code < 300:
+            logger.info(f"Successfully deleted source with ID {source_id}.")
+        else:
+            logger.info(f"Failed to delete source with ID {source_id}. Status code: {response.status_code}, "
+                        f"Response text: {response.text}")
