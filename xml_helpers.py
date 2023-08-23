@@ -73,15 +73,15 @@ def find_all_transaction_types(root):
 # Return True, if the concept is an aviation concept.
 def is_concept_aviation_related(concept):
     sub_categories_list = ['Aeronavigatsioonilised kaardid', 'Lennukõlblikkus', 'Lennuliikluse korraldamine',
-                      'Lennumeteoroloogia', 'Lennunduse (rahvusvaheline) reguleerimine', 'Lennundusjulgestus',
-                      'Lennundusohutus', 'Lennundusside (telekommunikatsioon)',
-                      'Lennundusspetsialistid, nende load ja pädevused', 'Lennundusspetsialistide koolitus',
-                      'Lennundusspetsialistide tervisekontroll', 'Lennundusteave', 'Lennureeglid', 'Lennutegevus',
-                      'Lennuväljad ja kopteriväljakud', 'Lennuõnnetused ja –intsidendid',
-                      'Ohtlike ainete/kaupade õhuvedu', 'Otsing ja päästmine',
-                      'Protseduuride lihtsustamine lennunduses', 'Reisijatevedu ja –teenindamine', 'Õhusõidukid',
-                      'Õhusõidukite keskkonnakõlblikkus (müra, emissioonid)',
-                      'Õhusõidukite riikkondsus ja registreerimistunnused']
+                           'Lennumeteoroloogia', 'Lennunduse (rahvusvaheline) reguleerimine', 'Lennundusjulgestus',
+                           'Lennundusohutus', 'Lennundusside (telekommunikatsioon)',
+                           'Lennundusspetsialistid, nende load ja pädevused', 'Lennundusspetsialistide koolitus',
+                           'Lennundusspetsialistide tervisekontroll', 'Lennundusteave', 'Lennureeglid', 'Lennutegevus',
+                           'Lennuväljad ja kopteriväljakud', 'Lennuõnnetused ja –intsidendid',
+                           'Ohtlike ainete/kaupade õhuvedu', 'Otsing ja päästmine',
+                           'Protseduuride lihtsustamine lennunduses', 'Reisijatevedu ja –teenindamine', 'Õhusõidukid',
+                           'Õhusõidukite keskkonnakõlblikkus (müra, emissioonid)',
+                           'Õhusõidukite riikkondsus ja registreerimistunnused']
 
     # Check whether "Valdkonnaviide" contains value "TR8" (Lenoch classificator for aero transport)
     domain_references = concept.findall(".//descrip[@type='Valdkonnaviide']")
@@ -152,6 +152,7 @@ def is_type_word_type(descrip_text):
     if descrip_text == 'lühend':
         return True
 
+
 def parse_word_types(descrip_text):
     if descrip_text == 'lühend':
         return 'l'
@@ -206,7 +207,6 @@ def parse_definition(descrip_text, descripGrp, lang):
     return definition
 
 
-
 # Kui /mtf/conceptGrp/languageGrp/termGrp/descripGrp/descrip[@type="Märkus"] alguses on
 # "SÜNONÜÜM: ", "VARIANT: " või "ENDINE: ", siis tuleb see salvestada selle termGrp
 # elemendi märkuseks, mille keelenditüüp Estermis on "SÜNONÜÜM", "VARIANT" või "ENDINE"
@@ -226,7 +226,7 @@ def update_notes(words):
             for prefix, state_code in prefix_to_state_code.items():
                 if lexemeNote.value.startswith(prefix):
                     cleaned_note = lexemeNote.value.replace(prefix, "", 1)
-                    lexemeNote.value = cleaned_note # Update the note value in place
+                    lexemeNote.value = cleaned_note  # Update the note value in place
                     notes_to_move[state_code].append(lexemeNote)
                     word.lexemeNotes.remove(lexemeNote)
                     logger.debug('Removed note from word: %s', word.value)
@@ -236,7 +236,6 @@ def update_notes(words):
             logger.debug('Added note to word: %s', word.value)
 
     return words
-
 
 
 def are_terms_public(conceptGrp):
@@ -273,8 +272,7 @@ def detect_language(note):
     return language
 
 
-def extract_definition_source_links(definition):
-
+def extract_definition_source_links(definition, sources):
     pattern = r'\[([^\[\]]*)\]$'
     match = re.search(pattern, definition.value)
 
@@ -284,37 +282,33 @@ def extract_definition_source_links(definition):
 
         for link in links:
             definition.sourceLinks.append(
-                data_classes.sourceLink(sourceId=find_source_by_name(link), value=link))
+                data_classes.sourceLink(sourceId=find_source_by_name(sources, link), value=link))
 
         definition.value = re.sub(pattern, '', definition.value).strip()
 
     return definition
 
+
 def remove_whitespace_before_numbers(value: str) -> str:
     return re.sub(r'(?<=\S)\s*(\d+[.)])', r' \1', value)
 
 
-def extract_source_links_from_usage_value(value: str):
-
-    pattern = r'\[([^\[\]]*)\]\s*$'
-    match = re.search(pattern, value)
-
+# Returns the usage ("Kontekst") value without the source link + sourcelink
+def extract_usage_and_its_sourcelink(element, updated_sources):
     source_links = []
+    usage_value = ''.join(element.itertext()).split('[')[0].strip()
+    xref_element = element.find('.//xref')
+    source_name = xref_element.text if xref_element is not None else None
+    source_link_specific = None
+    if xref_element is not None and xref_element.tail:
+        source_link_specific = xref_element.tail.strip().rstrip(']')
 
-    if match:
-        links_text = match.group(1)
-        links = [item.strip() for item in links_text.split(';')]
+    value_for_displaying = (source_name if source_name else '') + ' ' + (source_link_specific if source_link_specific else '')
 
+    source_links.append(
+        data_classes.sourceLink(find_source_by_name(updated_sources, source_name), value=value_for_displaying))
 
-        source_links = [data_classes.sourceLink(find_source_by_name(link), value=link) for link in links]
-
-        value = re.sub(pattern, '', value).strip()
-
-    value = value.rstrip(';').strip()
-
-    value = remove_whitespace_before_numbers(value)
-
-    return value, source_links
+    return usage_value, source_links
 
 
 def does_note_contain_multiple_languages(note):
@@ -357,11 +351,13 @@ def edit_note_without_multiple_languages(note):
     return note
 
 
-def find_source_by_name(name):
-    with open('files/output/sources_with_ids.json', 'r', encoding='utf-8') as file:
-        sources = json.load(file)
-        for source in sources:
-            for prop in source['sourceProperties']:
-                if prop['type'] == 'SOURCE_NAME' and prop['valueText'] == name:
-                    return source['id']
+def find_source_by_name(sources, name):
+    for source in sources:
+        for prop in source['sourceProperties']:
+            if prop['type'] == 'SOURCE_NAME' and prop['valueText'] == name:
+                return source['id']
+                logger.info(f"Source ID for '{name}' is {source['id']}")
+
+    logger.warning(f"Warning: Source ID for '{name}' not found.")
+
     return None

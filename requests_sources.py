@@ -42,6 +42,8 @@ def get_existing_source_id(source):
     return None
 
 
+
+
 # Create a new source in Ekilex and return its ID
 def create_source(source):
     endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/create"
@@ -67,6 +69,9 @@ def get_or_create_source(source):
     if existing_id:
         return existing_id, False
     new_id = create_source(source)
+    if new_id:
+        logger.info(
+            f"Created new source with ID {new_id} and name {source['sourceProperties'][0]['valueText']}.")
     return new_id, True
 
 
@@ -87,13 +92,15 @@ def assign_ids_to_all_sources(input_file):
                 if was_created:
                     ids_of_created_sources.append(source_id)
 
-    # Create a file with ID-s added to sources
+    # Create a file with sources and their ID-s
     with open(sources_with_ids_file, 'w', encoding='utf-8') as f:
         json.dump(updated_sources, f, ensure_ascii=False, indent=4)
 
     # Create a file with list of ID-s of created sources
     with open(ids_of_created_sources_file, 'w', encoding='utf-8') as f:
         json.dump(ids_of_created_sources, f, ensure_ascii=False, indent=4)
+
+    return updated_sources
 
 
 def delete_created_sources(file):
