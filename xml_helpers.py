@@ -1,3 +1,4 @@
+import logging
 import xml.etree.ElementTree as ET
 import log_config
 from langdetect import detect
@@ -361,3 +362,22 @@ def find_source_by_name(sources, name):
     logger.warning(f"Warning: Source ID for '{name}' not found.")
 
     return None
+
+
+def extract_definition_and_its_source(definition_text):
+    definition_value = ''
+    source = ''
+    specific_source = ''
+    sourcelink_to_be_displayed = ''
+
+    match = re.match(r'(.+?)\s+\[(\w+)(?:\s+(§\s*\d+))?\]', definition_text)
+
+    if match:
+        definition_value = match.group(1)  # optsioonid ja futuurid
+        source = match.group(2)  # X2006K1
+        specific_source = match.group(3) if match.group(3) else ''  # § 107 if present
+        sourcelink_to_be_displayed = f"{source} {specific_source}".strip()  # X2006K1 § 107 if present
+    else:
+        logger.warning("No match found")
+
+    return definition_value, source, specific_source, sourcelink_to_be_displayed

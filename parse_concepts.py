@@ -110,7 +110,8 @@ def parse_mtf(root, updated_sources):
             concept.words.append(word)
 
         for definition in definitions:
-            concept.definitions.append(xml_helpers.extract_definition_source_links(definition, updated_sources))
+            #concept.definitions.append(xml_helpers.extract_definition_source_links(definition, updated_sources))
+            concept.definitions.append(definition)
 
         list_to_append.append(concept)
         logger.info('Finished parsing concept.')
@@ -173,7 +174,7 @@ def parse_words(conceptGrp, concept, updated_sources):
                         logger.debug('Added word type: %s', xml_helpers.parse_word_types(valuestatecode_or_wordtype))
                     else:
                         # Currently set the value state code in XML as value state code attribute value,
-                        # it will be updated afterwards
+                        # it will be updated afterward
                         word.lexemeValueStateCode = valuestatecode_or_wordtype
                         logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
@@ -191,24 +192,44 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                         # Appending each definition separately
                         for individual_definition in individual_definitions:
+                            source_links = []
+                            definition_value, source, specific_source, sourcelink_to_be_displayed = \
+                                xml_helpers.extract_definition_and_its_source(individual_definition)
+
+                            source_links.append(data_classes.sourceLink(
+                                sourceId=xml_helpers.find_source_by_name(updated_sources, source),
+                                value=sourcelink_to_be_displayed
+                            ))
+
                             definitions.append(
                                 data_classes.Definition(
-                                    value=individual_definition,
+                                    value=definition_value,
                                     lang=word.lang,
+                                    sourceLinks=source_links,
                                     definitionTypeCode='definitsioon')
                             )
                     else:
+
+                        source_links = []
+
                         # If there's only one definition, append it as is
+                        definition_value, source, specific_source, sourcelink_to_be_displayed = \
+                            xml_helpers.extract_definition_and_its_source(descrip_text.strip())
+
+                        source_links.append(data_classes.sourceLink(
+                            sourceId=xml_helpers.find_source_by_name(updated_sources, source),
+                            value=sourcelink_to_be_displayed
+                        ))
+
                         definitions.append(
                             data_classes.Definition(
-                                value=descrip_text.strip(),
+                                value=definition_value,
                                 lang=word.lang,
+                                sourceLinks=source_links,
                                 definitionTypeCode='definitsioon')
                         )
 
                 if descrip_type == 'Kontekst':
-                    # updated_value, source_links = xml_helpers.extract_source_links_from_usage_value(
-                    #     updated_sources, ''.join(descripGrp.itertext()))
 
                     updated_value, source_links = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, updated_sources)
 
