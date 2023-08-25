@@ -20,10 +20,13 @@ parameters = {"crudRoleDataset": crud_role_dataset}
 
 def get_existing_source_id(source):
     value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
-    endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/search"
 
     for value_text in value_texts:
-        params = {"crudRoleDataset": crud_role_dataset, "query": value_text}
+        params = {"crudRoleDataset": crud_role_dataset}
+        if '/' in value_text:
+            value_text = value_text.replace('/', '?')
+        endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_text}"
+
         response = requests.get(endpoint, headers=header, params=params)
 
         if response.status_code >= 200 and response.status_code < 300:
@@ -40,8 +43,6 @@ def get_existing_source_id(source):
             logger.warning(f"Received non-200 response when retrieving the ID of the source {value_texts[0]}. "
                            f"Status code: {response.status_code}, Response text: {response.text}")
     return None
-
-
 
 
 # Create a new source in Ekilex and return its ID
