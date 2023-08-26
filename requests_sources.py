@@ -19,6 +19,7 @@ parameters = {"crudRoleDataset": crud_role_dataset}
 
 
 def get_existing_source_id(source):
+    logger.debug(f'Attempting to find ID for a source {source}')
     value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
 
     for value_text in value_texts:
@@ -35,6 +36,7 @@ def get_existing_source_id(source):
                 for source_response in response_data:
                     # Check if all elements in value_texts are present in source_response['sourceNames']
                     if all(text in source_response['sourceNames'] for text in value_texts):
+                        logger.info(f'Source {source} already exists. Response: {source_response}')
                         return source_response['id']
             except (json.JSONDecodeError, IndexError):
                 logger.warning(f"Failed to retrieve the ID of the source {value_texts[0]}. "
@@ -47,12 +49,14 @@ def get_existing_source_id(source):
 
 # Create a new source in Ekilex and return its ID
 def create_source(source):
+    logger.debug(f'Started creating source {source}')
     endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/create"
     response = requests.post(endpoint, headers=header, params=parameters, json=source)
 
     if response.status_code >= 200 and response.status_code < 300:
         try:
             response_data = response.json()
+            logger.info(f'Created source {source}. Response: {response_data}')
             return response_data['id']
         except json.JSONDecodeError:
             logger.warning(f"Failed to parse JSON from response when creating source "
@@ -68,6 +72,7 @@ def create_source(source):
 def get_or_create_source(source):
     existing_id = get_existing_source_id(source)
     if existing_id:
+        logger.info(f'Source {existing_id} already exists')
         return existing_id, False
     new_id = create_source(source)
     if new_id:
@@ -77,11 +82,12 @@ def get_or_create_source(source):
 
 
 def assign_ids_to_all_sources(input_file):
-
     sources_with_ids_file = 'files/output/sources_with_ids.json'
     ids_of_created_sources_file = 'files/output/ids_of_created_sources.json'
     updated_sources = []
     ids_of_created_sources = []
+
+    logger.info(f'Started assigning ID-s to all sources {sources_with_ids_file}')
 
     with open(input_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -97,9 +103,13 @@ def assign_ids_to_all_sources(input_file):
     with open(sources_with_ids_file, 'w', encoding='utf-8') as f:
         json.dump(updated_sources, f, ensure_ascii=False, indent=4)
 
+    logger.info('Created file with sources and their ID-s')
+
     # Create a file with list of ID-s of created sources
     with open(ids_of_created_sources_file, 'w', encoding='utf-8') as f:
         json.dump(ids_of_created_sources, f, ensure_ascii=False, indent=4)
+
+    logger.info('Created file list of ID-s of created sources')
 
     return updated_sources
 
