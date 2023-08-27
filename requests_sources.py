@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import log_config
 from collections import OrderedDict
-
+import re
 
 logger = log_config.get_logger()
 
@@ -22,28 +22,38 @@ def get_existing_source_id(source):
     logger.debug(f'Attempting to find ID for a source {source}')
     value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
 
+    matching_sources = []
+
     for value_text in value_texts:
+        # Normalise spaces because API normalises spaces when creating it
+        value_text = re.sub(' +', ' ', value_text).strip()
         params = {"crudRoleDataset": crud_role_dataset}
         if '/' in value_text:
             value_text = value_text.replace('/', '?')
         endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_text}"
-
+        print(endpoint)
         response = requests.get(endpoint, headers=header, params=params)
 
         if response.status_code >= 200 and response.status_code < 300:
             try:
                 response_data = response.json()
                 for source_response in response_data:
-                    # Check if all elements in value_texts are present in source_response['sourceNames']
                     if all(text in source_response['sourceNames'] for text in value_texts):
-                        logger.info(f'Source {source} already exists. Response: {source_response}')
-                        return source_response['id']
+                        matching_sources.append(source_response)
             except (json.JSONDecodeError, IndexError):
-                logger.warning(f"Failed to retrieve the ID of the source {value_texts[0]}. "
-                               f"Response text: {response.text}")
+                logger.warning(f"Failed to retrieve the ID of the source {value_texts[0]}. Response text: {response.text}")
         else:
             logger.warning(f"Received non-200 response when retrieving the ID of the source {value_texts[0]}. "
                            f"Status code: {response.status_code}, Response text: {response.text}")
+
+    if matching_sources:
+        # Sort by ID and select the one with the smallest ID
+        matching_sources.sort(key=lambda x: x['id'])
+        selected_source = matching_sources[0]
+        logger.info(f'Selected source with smallest ID: {selected_source}')
+        return selected_source['id']
+
+    logger.warning(f'No matching source found for {source}.')
     return None
 
 
@@ -74,7 +84,9 @@ def get_or_create_source(source):
     if existing_id:
         logger.info(f'Source {existing_id} already exists')
         return existing_id, False
-    new_id = create_source(source)
+    #new_id = create_source(source)
+    # Testing purposes
+    new_id = 12345
     if new_id:
         logger.info(
             f"Created new source with ID {new_id} and name {source['sourceProperties'][0]['valueText']}.")
@@ -100,8 +112,8 @@ def assign_ids_to_all_sources(input_file):
                     ids_of_created_sources.append(source_id)
 
     # Create a file with sources and their ID-s
-    with open(sources_with_ids_file, 'w', encoding='utf-8') as f:
-        json.dump(updated_sources, f, ensure_ascii=False, indent=4)
+    with open(sources_with_ids_file, 'w', encoding='utf-8') as source_files_with_ids:
+        json.dump(updated_sources, source_files_with_ids, ensure_ascii=False, indent=4)
 
     logger.info('Created file with sources and their ID-s')
 
@@ -111,7 +123,7 @@ def assign_ids_to_all_sources(input_file):
 
     logger.info('Created file list of ID-s of created sources')
 
-    return updated_sources
+    return source_files_with_ids
 
 
 def delete_created_sources(file):
