@@ -19,6 +19,7 @@ parameters = {"crudRoleDataset": crud_role_dataset}
 
 
 def get_existing_source_id(source):
+    return 1
     logger.debug(f'Attempting to find ID for a source {source}')
     value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
 
@@ -104,7 +105,7 @@ def assign_ids_to_all_sources(input_file):
     with open(input_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
         for source in data:
-            source_id, was_created = get_or_create_source(source)
+            source_id, was_created = get_or_create_source(source)  # TODO: todo
             if source_id:
                 ordered_source = OrderedDict([('id', source_id)] + list(source.items()))
                 updated_sources.append(ordered_source)

@@ -134,7 +134,7 @@ def export_sources_from_xml(filename, expert_sources):
     # Replace Esterm source types with Ekilex source types
     json_objects = replace_type(json_objects)
 
-    json_objects.append(expert_sources)
+    json_objects = json_objects + expert_sources
 
     # Write sources to sources.json
     with open('files/output/sources.json', 'w', encoding='utf-8') as file:
@@ -253,7 +253,9 @@ def export_experts_names_from_xml(filename):
     return unique_matches
 
 
-def create_expert_sources(expert_names):
+def create_expert_sources(filename):
+
+    expert_names = export_experts_names_from_xml(filename)
 
     expert_sources = []
 
