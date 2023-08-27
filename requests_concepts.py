@@ -20,6 +20,7 @@ def set_up_requests():
 
     return parameters, header
 
+
 def import_concepts(file, max_objects=None):
 
     with open(file, 'r', encoding='utf-8') as f:
@@ -34,7 +35,7 @@ def import_concepts(file, max_objects=None):
             if max_objects is not None and counter >= max_objects:
                 break
 
-            concept_id = import_concept(concept)
+            concept_id = save_concept(concept)
             list_of_concepts_saved.append(concept_id)
 
             counter += 1
@@ -52,7 +53,7 @@ def import_concepts(file, max_objects=None):
         json.dump(list_of_concepts_saved, f)
 
 
-def import_concept(concept):
+def save_concept(concept):
 
     parameters, header = set_up_requests()
 
