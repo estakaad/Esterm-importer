@@ -19,7 +19,7 @@ def parse_mtf(root, updated_sources):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # For testing
-        if counter % 100 == 0:
+        if counter % 50 == 0:
             logger.info(f'counter: {counter}')
             break
 
@@ -148,14 +148,11 @@ def parse_words(conceptGrp, concept, updated_sources):
             lang_grp = xml_helpers.match_language(lang_grp)
             logger.debug(('def language after matching: %s', lang_grp))
 
-            descrip_text = ''.join(descripGrp.xpath('descrip')[0].itertext())
-            # definitions.append(xml_helpers.parse_definition(descrip_text, descripGrp, lang_grp))
-            definitions.append(
-                data_classes.Definition(
-                    value=descrip_text,
-                    lang=lang_grp,
-                    definitionTypeCode='definitsioon')
-            )
+            definition = descripGrp.find('./descrip')
+
+            definition_object = xml_helpers.create_definition_object(lang_grp, definition, updated_sources)
+
+            definitions.append(definition_object)
 
         termGrps = languageGrp.xpath('termGrp')
 
@@ -179,7 +176,6 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                 # Parse word type as value state code or word type
                 if descrip_type == 'Keelenditüüp':
-                    #print(valuestatecode_or_wordtype)
                     if xml_helpers.is_type_word_type(valuestatecode_or_wordtype):
                         word.wordTypeCodes.append(xml_helpers.parse_word_types(valuestatecode_or_wordtype))
                         logger.debug('Added word type: %s', xml_helpers.parse_word_types(valuestatecode_or_wordtype))
@@ -190,58 +186,15 @@ def parse_words(conceptGrp, concept, updated_sources):
                         logger.debug('Added word value state code: %s', word.lexemeValueStateCode)
 
                 if descrip_type == 'Definitsioon':
-                    descrip_text = ''.join(descripGrp.xpath('descrip')[0].itertext())
-                    print(descrip_text)
+                    individual_definitions = xml_helpers.split_and_preserve_xml(descripGrp)
+                    individual_definitions = xml_helpers.fix_xml_fragments(individual_definitions, 'descrip')
+                    for definition in individual_definitions:
 
-                    # Check whether there are multiple definitions
-                    if re.search(r'\n\d\.', descrip_text):
-                        # Prepend a newline if the description text doesn't already start with one
-                        if not descrip_text.startswith('\n'):
-                            descrip_text = '\n' + descrip_text
+                        definition_element = etree.fromstring(definition)
 
-                        # Splitting the text content into separate definitions
-                        individual_definitions = [d.strip() for d in re.split(r'\n\d\.', descrip_text) if d.strip()]
+                        definition_object = xml_helpers.create_definition_object(word.lang, definition_element, updated_sources)
 
-                        # Appending each definition separately
-                        for individual_definition in individual_definitions:
-                            source_links = []
-                            definition_value, source, specific_source, sourcelink_to_be_displayed = \
-                                xml_helpers.extract_definition_and_its_source(individual_definition)
-
-                            source_links.append(data_classes.sourceLink(
-                                sourceId=xml_helpers.find_source_by_name(updated_sources, source),
-                                searchValue=sourcelink_to_be_displayed,
-                                value=sourcelink_to_be_displayed
-                            ))
-
-                            definitions.append(
-                                data_classes.Definition(
-                                    value=definition_value,
-                                    lang=word.lang,
-                                    sourceLinks=source_links,
-                                    definitionTypeCode='definitsioon')
-                            )
-                    else:
-
-                        source_links = []
-
-                        # If there's only one definition, append it as is
-                        definition_value, source, specific_source, sourcelink_to_be_displayed = \
-                            xml_helpers.extract_definition_and_its_source(descrip_text.strip())
-
-                        source_links.append(data_classes.sourceLink(
-                            sourceId=xml_helpers.find_source_by_name(updated_sources, source),
-                            searchValue=sourcelink_to_be_displayed,
-                            value=sourcelink_to_be_displayed
-                        ))
-
-                        definitions.append(
-                            data_classes.Definition(
-                                value=definition_value,
-                                lang=word.lang,
-                                sourceLinks=source_links,
-                                definitionTypeCode='definitsioon')
-                        )
+                        definitions.append(definition_object)
 
                 if descrip_type == 'Kontekst':
 
