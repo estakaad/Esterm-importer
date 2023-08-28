@@ -5,6 +5,7 @@ import os
 import data_classes
 import log_config
 import re
+from lxml.etree import tostring
 
 logger = log_config.get_logger()
 
@@ -209,19 +210,25 @@ def parse_words(conceptGrp, concept, updated_sources):
                     )
 
                 if descrip_type == 'Allikaviide':
-                    source_links_str = ''.join(descripGrp.itertext()).strip()
 
-                    potential_links = source_links_str.split(';')
+                    descrip_element = descripGrp.xpath('./descrip[@type="Allikaviide"]')[0]
 
-                    for link in potential_links:
-                        link = link.strip()
+                    full_string = tostring(descrip_element, encoding="utf-8").decode('utf-8')
 
-                        if link.startswith('[') and link.endswith(']'):
-                            link = link.strip('[]')
+                    # Remove the outer tags to get only the inner XML
+                    inner_xml = full_string.split('>', 1)[1].rsplit('<', 1)[0].strip()
 
+                    sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, updated_sources)
+
+                    for link in sourcelinks:
                         word.lexemeSourceLinks.append(
-                            data_classes.sourceLink(xml_helpers.find_source_by_name(updated_sources, link), searchValue=link, value=link)
+                            data_classes.sourceLink(
+                                sourceId=link.sourceId,
+                                searchValue=link.searchValue,
+                                value=link.searchValue + (' ' if link.value else '') + (link.value if link.value else '')
+                            )
                         )
+
 
                 # If source link contains EKSPERT, then expert's name is not removed.
                 if descrip_type == 'Märkus':

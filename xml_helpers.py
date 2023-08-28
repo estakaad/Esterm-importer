@@ -5,6 +5,7 @@ from langdetect import detect
 import re
 import json
 import data_classes
+from lxml.etree import tostring
 
 logger = log_config.get_logger()
 
@@ -351,6 +352,10 @@ def split_and_preserve_xml(descrip_element):
 # Definition contains the definition value and its sourcelink names.
 # The sourcelinks manifest themselves in different formats.
 # This function splits the definition element to definition value and sourcelink names
+# TODO: What if there are multiple sourcelinks?
+#  <descrip type="Definitsioon">an instruction that specifies
+#  a funds transfer [<xref Tlink="en:EUR">EUR</xref>]
+#  [<xref Tlink="Allikas:TERMIUM">TERMIUM</xref>]</descrip>
 def check_definition_content(root):
 
     if root.xpath('xref'):
@@ -429,3 +434,47 @@ def create_definition_object(lang, definition_element, updated_sources):
             lang=lang,
             sourceLinks=source_links,
             definitionTypeCode='definitsioon')
+
+
+# There can be multiple lexeme source links. Split them to separate sourcelink objects.
+def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
+    source_links = []
+    list_of_raw_sourcelinks = root.split(';')
+
+    for item in list_of_raw_sourcelinks:
+        item = item.strip()
+
+        # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4]
+        if item.startswith('[') and item.endswith(']'):
+            item = item[1:-1]
+
+            xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', item)
+            if xref_match:
+                searchValue = xref_match.group(1)
+                value = item[xref_match.end():].strip()
+                source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue, value=value)
+            else:
+                print(f"Skipping invalid XML: {item}")
+                continue
+        else:
+            try:
+                # <xref Tlink="Allikas:TER-PLUS">TER-PLUS</xref>
+                item_element = ET.fromstring(item)
+                searchValue = item_element.text
+                value = item_element.tail if item_element.tail else ""
+            except ET.ParseError:
+                # If it's not XML, treat it as a valid string
+                # ÕL
+                # PS-2015/05
+                searchValue = item
+                value = ""
+
+            value = value.strip()
+            source_link = data_classes.sourceLink(
+                sourceId=find_source_by_name(updated_sources, searchValue),
+                searchValue=searchValue,
+                value=value)
+
+        source_links.append(source_link)
+
+    return source_links
