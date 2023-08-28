@@ -186,28 +186,6 @@ def parse_value_state_codes(descrip_text, count):
     return code
 
 
-def parse_definition(descrip_text, descripGrp, lang):
-    if descripGrp.xpath('descrip/xref'):
-        source = descripGrp.xpath('descrip/xref')[0].text
-    else:
-        source = None
-
-    if '[' in descrip_text:
-        definition_text = descrip_text.split('[')[0].strip()
-    else:
-        definition_text = descrip_text.strip()
-
-    definition = data_classes.Definition(
-        value=definition_text,
-        lang=lang,
-        definitionTypeCode='definitsioon'
-    )
-
-    logger.info('Added definition - definition value: %s, language: %s', definition.value, definition.lang)
-
-    return definition
-
-
 # Kui /mtf/conceptGrp/languageGrp/termGrp/descripGrp/descrip[@type="Märkus"] alguses on
 # "SÜNONÜÜM: ", "VARIANT: " või "ENDINE: ", siis tuleb see salvestada selle termGrp
 # elemendi märkuseks, mille keelenditüüp Estermis on "SÜNONÜÜM", "VARIANT" või "ENDINE"
@@ -271,23 +249,6 @@ def detect_language(note):
             language = 'est'
 
     return language
-
-
-def extract_definition_source_links(definition, sources):
-    pattern = r'\[([^\[\]]*)\]$'
-    match = re.search(pattern, definition.value)
-
-    if match:
-        links_text = match.group(1).strip()
-        links = [item.strip() for item in links_text.split(';')]
-
-        for link in links:
-            definition.sourceLinks.append(
-                data_classes.sourceLink(sourceId=find_source_by_name(sources, link), value=link))
-
-        definition.value = re.sub(pattern, '', definition.value).strip()
-
-    return definition
 
 
 def remove_whitespace_before_numbers(value: str) -> str:
@@ -364,20 +325,107 @@ def find_source_by_name(sources, name):
     return None
 
 
-def extract_definition_and_its_source(definition_text):
-    definition_value = ''
-    source = ''
-    specific_source = ''
-    sourcelink_to_be_displayed = ''
+def split_and_preserve_xml(descrip_element):
+    elements_and_text = list(descrip_element)
+    current_text = ""
+    individual_definitions = []
+    for item in elements_and_text:
+        if ET.iselement(item):
+            if re.search(r'\n\d\.', current_text):
+                individual_definitions.extend([d.strip() for d in re.split(r'\n\d\.', current_text) if d.strip()])
+                current_text = ""
 
-    match = re.match(r'(.+?)\s+\[(\w+)(?:\s+(§\s*\d+))?\]', definition_text)
+            if individual_definitions:
+                individual_definitions[-1] += ET.tostring(item, encoding='unicode')
+            else:
+                current_text += ET.tostring(item, encoding='unicode')
+        else:
+            current_text += item.strip()
 
-    if match:
-        definition_value = match.group(1)  # optsioonid ja futuurid
-        source = match.group(2)  # X2006K1
-        specific_source = match.group(3) if match.group(3) else ''  # § 107 if present
-        sourcelink_to_be_displayed = f"{source} {specific_source}".strip()  # X2006K1 § 107 if present
+    if current_text:
+        individual_definitions.extend([d.strip() for d in re.split(r'\n\d\.', current_text) if d.strip()])
+
+    return individual_definitions
+
+
+# Definition contains the definition value and its sourcelink names.
+# The sourcelinks manifest themselves in different formats.
+# This function splits the definition element to definition value and sourcelink names
+def check_definition_content(root):
+
+    if root.xpath('xref'):
+        text_before_xref = root.xpath('xref/preceding-sibling::text()')
+        xref_link_value = root.xpath('xref/text()')
+        text_after_xref = root.xpath('xref/following-sibling::text()')
+        text_before_xref_str = ''.join(text_before_xref).strip()
     else:
-        logger.warning("No match found")
+        text_before_xref_str = root.text if root.text else ''
+        xref_link_value = None
+        text_after_xref = None
 
-    return definition_value, source, specific_source, sourcelink_to_be_displayed
+    xref_link_value_str = ''.join(xref_link_value).strip() if xref_link_value else None
+    text_after_xref_str = ''.join(text_after_xref).strip() if text_after_xref else None
+
+    if '[' in text_before_xref_str and ']' in text_before_xref_str:
+        text_before_bracket, text_in_bracket = text_before_xref_str.split('[', 1)
+        text_in_bracket = text_in_bracket.split(']', 1)[0]
+    else:
+        text_before_bracket = text_before_xref_str
+        text_in_bracket = None
+
+    if text_before_bracket.endswith('['):
+        text_before_bracket = text_before_bracket[:-1].strip()
+
+    if text_before_bracket.startswith('1. '):
+        text_before_bracket = text_before_bracket[len('1. '):]
+
+    if text_after_xref_str is not None:
+        if ']' in text_after_xref_str:
+            text_after_xref_str = ''.join(text_after_xref).replace(']', '').strip() if text_after_xref else ''
+
+    return text_before_bracket, text_in_bracket, xref_link_value_str, text_after_xref_str
+
+
+# In case definition contains more than one definition, it is split, but this breaks the XML tags.
+# This function adds the missing XML tags
+def fix_xml_fragments(fragments, tag_name):
+    fixed_fragments = []
+    for i, fragment in enumerate(fragments):
+        if i == 0:
+            if not fragment.strip().endswith(f"</{tag_name}>"):
+                fragment += f"</{tag_name}>"
+        elif i == len(fragments) - 1:
+            if not fragment.strip().startswith(f"<{tag_name}"):
+                fragment = f"<{tag_name}>" + fragment
+        else:
+            fragment = f"<{tag_name}>" + fragment + f"</{tag_name}>"
+
+        fixed_fragments.append(fragment)
+    return fixed_fragments
+
+
+# Parse definition, split it to definition value and sourcelink and return the definition object
+def create_definition_object(lang, definition_element, updated_sources):
+    source_links = []
+
+    text_before_xref_str, text_in_bracket, xref_link_value_str, text_after_xref_str = \
+        check_definition_content(definition_element)
+
+    if xref_link_value_str:
+        source_links.append(data_classes.sourceLink(
+            sourceId=find_source_by_name(updated_sources, xref_link_value_str),
+            searchValue=xref_link_value_str,
+            value=xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else "")
+        ))
+    else:
+        source_links.append(data_classes.sourceLink(
+            sourceId=find_source_by_name(updated_sources, text_in_bracket),
+            searchValue=text_in_bracket,
+            value=text_in_bracket
+        ))
+
+    return data_classes.Definition(
+            value=text_before_xref_str,
+            lang=lang,
+            sourceLinks=source_links,
+            definitionTypeCode='definitsioon')
