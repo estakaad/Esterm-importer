@@ -307,7 +307,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
     value_for_displaying = (source_name if source_name else '') + ' ' + (source_link_specific if source_link_specific else '')
 
     source_links.append(
-        data_classes.sourceLink(find_source_by_name(updated_sources, source_name), value=value_for_displaying))
+        data_classes.sourceLink(find_source_by_name(updated_sources, source_name), searchValue=value_for_displaying, value=value_for_displaying))
 
     return usage_value, source_links
 

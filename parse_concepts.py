@@ -191,6 +191,7 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                 if descrip_type == 'Definitsioon':
                     descrip_text = ''.join(descripGrp.xpath('descrip')[0].itertext())
+                    print(descrip_text)
 
                     # Check whether there are multiple definitions
                     if re.search(r'\n\d\.', descrip_text):
@@ -209,6 +210,7 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                             source_links.append(data_classes.sourceLink(
                                 sourceId=xml_helpers.find_source_by_name(updated_sources, source),
+                                searchValue=sourcelink_to_be_displayed,
                                 value=sourcelink_to_be_displayed
                             ))
 
@@ -229,6 +231,7 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                         source_links.append(data_classes.sourceLink(
                             sourceId=xml_helpers.find_source_by_name(updated_sources, source),
+                            searchValue=sourcelink_to_be_displayed,
                             value=sourcelink_to_be_displayed
                         ))
 
@@ -264,7 +267,7 @@ def parse_words(conceptGrp, concept, updated_sources):
                             link = link.strip('[]')
 
                         word.lexemeSourceLinks.append(
-                            data_classes.sourceLink(xml_helpers.find_source_by_name(updated_sources, link), value=link)
+                            data_classes.sourceLink(xml_helpers.find_source_by_name(updated_sources, link), searchValue=link, value=link)
                         )
 
                 # If source link contains EKSPERT, then expert's name is not removed.

@@ -10,6 +10,7 @@ class Domain:
 @dataclass
 class sourceLink:
     sourceId: int
+    searchValue: str
     value: str
 
 @dataclass

@@ -26,6 +26,8 @@ esterm_filename = 'files/input/esterm.xml'
 
 #updated_sources_file = requests_sources.assign_ids_to_all_sources(sources_output_json_filename)
 
+
+# 4,6 sekundit
 # 3. Export concepts from XML. Returns files/output/concepts.json and files/output/aviation_concepts.json
 with open('files/output/sources_with_ids.json', 'r', encoding='utf-8') as f:
     updated_sources = json.load(f)
