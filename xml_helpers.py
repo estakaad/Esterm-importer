@@ -256,20 +256,35 @@ def remove_whitespace_before_numbers(value: str) -> str:
     return re.sub(r'(?<=\S)\s*(\d+[.)])', r' \1', value)
 
 
-# Returns the usage ("Kontekst") value without the source link + sourcelink
+# Returns the usage ("Kontekst") value without the source link + sourcelinks
 def extract_usage_and_its_sourcelink(element, updated_sources):
     source_links = []
-    usage_value = ''.join(element.itertext()).split('[')[0].strip()
-    xref_element = element.find('.//xref')
-    source_name = xref_element.text if xref_element is not None else None
-    source_link_specific = None
-    if xref_element is not None and xref_element.tail:
-        source_link_specific = xref_element.tail.strip().rstrip(']')
+    full_text = ''.join(element.itertext())
+    usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
+    usage_value = usage_value.strip()
 
-    value_for_displaying = (source_name if source_name else '') + ' ' + (source_link_specific if source_link_specific else '')
+    source_info = source_info.strip()
+    source_info = source_info.rstrip(']')
+
+    xref_element = element.find('.//xref')
+    source_name = xref_element.text if xref_element is not None else ''
+    source_link_specific = None
+
+    # 'Abiteenistujatele laienevad töölepingu seadus ja muud tööseadused niivõrd,
+    # kuivõrd käesoleva seaduse või avalikku teenistust reguleerivate eriseadustega
+    # ei sätestata teisiti. [<xref Tlink="Allikas:X0002">X0002</xref> §13-2]'
+    if xref_element is not None and xref_element.tail:
+        source_link_specific = xref_element.tail.strip()
+    # 'Parents who are raising children have the right to assistance from the state. [77184]'
+    elif source_info:
+        source_name = source_info
+
+    value_for_displaying = (source_name if source_name else '') + ' ' + (
+        source_link_specific if source_link_specific else '')
 
     source_links.append(
-        data_classes.sourceLink(find_source_by_name(updated_sources, source_name), searchValue=value_for_displaying, value=value_for_displaying))
+        data_classes.sourceLink(find_source_by_name(updated_sources, source_name), searchValue=source_name,
+                                value=value_for_displaying.strip(']')))
 
     return usage_value, source_links
 
