@@ -493,3 +493,54 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
         source_links.append(source_link)
 
     return source_links
+
+
+# If there is a date in the end of the lexeme note and before it the initials of a person,
+# then remove the initials, but keep the date.
+# If there is a sourcelink in the brackets in the end of the lexeme note, extract it. If it contains
+# of the main value and its tail, then separate them.
+def extract_lexeme_note_and_its_sourcelinks(string):
+    # Define a pattern to match square brackets and their contents
+    # at the end of the string
+    pattern_for_finding_content_in_brackets = r'(.*)\[(.*?)\]$'
+
+    date_string = ''
+    source = ''
+    tail = ''
+    text_before_bracket = string
+
+    matches = re.findall(pattern_for_finding_content_in_brackets, string)
+
+    if matches:
+        text_before_bracket, bracket_content = matches[0]
+
+        # Extracting initials and date
+        pattern_for_initials_and_date = r'\[{?\w*}?\s?(\d+\.\d+\.\d+)\]'
+        initials_and_date_matches = re.findall(pattern_for_initials_and_date, '[' + bracket_content + ']')
+
+        if initials_and_date_matches:
+            date_string = initials_and_date_matches[0]
+            pattern_for_source_before_initials = r'\[(.*?)\]\s*\[{?\w*}?\s?\d+\.\d+\.\d+\]'
+            source_matches = re.findall(pattern_for_source_before_initials, string)
+            if source_matches:
+                source = source_matches[0]
+        else:
+            # Check if brackets contain xref
+            pattern_for_matching_xref = r'<xref Tlink="Allikas:(.*?)">(.*?)<\/xref>(?:\s*(.*?))?\s*$'
+            xref_matches = re.findall(pattern_for_matching_xref, bracket_content)
+            if xref_matches:
+                source, _, tail = xref_matches[0]
+                tail = tail if tail else None
+            else:
+                # If there is not a xref element in the brackets, the source is the string in the brackets
+                source = bracket_content
+
+    if source:
+        pattern_to_remove = r'\[' + re.escape(source) + r'\]\s*$'
+        text_before_bracket = re.sub(pattern_to_remove, '', text_before_bracket).rstrip()
+
+    if date_string:
+        text_before_bracket = text_before_bracket + ' [' + date_string + ']'
+
+    text_before_bracket = text_before_bracket.replace('  ', ' ')
+    return text_before_bracket, date_string, source, tail

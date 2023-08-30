@@ -20,7 +20,7 @@ def parse_mtf(root, updated_sources):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # For testing
-        if counter % 50 == 0:
+        if counter % 500 == 0:
             logger.info(f'counter: {counter}')
             break
 
@@ -229,29 +229,50 @@ def parse_words(conceptGrp, concept, updated_sources):
                             )
                         )
 
-
-                # If source link contains EKSPERT, then expert's name is not removed.
                 if descrip_type == 'Märkus':
-                    note_value = ''.join(descripGrp.itertext()).strip()
+                    note_value = ''.join(descripGrp.itertext()).strip().replace('\u200b', '')
 
-                    # Replace occurrences of the <xref> tag with its inner text content.
-                    note_value = re.sub(r"<xref[^>]*>(.*?)<\/xref>", r"\1", note_value)
+                    text_before_bracket, date_string, source, tail = \
+                        xml_helpers.extract_lexeme_note_and_its_sourcelinks(note_value)
 
-                    # Clean up any whitespace after the closing square bracket.
-                    note_value = re.sub(r"]\n*\t*$", "]", note_value)
+                    source_links = []
 
-                    # Strip off the whitespace around the content inside the square brackets,
-                    # and remove the curly brackets and their content.
-                    pattern = r'\[\{.*?\}\s*(.+?)\s*\]'
-                    note_value = re.sub(pattern, r'[\1]', note_value)
+                    if source:
+                        if tail:
+                            display_value = source + ' ' + tail
+                        else:
+                            display_value = source
+
+                        source_links.append(
+                            data_classes.sourceLink(
+                                sourceId=xml_helpers.find_source_by_name(updated_sources, source),
+                                searchValue=source,
+                                value=display_value
+                            )
+                        )
 
                     if word.lang == 'est':
                         note_lang = 'est'
                     else:
-                        note_lang = xml_helpers.detect_language(note_value)
+                        note_lang = xml_helpers.detect_language(text_before_bracket)
 
-                    word.lexemeNotes.append(
-                        data_classes.lexemeNote(value=note_value, lang=note_lang, publicity=word.lexemePublicity))
+                    if source_links:
+                        word.lexemeNotes.append(
+                            data_classes.lexemeNote(
+                                value=text_before_bracket,
+                                lang=note_lang,
+                                publicity=word.lexemePublicity,
+                                sourceLinks=source_links
+                            )
+                        )
+                    else:
+                        word.lexemeNotes.append(
+                            data_classes.lexemeNote(
+                                value=text_before_bracket,
+                                lang=note_lang,
+                                publicity=word.lexemePublicity
+                            )
+                        )
 
             words.append(word)
 
