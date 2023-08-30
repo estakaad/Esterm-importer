@@ -402,10 +402,25 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
     list_of_raw_sourcelinks = root.split(';')
 
     for item in list_of_raw_sourcelinks:
+
         item = item.strip()
 
+        # Handle cases where source is an expert
+        if "EKSPERT" in item:
+            stripped_item = item.replace("[", "").replace("]", "")
+            expert_item = stripped_item.replace("{", "").replace("}", "")
+            if expert_item.startswith('<xref'):
+                xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', expert_item)
+                if xref_match:
+                    searchValue = expert_item[xref_match.end():].strip()
+                    value = xref_match.group(1) + ' '+ expert_item[xref_match.end():].strip()
+                    source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue, value=value)
+                else:
+                    logger.warning('EKSPERT in lexeme sourcelinks, but failed to extract the value.')
+            else:
+                source_link = data_classes.sourceLink(sourceId=0, searchValue=expert_item.replace("EKSPERT ", "", 1), value=expert_item)
         # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4]
-        if item.startswith('[') and item.endswith(']'):
+        elif item.startswith('[') and item.endswith(']'):
             item = item[1:-1]
 
             xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', item)

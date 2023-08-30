@@ -64,16 +64,14 @@ def parse_mtf(root, updated_sources):
             # Get concept notes and add to the list of concept notes. !?!?! MIS KEELES?
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
-                print(raw_note_value)
+
+                # TODO: check this out.
                 # What if source is EKSPERT? Do expert names have to be removed? Currently they are.
 
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                 else:
                     note_value = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
-
-                if note_value:
-                    print(note_value)
 
                 concept.notes.append(data_classes.Note(
                     value=note_value,
@@ -226,13 +224,22 @@ def parse_words(conceptGrp, concept, updated_sources):
                     sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, updated_sources)
 
                     for link in sourcelinks:
-                        word.lexemeSourceLinks.append(
-                            data_classes.sourceLink(
-                                sourceId=link.sourceId,
-                                searchValue=link.searchValue,
-                                value=link.searchValue + (' ' if link.value else '') + (link.value if link.value else '')
+                        if link.value.startswith('EKSPERT'):
+                            word.lexemeSourceLinks.append(
+                                data_classes.sourceLink(
+                                    sourceId=link.sourceId,
+                                    searchValue=link.searchValue,
+                                    value=link.value
+                                )
                             )
-                        )
+                        else:
+                            word.lexemeSourceLinks.append(
+                                data_classes.sourceLink(
+                                    sourceId=link.sourceId,
+                                    searchValue=link.searchValue,
+                                    value=link.searchValue + ((' ' + link.value) if link.value else '')
+                                )
+                            )
 
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip().replace('\u200b', '')
