@@ -222,8 +222,8 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
     elif source_info:
         source_name = source_info
 
-    value_for_displaying = (source_name if source_name else '') + ' ' + (
-        source_link_specific if source_link_specific else '')
+    value_for_displaying = (source_name if source_name else '') + ((' ' +
+        source_link_specific) if source_link_specific else '')
 
     source_links.append(
         data_classes.sourceLink(find_source_by_name(updated_sources, source_name), searchValue=source_name,
