@@ -429,7 +429,9 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
                 value = item[xref_match.end():].strip()
                 source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue, value=value)
             else:
-                print(f"Skipping invalid XML: {item}")
+                searchValue = item
+                value = item
+                source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue, value=value)
                 continue
         else:
             try:
