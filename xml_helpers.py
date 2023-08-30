@@ -3,9 +3,7 @@ import xml.etree.ElementTree as ET
 import log_config
 from langdetect import detect
 import re
-import json
 import data_classes
-from lxml.etree import tostring
 
 logger = log_config.get_logger()
 
@@ -33,43 +31,6 @@ def match_language(lang):
     if lang == "DE":
         lang_name = "deu"
     return lang_name
-
-
-# Return list of all unique languages present in XML
-def find_all_languages(root):
-    all_languages = []
-    for term in root.findall(".//languageGrp"):
-        for lang in term.findall(".//language"):
-            all_languages.append(lang.attrib["lang"])
-
-    set_res = set(all_languages)
-    unique_languages = (list(set_res))
-
-    return unique_languages
-
-
-def find_all_description_types(root):
-    all_description_types = []
-    for term in root.findall(".//descripGrp"):
-        for description_type in term.findall(".//descrip"):
-            all_description_types.append(description_type.attrib["type"])
-
-    set_res = set(all_description_types)
-    unique_description_types = (list(set_res))
-
-    return unique_description_types
-
-
-def find_all_transaction_types(root):
-    all_transacGrp_types = []
-    for term in root.findall(".//transacGrp"):
-        for transaction_type in term.findall(".//transac"):
-            all_transacGrp_types.append(transaction_type.attrib["type"])
-
-    set_res = set(all_transacGrp_types)
-    unique_transaction_types = (list(set_res))
-
-    return unique_transaction_types
 
 
 # Return True, if the concept is an aviation concept.
@@ -126,28 +87,6 @@ def type_of_concept(conceptGrp):
         type_of_concept = 'general'
     logger.debug('Type of concept: %s', type_of_concept)
     return type_of_concept
-
-
-# Find all attribute "type" values for element "language"
-def find_all_language_types(root):
-    all_language_types = []
-    for term in root.findall(".//languageGrp"):
-        for language_type in term.findall(".//language"):
-            all_language_types.append(language_type.attrib["type"])
-
-    set_lang_types = set(all_language_types)
-    unique_language_types = (list(set_lang_types))
-
-    return unique_language_types
-
-
-def find_max_number_of_definitions(root):
-    # Find all elements with attribute "type" and value "definitsioon"
-    elements = root.findall(".//*[@type='definitsioon']")
-
-    # Iterate through the elements and print their tag name and text content
-    for element in elements:
-        print(element.tag, element.text)
 
 
 def is_type_word_type(descrip_text):
@@ -256,6 +195,10 @@ def remove_whitespace_before_numbers(value: str) -> str:
     return re.sub(r'(?<=\S)\s*(\d+[.)])', r' \1', value)
 
 
+##################################
+## Word "Kontekst" > word.usage ##
+##################################
+
 # Returns the usage ("Kontekst") value without the source link + sourcelinks
 def extract_usage_and_its_sourcelink(element, updated_sources):
     source_links = []
@@ -289,6 +232,11 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
     return usage_value, source_links
 
 
+######################################
+## Concept "Märkus" > concept.notes ##
+######################################
+
+# Does the note contain examples in multiple languages? If so, it has to be split
 def does_note_contain_multiple_languages(note):
     pattern = r'[A-Z]{2}:'
 
@@ -329,18 +277,11 @@ def edit_note_without_multiple_languages(note):
     return note
 
 
-def find_source_by_name(sources, name):
-    for source in sources:
-        for prop in source['sourceProperties']:
-            if prop['type'] == 'SOURCE_NAME' and prop['valueText'] == name:
-                return source['id']
-                logger.info(f"Source ID for '{name}' is {source['id']}")
+##########################################
+## "Definitsioon" > concept.definitions ##
+##########################################
 
-    logger.warning(f"Warning: Source ID for '{name}' not found.")
-
-    return None
-
-
+# Function for splitting and preserving definition element content
 def split_and_preserve_xml(descrip_element):
     elements_and_text = list(descrip_element)
     current_text = ""
@@ -451,6 +392,10 @@ def create_definition_object(lang, definition_element, updated_sources):
             definitionTypeCode='definitsioon')
 
 
+############################################
+## "Allikaviide" > word.lexemesourcelinks ##
+############################################
+
 # There can be multiple lexeme source links. Split them to separate sourcelink objects.
 def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
     source_links = []
@@ -494,6 +439,10 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
 
     return source_links
 
+
+######################################
+## word "Märkus" > word.lexemeNotes ##
+######################################
 
 # If there is a date in the end of the lexeme note and before it the initials of a person,
 # then remove the initials, but keep the date.
@@ -544,3 +493,19 @@ def extract_lexeme_note_and_its_sourcelinks(string):
 
     text_before_bracket = text_before_bracket.replace('  ', ' ')
     return text_before_bracket, date_string, source, tail
+
+
+######################################
+## Sources ##
+######################################
+
+def find_source_by_name(sources, name):
+    for source in sources:
+        for prop in source['sourceProperties']:
+            if prop['type'] == 'SOURCE_NAME' and prop['valueText'] == name:
+                return source['id']
+                logger.info(f"Source ID for '{name}' is {source['id']}")
+
+    logger.warning(f"Warning: Source ID for '{name}' not found.")
+
+    return None

@@ -32,6 +32,7 @@ def parse_mtf(root, updated_sources):
 
         type_of_concept = xml_helpers.type_of_concept(conceptGrp)
 
+        # Only continue parsing if the concept is actually a concept. Skip sources and domains.
         if type_of_concept == 'source':
             logger.debug('Concept is actually a source. Skipping it.')
             continue
@@ -59,16 +60,20 @@ def parse_mtf(root, updated_sources):
                     domain = domain.strip()
                     if domain:
                         concept.domains.append(data_classes.Domain(code=domain, origin='lenoch'))
+
             # Get concept notes and add to the list of concept notes. !?!?! MIS KEELES?
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
-
+                print(raw_note_value)
                 # What if source is EKSPERT? Do expert names have to be removed? Currently they are.
 
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                 else:
                     note_value = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
+
+                if note_value:
+                    print(note_value)
 
                 concept.notes.append(data_classes.Note(
                     value=note_value,
