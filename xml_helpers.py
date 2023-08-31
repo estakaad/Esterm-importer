@@ -4,6 +4,7 @@ import log_config
 from langdetect import detect
 import re
 import data_classes
+import json
 
 logger = log_config.get_logger()
 
@@ -399,11 +400,18 @@ def create_definition_object(lang, definition_element, updated_sources):
 # There can be multiple lexeme source links. Split them to separate sourcelink objects.
 def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
     source_links = []
-    list_of_raw_sourcelinks = root.split(';')
+    # Source links are sometimes separated by ;, sometimes not, in such cases find ][ and separate by this
+    list_of_raw_sourcelinks = re.split(r';|\]\[', root)
 
-    for item in list_of_raw_sourcelinks:
+    for idx, item in enumerate(list_of_raw_sourcelinks):
 
         item = item.strip()
+
+        # Add the brackets if they were removed during splitting the source links
+        if root.startswith('[') and idx != 0:
+            item = '[' + item
+        if root.endswith(']') and idx != len(list_of_raw_sourcelinks) - 1:
+            item = item + ']'
 
         # Handle cases where source is an expert
         if "EKSPERT" in item:
@@ -419,9 +427,10 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
                     logger.warning('EKSPERT in lexeme sourcelinks, but failed to extract the value.')
             else:
                 source_link = data_classes.sourceLink(sourceId=0, searchValue=expert_item.replace("EKSPERT ", "", 1), value=expert_item)
-        # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4]
-        elif item.startswith('[') and item.endswith(']'):
-            item = item[1:-1]
+        # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
+        elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
+            if item.startswith('[') and item.endswith(']'):
+                item = item[1:-1]
 
             xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', item)
             if xref_match:
@@ -526,3 +535,29 @@ def find_source_by_name(sources, name):
     logger.warning(f"Warning: Source ID for '{name}' not found.")
 
     return None
+
+#
+# def find_ekspert_values(data):
+#     ekspert_values = set()
+#     if isinstance(data, dict):
+#         for key, value in data.items():
+#             if isinstance(value, str) and value.startswith("EKSPERT"):
+#                 ekspert_values.add(value)
+#             elif isinstance(value, (dict, list)):
+#                 ekspert_values.update(find_ekspert_values(value))
+#     elif isinstance(data, list):
+#         for item in data:
+#             if isinstance(item, (dict, list)):
+#                 ekspert_values.update(find_ekspert_values(item))
+#     return list(ekspert_values)
+#
+#
+# # Load JSON data from a file
+# with open("files/output/concepts-3008.json", "r", encoding='utf-8') as f:
+#     json_data = json.load(f)
+#
+# # Find unique values that start with "EKSPERT"
+# experts = find_ekspert_values(json_data)
+#
+# for e in experts:
+#     print(e)
