@@ -16,15 +16,15 @@ def parse_mtf(root, updated_sources):
     aviation_concepts = []
 
     # For testing #
-    #counter = 1
+    counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # For testing
-        # if counter % 300 == 0:
-        #     logger.info(f'counter: {counter}')
-        #     break
-        #
-        # counter += 1
+        if counter % 10000 == 0:
+            logger.info(f'counter: {counter}')
+            break
+
+        counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='et1608')

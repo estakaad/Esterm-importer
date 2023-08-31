@@ -374,23 +374,37 @@ def create_definition_object(lang, definition_element, updated_sources):
         check_definition_content(definition_element)
 
     if xref_link_value_str:
+        if xref_link_value_str.startswith('EKSPERT {'):
+            search_value = xref_link_value_str[9:-1]
+            value = 'EKSPERT ' + xref_link_value_str[9:-1] + (' ' + text_after_xref_str if text_after_xref_str else "")
+        else:
+            search_value = xref_link_value_str
+            value = xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else "")
+
         source_links.append(data_classes.sourceLink(
             sourceId=find_source_by_name(updated_sources, xref_link_value_str),
-            searchValue=xref_link_value_str,
-            value=xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else "")
+            searchValue=search_value,
+            value=value
         ))
     else:
+        if text_in_bracket and text_in_bracket.startswith('EKSPERT {'):
+            search_value = text_in_bracket[9:-1]
+            value = 'EKSPERT ' + text_in_bracket[9:-1]
+        else:
+            search_value = text_in_bracket
+            value = text_in_bracket
+
         source_links.append(data_classes.sourceLink(
             sourceId=find_source_by_name(updated_sources, text_in_bracket),
-            searchValue=text_in_bracket,
-            value=text_in_bracket
+            searchValue=search_value,
+            value=value
         ))
 
     return data_classes.Definition(
-            value=text_before_xref_str,
-            lang=lang,
-            sourceLinks=source_links,
-            definitionTypeCode='definitsioon')
+        value=text_before_xref_str,
+        lang=lang,
+        sourceLinks=source_links,
+        definitionTypeCode='definitsioon')
 
 
 ############################################
@@ -400,18 +414,17 @@ def create_definition_object(lang, definition_element, updated_sources):
 # There can be multiple lexeme source links. Split them to separate sourcelink objects.
 def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
     source_links = []
-    # Source links are sometimes separated by ;, sometimes not, in such cases find ][ and separate by this
-    list_of_raw_sourcelinks = re.split(r';|\]\[', root)
 
-    for idx, item in enumerate(list_of_raw_sourcelinks):
+    # Pre-process the root string to replace '][' or '] [' with '];['
+    # and also replace ',' (with optional space) with ';'
+    root = re.sub(r'\]\s*\[|,\s*', '];[', root)
+
+    # Now split by semicolon, as all source links are now separated by it
+    list_of_raw_sourcelinks = root.split(';')
+
+    for item in list_of_raw_sourcelinks:
 
         item = item.strip()
-
-        # Add the brackets if they were removed during splitting the source links
-        if root.startswith('[') and idx != 0:
-            item = '[' + item
-        if root.endswith(']') and idx != len(list_of_raw_sourcelinks) - 1:
-            item = item + ']'
 
         # Handle cases where source is an expert
         if "EKSPERT" in item:
@@ -427,6 +440,7 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
                     logger.warning('EKSPERT in lexeme sourcelinks, but failed to extract the value.')
             else:
                 source_link = data_classes.sourceLink(sourceId=0, searchValue=expert_item.replace("EKSPERT ", "", 1), value=expert_item)
+
         # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
         elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
             if item.startswith('[') and item.endswith(']'):
@@ -553,7 +567,7 @@ def find_source_by_name(sources, name):
 #
 #
 # # Load JSON data from a file
-# with open("files/output/concepts-3008.json", "r", encoding='utf-8') as f:
+# with open("files/output/concepts.json", "r", encoding='utf-8') as f:
 #     json_data = json.load(f)
 #
 # # Find unique values that start with "EKSPERT"
