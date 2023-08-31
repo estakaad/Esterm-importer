@@ -266,16 +266,86 @@ def edit_note_with_multiple_languages(note):
 
 
 def edit_note_without_multiple_languages(note):
-    pattern = r'<xref Tlink=".*?">(.*?)</xref>'
-    replacement = r"[\1]"
 
-    note = re.sub(pattern, replacement, note)
+    sourcelink_searchvalue = ''
+    sourcelink_display_value = ''
 
-    pattern_date = r'\{.*?(\d{1,2}\.\d{1,2}\.\d{4})\}$'
-    replacement_date = r"{\1}"
-    note = re.sub(pattern_date, replacement_date, note)
+    # Extract date
+    date_pattern = r'[\{\[]\{*\w+\}*\s*\d+[\.\\]\d+[\.\\]\d+[\}\]]$'
+    date_match = re.search(date_pattern, note)
 
-    return note
+    note_without_date = note
+
+    if date_match:
+        original_date = date_match.group()
+        date = ''.join([char for char in original_date if not char.isalpha() and char != ' '])
+        date = date.replace('{}', '')
+    else:
+        original_date = None
+        date = None
+
+    # Remove date from note
+    if original_date:
+        note_without_date = note_without_date.replace(original_date, '').strip()
+
+    # Extract source
+    source_pattern = r'\[.*\]$'
+    source_match = re.search(source_pattern, note_without_date)
+
+    if source_match:
+        source = source_match.group()
+        if 'xref' in source:
+            xref_pattern = r'<xref Tlink=".*?">(.*?)</xref>'
+            xref_match = re.search(xref_pattern, source)
+
+            # Variable to store the text inside <xref>...</xref>
+            inside_xref = None
+
+            if xref_match:
+                inside_xref = xref_match.group(1)
+
+            # Extracting the remaining text after </xref>
+            remaining_text = source.split('</xref>')[-1].strip()
+
+            if inside_xref == 'EKSPERT':
+                sourcelink_searchvalue = remaining_text
+                sourcelink_display_value = inside_xref + ' ' + remaining_text.replace(']','')
+            else:
+                sourcelink_searchvalue = inside_xref
+                sourcelink_display_value = inside_xref + ((' ' + remaining_text.replace(']','')) if remaining_text else '')
+
+            last_instance_index = note_without_date.rfind(source)
+
+            if last_instance_index != -1:
+                note_without_date = note_without_date[:last_instance_index] + note_without_date[
+                                                                              last_instance_index + len(source):]
+
+    note = note_without_date + ((' ' + date) if date else '')
+
+    return note, sourcelink_searchvalue.replace(']',''), sourcelink_display_value
+#
+# test1 = ''''Olema otsustamisvõimeline' - 'have a quorum' [<xref Tlink="Allikas:X0000">X0000</xref> § 70]'''
+# test2 = 'Eesti äriseadustiku tõlkes on ingliskeelses tekstis samuti lühend OÜ. {KMU 22.10.2004}'
+# test3 = 'üleminek pärijale-transmission to an heir'
+# test4 = 'Välisministeeriumi rahvusvahelise õiguse büroo seisukoht on selline: treaty (dogovor, traité, vertrag) ' \
+#         '= leping ja agreement (soglašenije, accord, abkommen) = kokkulepe. ' \
+#         '[<xref Tlink="Allikas:EKSPERT">EKSPERT</xref> Peter Pedak]'
+# test5 = 'Vaata ka kirjet nr 92159 "Transpordiamet". [{MVS}18.01.2021]'
+# test6 = 'Siin on tegemist ametiasutuse nimetusega. Vaata ka kirjet "Kaitsejõudude Peastaap - ' \
+#         'General Staff of the Defence Forces". [ÜMT 03.04.1996]'
+# test7 = '''1. samm: 'VAT'-i (Eestis: käibemaks) puhul saab eelmistes staadiumides arvestatud
+# käibemaksu enda käibelt arvestatud käibemaksust maha arvata, 'turnover tax'i puhul kuhjuvad
+# erinevates staadiumides võetavad käibemaksud üksteise otsa.
+# [<xref Tlink="Allikas:EKSPERT">EKSPERT</xref> Ain Ulmre, Rahandusministeeriumi käibemaksuspetsialist]
+# [{KMU}27.04.1999] Võrdle kirjega 'turnover tax - kumuleeruv käibemaks'.'''
+#
+# edit_note_without_multiple_languages(test1)
+# edit_note_without_multiple_languages(test2)
+# edit_note_without_multiple_languages(test3)
+# edit_note_without_multiple_languages(test4)
+# edit_note_without_multiple_languages(test5)
+# edit_note_without_multiple_languages(test6)
+# edit_note_without_multiple_languages(test7)
 
 
 ##########################################
@@ -532,6 +602,13 @@ def extract_lexeme_note_and_its_sourcelinks(string):
         text_before_bracket = text_before_bracket + ' [' + date_string + ']'
 
     text_before_bracket = text_before_bracket.replace('  ', ' ')
+
+    if source.startswith('EKSPERT '):
+        source = source.replace("{", "").replace("}", "")
+
+    if tail.startswith('EKSPERT '):
+        source = tail.replace("{", "").replace("}", "")
+
     return text_before_bracket, date_string, source, tail
 
 

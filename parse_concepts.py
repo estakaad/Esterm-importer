@@ -20,7 +20,7 @@ def parse_mtf(root, updated_sources):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # For testing
-        if counter % 10000 == 0:
+        if counter % 1000 == 0:
             logger.info(f'counter: {counter}')
             break
 
@@ -61,26 +61,55 @@ def parse_mtf(root, updated_sources):
                     if domain:
                         concept.domains.append(data_classes.Domain(code=domain, origin='lenoch'))
 
-            # Get concept notes and add to the list of concept notes. !?!?! MIS KEELES?
+            # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
-
-                # TODO: check this out.
-                # What if source is EKSPERT? Do expert names have to be removed? Currently they are.
+                print('raw note: ' + raw_note_value)
+                note_value = None
 
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
+                    #print('note_value : ' + note_value)
+                    print('note value (multiple lang): ' + note_value)
                 else:
-                    note_value = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
+                    note, source_search_value, source_display_value = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
+                    print('note (one lang) : ' + note)
+                    print('note value : ' + note_value if note_value else '')
+                    print('note: ' + note)
+                    print('source_search_value : ' + source_search_value)
+                    print('source_display_value : ' + source_display_value)
 
-                concept.notes.append(data_classes.Note(
-                    value=note_value,
-                    lang='est',
-                    publicity=True
-                ))
+                if note_value:
+                    concept.notes.append(data_classes.Note(
+                        value=note_value,
+                        lang='est',
+                        publicity=True
+                    ))
+                else:
+                    if source_search_value:
+                        source_links = []
 
-                if descrip_element_value:
-                    logger.debug('Added note: %s', descrip_element_value)
+                        source_links.append(
+                            data_classes.sourceLink(
+                                sourceId=xml_helpers.find_source_by_name(updated_sources, source_search_value),
+                                searchValue=source_search_value,
+                                value=source_display_value
+                            )
+                        )
+                        concept.notes.append(data_classes.Note(
+                            value=note,
+                            lang='est',
+                            publicity=True,
+                            sourceLinks=source_links
+                        ))
+                    else:
+                        concept.notes.append(data_classes.Note(
+                            value=note,
+                            lang='est',
+                            publicity=True
+                        ))
+
+                logger.debug('Added note: %s', descrip_element_value)
 
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
@@ -249,11 +278,9 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                     source_links = []
 
-                    if source:
-                        if tail:
-                            display_value = source + ' ' + tail
-                        else:
-                            display_value = source
+                    if source.startswith('EKSPERT '):
+                        source = source.replace('EKSPERT ', '').strip()
+                        display_value = 'EKSPERT ' + source
 
                         source_links.append(
                             data_classes.sourceLink(
@@ -262,6 +289,20 @@ def parse_words(conceptGrp, concept, updated_sources):
                                 value=display_value
                             )
                         )
+                    else:
+                        if source:
+                            if tail:
+                                display_value = source + ' ' + tail
+                            else:
+                                display_value = source
+
+                            source_links.append(
+                                data_classes.sourceLink(
+                                    sourceId=xml_helpers.find_source_by_name(updated_sources, source),
+                                    searchValue=source,
+                                    value=display_value
+                                )
+                            )
 
                     if word.lang == 'est':
                         note_lang = 'est'
