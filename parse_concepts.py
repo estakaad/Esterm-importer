@@ -16,15 +16,15 @@ def parse_mtf(root, updated_sources):
     aviation_concepts = []
 
     # For testing #
-    counter = 1
+    #counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # For testing
-        if counter % 1000 == 0:
-            logger.info(f'counter: {counter}')
-            break
-
-        counter += 1
+        # if counter % 1000 == 0:
+        #     logger.info(f'counter: {counter}')
+        #     break
+        #
+        # counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='et1608')
@@ -64,20 +64,12 @@ def parse_mtf(root, updated_sources):
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
-                print('raw note: ' + raw_note_value)
                 note_value = None
 
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
-                    #print('note_value : ' + note_value)
-                    print('note value (multiple lang): ' + note_value)
                 else:
                     note, source_search_value, source_display_value = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
-                    print('note (one lang) : ' + note)
-                    print('note value : ' + note_value if note_value else '')
-                    print('note: ' + note)
-                    print('source_search_value : ' + source_search_value)
-                    print('source_display_value : ' + source_display_value)
 
                 if note_value:
                     concept.notes.append(data_classes.Note(
@@ -109,7 +101,7 @@ def parse_mtf(root, updated_sources):
                             publicity=True
                         ))
 
-                logger.debug('Added note: %s', descrip_element_value)
+                logger.debug('Added concept note: %s', descrip_element_value)
 
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':

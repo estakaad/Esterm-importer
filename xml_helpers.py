@@ -626,29 +626,3 @@ def find_source_by_name(sources, name):
     logger.warning(f"Warning: Source ID for '{name}' not found.")
 
     return None
-
-#
-# def find_ekspert_values(data):
-#     ekspert_values = set()
-#     if isinstance(data, dict):
-#         for key, value in data.items():
-#             if isinstance(value, str) and value.startswith("EKSPERT"):
-#                 ekspert_values.add(value)
-#             elif isinstance(value, (dict, list)):
-#                 ekspert_values.update(find_ekspert_values(value))
-#     elif isinstance(data, list):
-#         for item in data:
-#             if isinstance(item, (dict, list)):
-#                 ekspert_values.update(find_ekspert_values(item))
-#     return list(ekspert_values)
-#
-#
-# # Load JSON data from a file
-# with open("files/output/concepts.json", "r", encoding='utf-8') as f:
-#     json_data = json.load(f)
-#
-# # Find unique values that start with "EKSPERT"
-# experts = find_ekspert_values(json_data)
-#
-# for e in experts:
-#     print(e)

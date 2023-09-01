@@ -19,42 +19,39 @@ parameters = {"crudRoleDataset": crud_role_dataset}
 
 
 def get_existing_source_id(source):
-    return 1
+
     logger.debug(f'Attempting to find ID for a source {source}')
+
     value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
+    # Normalise source names or matching will give unexpected results
+    value_texts = [re.sub(' +', ' ', value_text).strip() for value_text in value_texts]
 
-    matching_sources = []
+    value_for_request = value_texts[0].replace('/', '*')
 
-    for value_text in value_texts:
-        # Normalise spaces because API normalises spaces when creating it
-        value_text = re.sub(' +', ' ', value_text).strip()
-        params = {"crudRoleDataset": crud_role_dataset}
-        if '/' in value_text:
-            value_text = value_text.replace('/', '?')
-        endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_text}"
-        print(endpoint)
-        response = requests.get(endpoint, headers=header, params=params)
+    params = {"crudRoleDataset": crud_role_dataset}
 
-        if response.status_code >= 200 and response.status_code < 300:
-            try:
-                response_data = response.json()
-                for source_response in response_data:
-                    if all(text in source_response['sourceNames'] for text in value_texts):
-                        matching_sources.append(source_response)
-            except (json.JSONDecodeError, IndexError):
-                logger.warning(f"Failed to retrieve the ID of the source {value_texts[0]}. Response text: {response.text}")
+    endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_for_request}"
+
+    response = requests.get(endpoint, headers=header, params=params)
+
+    if response.status_code >= 200 and response.status_code < 300:
+        response_data = response.json()
+        if response_data:
+            for item in response_data:
+                source_names_in_response = []
+                for prop in item['sourceProperties']:
+                    if prop['type'] == 'SOURCE_NAME':
+                        source_names_in_response.append(prop['valueText'])
+
+                if set(source_names_in_response) == set(value_texts):
+                    logger.info(f'There was a response and it contained a source with the same names. ID: {item["id"]}')
+                    return item['id']
+
+            logger.info('No match found in any of the objects in the response.')
+            return None
         else:
-            logger.warning(f"Received non-200 response when retrieving the ID of the source {value_texts[0]}. "
-                           f"Status code: {response.status_code}, Response text: {response.text}")
-
-    if matching_sources:
-        # Sort by ID and select the one with the smallest ID
-        matching_sources.sort(key=lambda x: x['id'])
-        selected_source = matching_sources[0]
-        logger.info(f'Selected source with smallest ID: {selected_source}')
-        return selected_source['id']
-
-    logger.warning(f'No matching source found for {source}.')
+            logger.info(f'The response was 200, but it was empty. The source name was: {value_for_request}')
+            return None
     return None
 
 
@@ -85,9 +82,8 @@ def get_or_create_source(source):
     if existing_id:
         logger.info(f'Source {existing_id} already exists')
         return existing_id, False
-    #new_id = create_source(source)
-    # Testing purposes
-    new_id = 12345
+    logger.info(f'Cannot find existing source, should create a new one.')
+    new_id = create_source(source)
     if new_id:
         logger.info(
             f"Created new source with ID {new_id} and name {source['sourceProperties'][0]['valueText']}.")
@@ -100,17 +96,23 @@ def assign_ids_to_all_sources(input_file):
     updated_sources = []
     ids_of_created_sources = []
 
-    logger.info(f'Started assigning ID-s to all sources {sources_with_ids_file}')
+    logger.info(f'Started assigning ID-s to all sources {input_file}')
 
     with open(input_file, 'r', encoding='utf-8') as f:
+        count_existing_sources = 0
+        count_created_sources = 0
         data = json.load(f)
+
         for source in data:
-            source_id, was_created = get_or_create_source(source)  # TODO: todo
+            source_id, was_created = get_or_create_source(source)
             if source_id:
                 ordered_source = OrderedDict([('id', source_id)] + list(source.items()))
                 updated_sources.append(ordered_source)
                 if was_created:
                     ids_of_created_sources.append(source_id)
+                    count_created_sources += 1
+                else:
+                    count_existing_sources += 1
 
     # Create a file with sources and their ID-s
     with open(sources_with_ids_file, 'w', encoding='utf-8') as source_files_with_ids:
@@ -123,7 +125,8 @@ def assign_ids_to_all_sources(input_file):
         json.dump(ids_of_created_sources, f, ensure_ascii=False, indent=4)
 
     logger.info('Created file list of ID-s of created sources')
-
+    logger.info('Number of existing sources: ' + str(count_existing_sources))
+    logger.info('Number of created sources: ' + str(count_created_sources))
     return source_files_with_ids
 
 
