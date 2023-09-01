@@ -520,11 +520,11 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
             if xref_match:
                 searchValue = xref_match.group(1)
                 value = item[xref_match.end():].strip()
-                source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue, value=value)
+                source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue.strip('[]'), value=value)
             else:
                 searchValue = item
                 value = item
-                source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue, value=value)
+                source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue.strip('[]'), value=value)
                 continue
         else:
             try:
@@ -542,7 +542,7 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
             value = value.strip()
             source_link = data_classes.sourceLink(
                 sourceId=find_source_by_name(updated_sources, searchValue),
-                searchValue=searchValue,
+                searchValue=searchValue.strip('[]'),
                 value=value)
 
         source_links.append(source_link)
@@ -616,13 +616,56 @@ def extract_lexeme_note_and_its_sourcelinks(string):
 ## Sources ##
 ######################################
 
-def find_source_by_name(sources, name):
+# Preprocess sources with ID-s, because otherwise it will take forever to find the match between name and ID
+# Not sure if there are duplicate names, but just in case there are, let's map the name to a list of matching ID-s
+def create_name_to_id_mapping(sources):
+    name_to_ids = {}
     for source in sources:
+        source_id = source['id']
+        logger.info(f"Processing source ID: {source_id}")  # Debug line
         for prop in source['sourceProperties']:
-            if prop['type'] == 'SOURCE_NAME' and prop['valueText'] == name:
-                return source['id']
-                logger.info(f"Source ID for '{name}' is {source['id']}")
+            prop_type = prop['type']
+            prop_value = prop['valueText']
+            logger.info(f"  Prop type: {prop_type}, Prop value: {prop_value}")  # Debug line
+            if prop_type == 'SOURCE_NAME':
+                name = prop_value
+                if name in name_to_ids:
+                    name_to_ids[name].append(source_id)
+                else:
+                    name_to_ids[name] = [source_id]
 
-    logger.warning(f"Warning: Source ID for '{name}' not found.")
+    return name_to_ids
 
-    return None
+
+# Return ID if there is exactly one match. Return None, if there are 0 matches or more than one matches.
+def find_source_by_name(name_to_ids_map, name):
+    source_ids = name_to_ids_map.get(name)
+
+    if source_ids is None:
+        print(name)
+        logger.warning(f"Warning: Source ID for '{name}' not found.")
+        return None
+
+    if len(source_ids) == 1:
+        logger.info(f"Source ID for '{name}' is {source_ids[0]}")
+        return source_ids[0]
+    else:
+        logger.warning(f"Warning: Duplicate entries found for '{name}'.")
+        return None
+
+
+# Remove sourceLink objects if sourceId is 0.
+def remove_source_links_with_zero_id(json_data):
+    for concept in json_data:
+        for section in ['definitions', 'notes', 'words']:
+            for item in concept.get(section, []):
+                filtered_source_links = [source_link for source_link in item.get('sourceLinks', []) if
+                                         source_link.get('sourceId') != 0]
+                item['sourceLinks'] = filtered_source_links
+
+                if section == 'words':
+                    filtered_lexeme_source_links = [source_link for source_link in item.get('lexemeSourceLinks', []) if
+                                                    source_link.get('sourceId') != 0]
+                    item['lexemeSourceLinks'] = filtered_lexeme_source_links
+
+    return json_data

@@ -16,18 +16,18 @@ def parse_mtf(root, updated_sources):
     aviation_concepts = []
 
     # For testing #
-    #counter = 1
+    counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # For testing
-        # if counter % 1000 == 0:
-        #     logger.info(f'counter: {counter}')
-        #     break
-        #
-        # counter += 1
+        if counter % 1000 == 0:
+            logger.info(f'counter: {counter}')
+            break
+
+        counter += 1
         # End
 
-        concept = data_classes.Concept(datasetCode='et1608')
+        concept = data_classes.Concept(datasetCode='estermtest')
         logger.info("Started parsing concept.")
 
         type_of_concept = xml_helpers.type_of_concept(conceptGrp)
@@ -331,7 +331,6 @@ def parse_words(conceptGrp, concept, updated_sources):
 
 # Write aviation concepts, all other concepts and domains to separate JSON files
 def print_concepts_to_json(concepts, aviation_concepts):
-
     logger.debug('Number of concepts: %s', str(len(concepts)))
     logger.debug('Number of aviation concepts: %s', str(len(aviation_concepts)))
 
@@ -340,15 +339,24 @@ def print_concepts_to_json(concepts, aviation_concepts):
 
     for concept_list, filename in [(concepts, 'concepts.json'),
                                    (aviation_concepts, 'aviation_concepts.json')]:
+
         concepts_json = json.dumps(
             [concept.__dict__ for concept in concept_list],
             default=lambda o: o.__dict__,
             indent=2,
             ensure_ascii=False
         )
-        with open(os.path.join(output_folder, filename), 'w', encoding='utf8') as json_file:
+        filepath = os.path.join(output_folder, filename)
+        with open(filepath, 'w', encoding='utf8') as json_file:
             json_file.write(concepts_json)
             logger.info('Finished writing concepts: %s.', filename)
+
+        # # Read the files back, remove undesired sourceLinks, and write the files again
+        with open(filepath, 'r', encoding='utf8') as json_file:
+            data = json.load(json_file)
+        data = xml_helpers.remove_source_links_with_zero_id(data)
+        with open(filepath, 'w', encoding='utf8') as json_file:
+            json.dump(data, json_file, indent=2, ensure_ascii=False)
 
 
 def transform_esterm_to_json(updated_sources):
@@ -360,6 +368,7 @@ def transform_esterm_to_json(updated_sources):
     root = etree.fromstring(xml_content, parser=parser)
 
     concepts, aviation_concepts = parse_mtf(root, updated_sources)
+
     print_concepts_to_json(concepts, aviation_concepts)
 
     logger.info('Finished transforming Esterm XML file to JSON files.')
