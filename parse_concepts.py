@@ -122,16 +122,6 @@ def parse_mtf(root, updated_sources):
                 if descrip_element_value:
                     logger.debug('Added sisemärkus to forums: %s', forum_note)
 
-            # Currently add "Kontekst" as concept notes and
-            # its language is always Estonian because we don't know any better
-            elif descrip_element.get('type') == 'Kontekst':
-                concept.notes.append(data_classes.Note(
-                    value=descrip_element_value,
-                    lang='est',
-                    publicity=xml_helpers.are_terms_public(conceptGrp)
-                ))
-                if descrip_element_value:
-                    logger.debug('Added kontekst to notes: %s', descrip_element_value)
 
         logger.info('Added concept domains: %s', str(concept.domains))
         if concept.notes:
