@@ -20,7 +20,7 @@ def parse_mtf(root, updated_sources):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # For testing
-        # if counter % 1000 == 0:
+        # if counter % 10000 == 0:
         #     logger.info(f'counter: {counter}')
         #     break
         #
@@ -165,7 +165,13 @@ def parse_words(conceptGrp, concept, updated_sources):
 
             definition = descripGrp.find('./descrip')
 
-            definition_object = xml_helpers.create_definition_object(lang_grp, definition, updated_sources)
+            semicolon_in_brackets = r'\s\[.*;.*\]'
+
+            if re.search(semicolon_in_brackets, ''.join(descripGrp.itertext())):
+                definition_object = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, updated_sources)
+                #print(definition_object)
+            else:
+                definition_object = xml_helpers.create_definition_object(lang_grp, definition, updated_sources)
 
             definitions.append(definition_object)
 
@@ -203,6 +209,7 @@ def parse_words(conceptGrp, concept, updated_sources):
                 if descrip_type == 'Definitsioon':
                     individual_definitions = xml_helpers.split_and_preserve_xml(descripGrp)
                     individual_definitions = xml_helpers.fix_xml_fragments(individual_definitions, 'descrip')
+
                     for definition in individual_definitions:
 
                         definition_element = etree.fromstring(definition)
