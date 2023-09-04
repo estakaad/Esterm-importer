@@ -652,20 +652,3 @@ def find_source_by_name(name_to_ids_map, name):
     else:
         logger.warning(f"Warning: Duplicate entries found for '{name}'.")
         return None
-
-
-# Remove sourceLink objects if sourceId is 0.
-def remove_source_links_with_zero_id(json_data):
-    for concept in json_data:
-        for section in ['definitions', 'notes', 'words']:
-            for item in concept.get(section, []):
-                filtered_source_links = [source_link for source_link in item.get('sourceLinks', []) if
-                                         source_link.get('sourceId') != 0]
-                item['sourceLinks'] = filtered_source_links
-
-                if section == 'words':
-                    filtered_lexeme_source_links = [source_link for source_link in item.get('lexemeSourceLinks', []) if
-                                                    source_link.get('sourceId') != 0]
-                    item['lexemeSourceLinks'] = filtered_lexeme_source_links
-
-    return json_data

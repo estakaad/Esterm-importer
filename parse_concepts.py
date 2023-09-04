@@ -16,15 +16,15 @@ def parse_mtf(root, updated_sources):
     aviation_concepts = []
 
     # For testing #
-    counter = 1
+    #counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        # For testing
-        if counter % 1000 == 0:
-            logger.info(f'counter: {counter}')
-            break
-
-        counter += 1
+        # # For testing
+        # if counter % 1000 == 0:
+        #     logger.info(f'counter: {counter}')
+        #     break
+        #
+        # counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest')
@@ -350,13 +350,6 @@ def print_concepts_to_json(concepts, aviation_concepts):
         with open(filepath, 'w', encoding='utf8') as json_file:
             json_file.write(concepts_json)
             logger.info('Finished writing concepts: %s.', filename)
-
-        # # Read the files back, remove undesired sourceLinks, and write the files again
-        with open(filepath, 'r', encoding='utf8') as json_file:
-            data = json.load(json_file)
-        data = xml_helpers.remove_source_links_with_zero_id(data)
-        with open(filepath, 'w', encoding='utf8') as json_file:
-            json.dump(data, json_file, indent=2, ensure_ascii=False)
 
 
 def transform_esterm_to_json(updated_sources):

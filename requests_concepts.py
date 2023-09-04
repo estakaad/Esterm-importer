@@ -13,7 +13,7 @@ logger.propagate = False
 def set_up_requests():
     load_dotenv()
     api_key = os.environ.get("API_KEY")
-    crud_role_dataset = os.environ.get("ESTERM")
+    crud_role_dataset = os.environ.get("AVI")
 
     header = {"ekilex-api-key": api_key}
     parameters = {"crudRoleDataset": crud_role_dataset}
