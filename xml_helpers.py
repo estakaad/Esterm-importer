@@ -323,34 +323,78 @@ def edit_note_without_multiple_languages(note):
     note = note_without_date + ((' ' + date) if date else '')
 
     return note, sourcelink_searchvalue.replace(']',''), sourcelink_display_value
-#
-# test1 = ''''Olema otsustamisvõimeline' - 'have a quorum' [<xref Tlink="Allikas:X0000">X0000</xref> § 70]'''
-# test2 = 'Eesti äriseadustiku tõlkes on ingliskeelses tekstis samuti lühend OÜ. {KMU 22.10.2004}'
-# test3 = 'üleminek pärijale-transmission to an heir'
-# test4 = 'Välisministeeriumi rahvusvahelise õiguse büroo seisukoht on selline: treaty (dogovor, traité, vertrag) ' \
-#         '= leping ja agreement (soglašenije, accord, abkommen) = kokkulepe. ' \
-#         '[<xref Tlink="Allikas:EKSPERT">EKSPERT</xref> Peter Pedak]'
-# test5 = 'Vaata ka kirjet nr 92159 "Transpordiamet". [{MVS}18.01.2021]'
-# test6 = 'Siin on tegemist ametiasutuse nimetusega. Vaata ka kirjet "Kaitsejõudude Peastaap - ' \
-#         'General Staff of the Defence Forces". [ÜMT 03.04.1996]'
-# test7 = '''1. samm: 'VAT'-i (Eestis: käibemaks) puhul saab eelmistes staadiumides arvestatud
-# käibemaksu enda käibelt arvestatud käibemaksust maha arvata, 'turnover tax'i puhul kuhjuvad
-# erinevates staadiumides võetavad käibemaksud üksteise otsa.
-# [<xref Tlink="Allikas:EKSPERT">EKSPERT</xref> Ain Ulmre, Rahandusministeeriumi käibemaksuspetsialist]
-# [{KMU}27.04.1999] Võrdle kirjega 'turnover tax - kumuleeruv käibemaks'.'''
-#
-# edit_note_without_multiple_languages(test1)
-# edit_note_without_multiple_languages(test2)
-# edit_note_without_multiple_languages(test3)
-# edit_note_without_multiple_languages(test4)
-# edit_note_without_multiple_languages(test5)
-# edit_note_without_multiple_languages(test6)
-# edit_note_without_multiple_languages(test7)
 
 
 ##########################################
 ## "Definitsioon" > concept.definitions ##
 ##########################################
+
+
+# Handle multiple sourcelinks for one language group level definition
+def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element, name_to_ids_map):
+    source_links = []
+    text = ''
+    if definition_element.xpath('xref'):
+        links_pattern = r'\s\[.*;.*\]'
+        links_match = re.search(links_pattern, ''.join(definition_element.itertext()))
+        if links_match:
+            links = links_match.group(0)
+
+            if links:
+                links = links.strip(' []').split(';')
+                for link in links:
+                    if '§' in link:
+                        match = re.search(r'§.*', link).group(0)
+                        if match:
+                            search_value = link.replace(match, '').strip()
+                            value = match.strip()
+                            source_links.append(data_classes.sourceLink(
+                                sourceId=find_source_by_name(name_to_ids_map, search_value),
+                                searchValue=search_value,
+                                value=search_value + ' ' + value
+                            ))
+                        else:
+                            logger.warning(f'Error parsing definition: {definition_element.itertext()}')
+                    else:
+                        source_links.append(data_classes.sourceLink(
+                            sourceId=find_source_by_name(name_to_ids_map, link.strip()),
+                            searchValue=link.strip(),
+                            value=link.strip()
+                        ))
+                text_pattern = r'(.*)\s\[.*;.*\]'
+                text = re.search(text_pattern, ''.join(definition_element.itertext())).group(1)
+            else:
+                logger.error(f'Definition element contains xref but it cannot be split to separate links: {definition_element}')
+        else:
+            print(f'Cannot find pattern from links: {definition_element}')
+
+    else:
+        links_pattern = r'\s\[.*;.*\]'
+        links = re.search(links_pattern, ''.join(definition_element.itertext())).group(0)
+        links = links.strip(' []').split(';')
+        for link in links:
+            source_links.append(data_classes.sourceLink(
+                sourceId=find_source_by_name(name_to_ids_map, link.strip()),
+                searchValue=link.strip(),
+                value=link.strip()
+            ))
+        text_pattern = r'(.*)\s\[.*;.*\]'
+        text = re.search(text_pattern, ''.join(definition_element.itertext())).group(1)
+    definition = None
+    if text:
+        definition = data_classes.Definition(
+            value=text,
+            lang=lang_grp,
+            definitionTypeCode='definitsioon',
+            sourceLinks=source_links
+        )
+    else:
+        logger.error(f'Cannot parse definition: {definition_element.itertext()}')
+
+    if definition:
+        return definition
+    else:
+        return None
 
 # Function for splitting and preserving definition element content
 def split_and_preserve_xml(descrip_element):
@@ -465,7 +509,7 @@ def create_definition_object(lang, definition_element, updated_sources):
             value = text_in_bracket
 
         source_links.append(data_classes.sourceLink(
-            sourceId=find_source_by_name(updated_sources, text_in_bracket),
+            sourceId=find_source_by_name(updated_sources, search_value),
             searchValue=search_value,
             value=value
         ))
@@ -608,7 +652,10 @@ def extract_lexeme_note_and_its_sourcelinks(string):
 
     if tail.startswith('EKSPERT '):
         source = tail.replace("{", "").replace("}", "")
-
+    # print('lexeme note text before bracket: ' + text_before_bracket)
+    # print('lexeme note date string: ' + date_string)
+    # print('lexeme note source: ' + source)
+    # print('lexeme note tail: ' + tail)
     return text_before_bracket, date_string, source, tail
 
 
@@ -639,11 +686,13 @@ def create_name_to_id_mapping(sources):
 
 # Return ID if there is exactly one match. Return None, if there are 0 matches or more than one matches.
 def find_source_by_name(name_to_ids_map, name):
+    if name:
+        name.strip('[]')
     source_ids = name_to_ids_map.get(name)
 
     if source_ids is None:
-        print(name)
         logger.warning(f"Warning: Source ID for '{name}' not found.")
+        print(name)
         return None
 
     if len(source_ids) == 1:
