@@ -11,20 +11,20 @@ logger = log_config.get_logger()
 
 
 # Parse the whole Esterm XML and return aviation concepts, all other concepts and the sources of the concepts
-def parse_mtf(root, updated_sources):
+def parse_mtf(root, name_to_id_map):
     concepts = []
     aviation_concepts = []
 
     # For testing #
-    #counter = 1
+    counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # For testing
-        # if counter % 10000 == 0:
-        #     logger.info(f'counter: {counter}')
-        #     break
-        #
-        # counter += 1
+        if counter % 500 == 0:
+            logger.info(f'counter: {counter}')
+            break
+
+        counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest')
@@ -83,7 +83,7 @@ def parse_mtf(root, updated_sources):
 
                         source_links.append(
                             data_classes.sourceLink(
-                                sourceId=xml_helpers.find_source_by_name(updated_sources, source_search_value),
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, source_search_value),
                                 searchValue=source_search_value,
                                 value=source_display_value
                             )
@@ -130,7 +130,7 @@ def parse_mtf(root, updated_sources):
             logger.info('Added concept forum: %s', str(concept.forums))
 
         # Concept level data is parsed, now to parsing word (term) level data
-        words, definitions = parse_words(conceptGrp, concept, updated_sources)
+        words, definitions = parse_words(conceptGrp, name_to_id_map)
 
         for word in words:
             concept.words.append(word)
@@ -146,7 +146,7 @@ def parse_mtf(root, updated_sources):
 
 
 # Parse word elements in one concept in XML
-def parse_words(conceptGrp, concept, updated_sources):
+def parse_words(conceptGrp, name_to_id_map):
 
     words = []
     definitions = []
@@ -168,10 +168,10 @@ def parse_words(conceptGrp, concept, updated_sources):
             semicolon_in_brackets = r'\s\[.*;.*\]'
 
             if re.search(semicolon_in_brackets, ''.join(descripGrp.itertext())):
-                definition_object = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, updated_sources)
+                definition_object = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
                 #print(definition_object)
             else:
-                definition_object = xml_helpers.create_definition_object(lang_grp, definition, updated_sources)
+                definition_object = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
 
             definitions.append(definition_object)
 
@@ -214,13 +214,13 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                         definition_element = etree.fromstring(definition)
 
-                        definition_object = xml_helpers.create_definition_object(word.lang, definition_element, updated_sources)
+                        definition_object = xml_helpers.create_definition_object(word.lang, definition_element, name_to_id_map)
 
                         definitions.append(definition_object)
 
                 if descrip_type == 'Kontekst':
 
-                    updated_value, source_links = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, updated_sources)
+                    updated_value, source_links = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map)
 
                     word.usages.append(
                         data_classes.Usage(
@@ -239,7 +239,7 @@ def parse_words(conceptGrp, concept, updated_sources):
                     # Remove the outer tags to get only the inner XML
                     inner_xml = full_string.split('>', 1)[1].rsplit('<', 1)[0].strip()
 
-                    sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, updated_sources)
+                    sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
 
                     for link in sourcelinks:
                         if link.value.startswith('EKSPERT'):
@@ -255,9 +255,10 @@ def parse_words(conceptGrp, concept, updated_sources):
                                 data_classes.sourceLink(
                                     sourceId=link.sourceId,
                                     searchValue=link.searchValue,
-                                    value=link.searchValue + ((' ' + link.value) if link.value else '')
+                                    value=link.value
                                 )
                             )
+
 
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip().replace('\u200b', '')
@@ -273,7 +274,7 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                         source_links.append(
                             data_classes.sourceLink(
-                                sourceId=xml_helpers.find_source_by_name(updated_sources, source),
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, source),
                                 searchValue=source,
                                 value=display_value
                             )
@@ -287,7 +288,7 @@ def parse_words(conceptGrp, concept, updated_sources):
 
                             source_links.append(
                                 data_classes.sourceLink(
-                                    sourceId=xml_helpers.find_source_by_name(updated_sources, source),
+                                    sourceId=xml_helpers.find_source_by_name(name_to_id_map, source),
                                     searchValue=source,
                                     value=display_value
                                 )
@@ -359,7 +360,7 @@ def print_concepts_to_json(concepts, aviation_concepts):
             logger.info('Finished writing concepts: %s.', filename)
 
 
-def transform_esterm_to_json(updated_sources):
+def transform_esterm_to_json(name_to_id_map):
 # Opening the file, parsing, writing JSON files
     with open('files/input/esterm.xml', 'rb') as file:
         xml_content = file.read()
@@ -367,7 +368,7 @@ def transform_esterm_to_json(updated_sources):
     parser = etree.XMLParser(encoding='UTF-16')
     root = etree.fromstring(xml_content, parser=parser)
 
-    concepts, aviation_concepts = parse_mtf(root, updated_sources)
+    concepts, aviation_concepts = parse_mtf(root, name_to_id_map)
 
     print_concepts_to_json(concepts, aviation_concepts)
 

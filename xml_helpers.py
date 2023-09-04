@@ -526,7 +526,7 @@ def create_definition_object(lang, definition_element, updated_sources):
 ############################################
 
 # There can be multiple lexeme source links. Split them to separate sourcelink objects.
-def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
+def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
     source_links = []
 
     # Pre-process the root string to replace '][' or '] [' with '];['
@@ -549,11 +549,15 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
                 if xref_match:
                     searchValue = expert_item[xref_match.end():].strip()
                     value = xref_match.group(1) + ' '+ expert_item[xref_match.end():].strip()
-                    source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue, value=value)
+                    source_link = data_classes.sourceLink(
+                        sourceId=find_source_by_name(name_to_ids_map, searchValue), searchValue=searchValue, value=value)
                 else:
                     logger.warning('EKSPERT in lexeme sourcelinks, but failed to extract the value.')
             else:
-                source_link = data_classes.sourceLink(sourceId=0, searchValue=expert_item.replace("EKSPERT ", "", 1), value=expert_item)
+                source_link = data_classes.sourceLink(
+                    sourceId=find_source_by_name(name_to_ids_map, expert_item.replace("EKSPERT ", "", 1)),
+                    searchValue=expert_item.replace("EKSPERT ", "", 1),
+                    value=expert_item)
 
         # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
         elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
@@ -564,11 +568,15 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
             if xref_match:
                 searchValue = xref_match.group(1)
                 value = item[xref_match.end():].strip()
-                source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue.strip('[]'), value=value)
+                source_link = data_classes.sourceLink(sourceId=find_source_by_name(name_to_ids_map, searchValue.strip('[]')),
+                                                      searchValue=searchValue.strip('[]'),
+                                                      value=(searchValue + ' ' + value).strip())
             else:
                 searchValue = item
                 value = item
-                source_link = data_classes.sourceLink(sourceId=0, searchValue=searchValue.strip('[]'), value=value)
+                source_link = data_classes.sourceLink(sourceId=find_source_by_name(name_to_ids_map, searchValue.strip('[]')),
+                                                      searchValue=searchValue.strip('[]'),
+                                                      value=value)
                 continue
         else:
             try:
@@ -584,11 +592,13 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, updated_sources):
                 value = ""
 
             value = value.strip()
-            source_link = data_classes.sourceLink(
-                sourceId=find_source_by_name(updated_sources, searchValue),
-                searchValue=searchValue.strip('[]'),
-                value=value)
 
+            source_link = data_classes.sourceLink(
+                sourceId=find_source_by_name(name_to_ids_map, searchValue),
+                searchValue=searchValue.strip('[]'),
+                value=(searchValue + ' ' + value).strip())
+
+        print(source_link)
         source_links.append(source_link)
 
     return source_links
