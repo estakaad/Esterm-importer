@@ -1,3 +1,4 @@
+import datetime
 from lxml import etree
 import json
 import xml_helpers
@@ -27,7 +28,7 @@ def parse_mtf(root, name_to_id_map):
         counter += 1
         # End
 
-        concept = data_classes.Concept(datasetCode='estermtest')
+        concept = data_classes.Concept(datasetCode='estermtest', manualEventOn=None, firstCreateEventOn=None)
         logger.info("Started parsing concept.")
 
         type_of_concept = xml_helpers.type_of_concept(conceptGrp)
@@ -53,6 +54,22 @@ def parse_mtf(root, name_to_id_map):
         concept_id = conceptGrp.find('concept').text
         concept.conceptIds.append(concept_id)
         logger.info(f'Added concept ID {concept_id}')
+
+        # Get origination date
+        # Find all transacGrp elements
+        transac_grp_elements = conceptGrp.findall(".//transacGrp")
+
+        origination_date = None
+        for transac_grp_element in transac_grp_elements:
+            transac_element = transac_grp_element.find("transac[@type='origination']")
+            if transac_element is not None and transac_element.text == 'super':
+                origination_date_element = transac_grp_element.find("date")
+                if origination_date_element is not None:
+                    origination_date = origination_date_element.text
+                    break
+
+
+        concept.firstCreateEventOn = origination_date
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):

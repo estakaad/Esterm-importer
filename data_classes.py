@@ -58,6 +58,8 @@ class Word:
 @dataclass
 class Concept:
     datasetCode: str
+    manualEventOn: str
+    firstCreateEventOn: str
     domains: List[Domain] = field(default_factory=list)
     definitions: List[Definition] = field(default_factory=list)
     notes: List[Note] = field(default_factory=list)
