@@ -227,7 +227,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
         source_link_specific) if source_link_specific else '')
 
     source_links.append(
-        data_classes.sourceLink(find_source_by_name(updated_sources, source_name), searchValue=source_name,
+        data_classes.Sourcelink(find_source_by_name(updated_sources, source_name), searchValue=source_name,
                                 value=value_for_displaying.strip(']')))
 
     return usage_value, source_links
@@ -348,7 +348,7 @@ def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element
                         if match:
                             search_value = link.replace(match, '').strip()
                             value = match.strip()
-                            source_links.append(data_classes.sourceLink(
+                            source_links.append(data_classes.Sourcelink(
                                 sourceId=find_source_by_name(name_to_ids_map, search_value),
                                 searchValue=search_value,
                                 value=search_value + ' ' + value
@@ -356,7 +356,7 @@ def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element
                         else:
                             logger.warning(f'Error parsing definition: {definition_element.itertext()}')
                     else:
-                        source_links.append(data_classes.sourceLink(
+                        source_links.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_ids_map, link.strip()),
                             searchValue=link.strip(),
                             value=link.strip()
@@ -373,7 +373,7 @@ def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element
         links = re.search(links_pattern, ''.join(definition_element.itertext())).group(0)
         links = links.strip(' []').split(';')
         for link in links:
-            source_links.append(data_classes.sourceLink(
+            source_links.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_ids_map, link.strip()),
                 searchValue=link.strip(),
                 value=link.strip()
@@ -495,7 +495,7 @@ def create_definition_object(lang, definition_element, updated_sources):
             search_value = xref_link_value_str
             value = xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else "")
 
-        source_links.append(data_classes.sourceLink(
+        source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(updated_sources, xref_link_value_str),
             searchValue=search_value,
             value=value
@@ -508,7 +508,7 @@ def create_definition_object(lang, definition_element, updated_sources):
             search_value = text_in_bracket
             value = text_in_bracket
 
-        source_links.append(data_classes.sourceLink(
+        source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(updated_sources, search_value),
             searchValue=search_value,
             value=value
@@ -549,12 +549,12 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
                 if xref_match:
                     searchValue = expert_item[xref_match.end():].strip()
                     value = xref_match.group(1) + ' '+ expert_item[xref_match.end():].strip()
-                    source_link = data_classes.sourceLink(
+                    source_link = data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_ids_map, searchValue), searchValue=searchValue, value=value)
                 else:
                     logger.warning('EKSPERT in lexeme sourcelinks, but failed to extract the value.')
             else:
-                source_link = data_classes.sourceLink(
+                source_link = data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_ids_map, expert_item.replace("EKSPERT ", "", 1)),
                     searchValue=expert_item.replace("EKSPERT ", "", 1),
                     value=expert_item)
@@ -568,13 +568,13 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
             if xref_match:
                 searchValue = xref_match.group(1)
                 value = item[xref_match.end():].strip()
-                source_link = data_classes.sourceLink(sourceId=find_source_by_name(name_to_ids_map, searchValue.strip('[]')),
+                source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, searchValue.strip('[]')),
                                                       searchValue=searchValue.strip('[]'),
                                                       value=(searchValue + ' ' + value).strip())
             else:
                 searchValue = item
                 value = item
-                source_link = data_classes.sourceLink(sourceId=find_source_by_name(name_to_ids_map, searchValue.strip('[]')),
+                source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, searchValue.strip('[]')),
                                                       searchValue=searchValue.strip('[]'),
                                                       value=value)
                 continue
@@ -593,7 +593,7 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
 
             value = value.strip()
 
-            source_link = data_classes.sourceLink(
+            source_link = data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_ids_map, searchValue),
                 searchValue=searchValue.strip('[]'),
                 value=(searchValue + ' ' + value).strip())

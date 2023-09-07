@@ -23,17 +23,17 @@ esterm_filename = 'files/input/esterm.xml'
 #updated_sources_file = requests_sources.assign_ids_to_all_sources(sources_output_json_filename)
 
 # 3. Map source names to their ID-s
-#with open('files/output/sources_with_ids.json', 'r', encoding='utf-8') as f:
-#   updated_sources = json.load(f)
+with open('files/output/sources_with_ids.json', 'r', encoding='utf-8') as f:
+   updated_sources = json.load(f)
 
-#name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
+name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
 
 # 3. Export concepts from XML. Returns files/output/concepts.json and files/output/aviation_concepts.json
-#parse_concepts.transform_esterm_to_json(name_to_id_map)
+parse_concepts.transform_esterm_to_json(name_to_id_map)
 
 # 4. Import all concepts from file files/output/concepts.json or files/output/aviation_concepts.json.
 # List of ID-s of concepts is saved to files/output/
-requests_concepts.import_concepts('files/output/aviation_concepts.json')
+#requests_concepts.import_concepts('files/output/aviation_concepts.json')
 
 
 ######################

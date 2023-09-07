@@ -16,15 +16,15 @@ def parse_mtf(root, name_to_id_map):
     aviation_concepts = []
 
     # For testing #
-    #counter = 1
+    counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # For testing
-        # if counter % 500 == 0:
-        #     logger.info(f'counter: {counter}')
-        #     break
-        #
-        # counter += 1
+        if counter % 10 == 0:
+            logger.info(f'counter: {counter}')
+            break
+
+        counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest')
@@ -48,6 +48,11 @@ def parse_mtf(root, name_to_id_map):
         else:
             list_to_append = concepts
             logger.debug('Concept will be added to the general list of concepts.')
+
+        # Get concept ID
+        concept_id = conceptGrp.find('concept').text
+        concept.conceptIds.append(concept_id)
+        logger.info(f'Added concept ID {concept_id}')
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):
@@ -82,7 +87,7 @@ def parse_mtf(root, name_to_id_map):
                         source_links = []
 
                         source_links.append(
-                            data_classes.sourceLink(
+                            data_classes.Sourcelink(
                                 sourceId=xml_helpers.find_source_by_name(name_to_id_map, source_search_value),
                                 searchValue=source_search_value,
                                 value=source_display_value
@@ -244,7 +249,7 @@ def parse_words(conceptGrp, name_to_id_map):
                     for link in sourcelinks:
                         if link.value.startswith('EKSPERT'):
                             word.lexemeSourceLinks.append(
-                                data_classes.sourceLink(
+                                data_classes.Sourcelink(
                                     sourceId=link.sourceId,
                                     searchValue=link.searchValue,
                                     value=link.value
@@ -252,7 +257,7 @@ def parse_words(conceptGrp, name_to_id_map):
                             )
                         else:
                             word.lexemeSourceLinks.append(
-                                data_classes.sourceLink(
+                                data_classes.Sourcelink(
                                     sourceId=link.sourceId,
                                     searchValue=link.searchValue,
                                     value=link.value
@@ -273,7 +278,7 @@ def parse_words(conceptGrp, name_to_id_map):
                         display_value = 'EKSPERT ' + source
 
                         source_links.append(
-                            data_classes.sourceLink(
+                            data_classes.Sourcelink(
                                 sourceId=xml_helpers.find_source_by_name(name_to_id_map, source),
                                 searchValue=source,
                                 value=display_value
@@ -287,7 +292,7 @@ def parse_words(conceptGrp, name_to_id_map):
                                 display_value = source
 
                             source_links.append(
-                                data_classes.sourceLink(
+                                data_classes.Sourcelink(
                                     sourceId=xml_helpers.find_source_by_name(name_to_id_map, source),
                                     searchValue=source,
                                     value=display_value
@@ -301,7 +306,7 @@ def parse_words(conceptGrp, name_to_id_map):
 
                     if source_links:
                         word.lexemeNotes.append(
-                            data_classes.lexemeNote(
+                            data_classes.Lexemenote(
                                 value=text_before_bracket,
                                 lang=note_lang,
                                 publicity=word.lexemePublicity,
@@ -310,7 +315,7 @@ def parse_words(conceptGrp, name_to_id_map):
                         )
                     else:
                         word.lexemeNotes.append(
-                            data_classes.lexemeNote(
+                            data_classes.Lexemenote(
                                 value=text_before_bracket,
                                 lang=note_lang,
                                 publicity=word.lexemePublicity
