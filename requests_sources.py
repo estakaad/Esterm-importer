@@ -12,7 +12,8 @@ logger = log_config.get_logger()
 load_dotenv()
 api_key = os.environ.get("API_KEY")
 parameters = {}
-crud_role_dataset = os.environ.get("ESTERM")
+#crud_role_dataset = os.environ.get("ESTERM")
+crud_role_dataset = os.environ.get("AVI")
 
 header = {"ekilex-api-key": api_key}
 parameters = {"crudRoleDataset": crud_role_dataset}

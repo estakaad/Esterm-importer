@@ -598,7 +598,7 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
                 searchValue=searchValue.strip('[]'),
                 value=(searchValue + ' ' + value).strip())
 
-        print(source_link)
+        #print(source_link)
         source_links.append(source_link)
 
     return source_links
@@ -703,7 +703,8 @@ def find_source_by_name(name_to_ids_map, name):
     if source_ids is None:
         logger.warning(f"Warning: Source ID for '{name}' not found.")
         print(name)
-        return None
+        # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
+        return '53361'
 
     if len(source_ids) == 1:
         logger.info(f"Source ID for '{name}' is {source_ids[0]}")

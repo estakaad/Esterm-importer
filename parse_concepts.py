@@ -16,15 +16,15 @@ def parse_mtf(root, name_to_id_map):
     aviation_concepts = []
 
     # For testing #
-    counter = 1
+    #counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # For testing
-        if counter % 500 == 0:
-            logger.info(f'counter: {counter}')
-            break
-
-        counter += 1
+        # if counter % 500 == 0:
+        #     logger.info(f'counter: {counter}')
+        #     break
+        #
+        # counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest')

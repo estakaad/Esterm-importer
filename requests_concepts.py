@@ -1,8 +1,9 @@
 import requests
 import json
+import os
 from dotenv import load_dotenv
 import log_config
-import os
+from datetime import datetime
 
 
 logger = log_config.get_logger()
@@ -21,40 +22,56 @@ def set_up_requests():
     return parameters, header
 
 
-def import_concepts(file, max_objects=None):
-
+def import_concepts(file, max_objects=5):
     with open(file, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     counter = 0
-
-    list_of_concepts_saved = []
+    concepts_saved = []
+    concepts_not_saved = []
 
     for concept in data:
+        if max_objects is not None and counter >= max_objects:
+            break
+
         try:
-            if max_objects is not None and counter >= max_objects:
+            concept_id = save_concept(concept)
+
+            if concept_id:
+                transformed_concept = concept
+                transformed_concept['id'] = concept_id
+                concepts_saved.append(transformed_concept)
+                counter += 1
+
+            else:
+                concepts_not_saved.append(concept)
+                remaining = max_objects - counter - 1
+
+                concepts_not_saved.extend(data[counter+1:counter+1+remaining])
+                logger.error("Response code was 200 but no ID received. Stopping processing.")
                 break
 
-            concept_id = save_concept(concept)
-            list_of_concepts_saved.append(concept_id)
+        except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout, requests.exceptions.RequestException) as e:
+            concepts_not_saved.append(concept)
 
-            counter += 1
+            remaining = max_objects - counter - 1
+            concepts_not_saved.extend(data[counter+1:counter+1+remaining])
+            logger.exception("Error: %s. Stopping processing.", e)
+            break
 
-        except requests.exceptions.HTTPError as errh:
-            logger.exception("Http error {e}".format(e=errh))
-        except requests.exceptions.ConnectionError as errc:
-            logger.exception("Error connecting {e}".format(e=errc))
-        except requests.exceptions.Timeout as errt:
-            logger.exception("Timeout error {e}".format(e=errt))
-        except requests.exceptions.RequestException as err:
-            logger.exception("Unknown error {e}".format(e=err))
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    saved_filename = f'files/import/{timestamp}_concepts_saved.json'
+    not_saved_filename = f'files/import/{timestamp}_concepts_not_saved.json'
 
-    with open('files/output/list_of_concepts_saved.json', 'w', encoding='utf-8') as f:
-        json.dump(list_of_concepts_saved, f)
+    with open(saved_filename, 'w', encoding='utf-8') as f:
+        json.dump(concepts_saved, f, ensure_ascii=False, indent=4)
+
+    with open(not_saved_filename, 'w', encoding='utf-8') as f:
+        json.dump(concepts_not_saved, f, ensure_ascii=False, indent=4)
 
 
 def save_concept(concept):
-
     parameters, header = set_up_requests()
 
     res = requests.post(
@@ -62,7 +79,9 @@ def save_concept(concept):
         params=parameters,
         json=concept,
         headers=header, timeout=3)
-    res.raise_for_status()
+
+    if res.status_code != 200:
+        raise requests.exceptions.HTTPError(f"Received {res.status_code} status code.")
 
     response_json = res.json()
     concept_id = response_json.get('id')
