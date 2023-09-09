@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from lxml import etree
 import json
 import xml_helpers
@@ -60,16 +60,30 @@ def parse_mtf(root, name_to_id_map):
         transac_grp_elements = conceptGrp.findall(".//transacGrp")
 
         origination_date = None
+        manual_event_on = None
+
         for transac_grp_element in transac_grp_elements:
             transac_element = transac_grp_element.find("transac[@type='origination']")
-            if transac_element is not None and transac_element.text == 'super':
+
+            if transac_element is not None:
                 origination_date_element = transac_grp_element.find("date")
                 if origination_date_element is not None:
                     origination_date = origination_date_element.text
-                    break
 
+            transac_element = transac_grp_element.find("transac[@type='modification']")
 
-        concept.firstCreateEventOn = origination_date
+            if transac_element is not None:
+                manual_event_on_element = transac_grp_element.find("date")
+                if manual_event_on_element is not None:
+                    manual_event_on = manual_event_on_element.text
+
+        if origination_date:
+            origination_date = datetime.strptime(origination_date, "%Y-%m-%dT%H:%M:%S")
+            concept.firstCreateEventOn = origination_date.strftime('%d.%m.%Y')
+
+        if manual_event_on:
+            manual_event_on = datetime.strptime(manual_event_on, "%Y-%m-%dT%H:%M:%S")
+            concept.manualEventOn = manual_event_on.strftime('%d.%m.%Y')
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):
