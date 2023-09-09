@@ -28,7 +28,11 @@ def parse_mtf(root, name_to_id_map):
         counter += 1
         # End
 
-        concept = data_classes.Concept(datasetCode='estermtest', manualEventOn=None, firstCreateEventOn=None)
+        concept = data_classes.Concept(datasetCode='estermtest',
+                                       manualEventOn=None,
+                                       manualEventPerson=None,
+                                       firstCreateEventOn=None,
+                                       firstCreateEventPerson=None)
         logger.info("Started parsing concept.")
 
         type_of_concept = xml_helpers.type_of_concept(conceptGrp)
@@ -56,34 +60,28 @@ def parse_mtf(root, name_to_id_map):
         logger.info(f'Added concept ID {concept_id}')
 
         # Get origination date
-        # Find all transacGrp elements
-        transac_grp_elements = conceptGrp.findall(".//transacGrp")
+        origination_transac_grp_element = conceptGrp.find(".//transacGrp/transac[@type='origination']/..")
+        modification_transac_grp_element = conceptGrp.find(".//transacGrp/transac[@type='modification']/..")
 
-        origination_date = None
-        manual_event_on = None
+        if origination_transac_grp_element is not None:
+            origination_date_element = origination_transac_grp_element.find("date")
+            if origination_date_element is not None:
+                origination_date = origination_date_element.text
+                origination_date_object = datetime.strptime(origination_date, "%Y-%m-%dT%H:%M:%S")
+                concept.firstCreateEventOn = origination_date_object.strftime('%d.%m.%Y')
+                transac_element = origination_transac_grp_element.find("transac")
+                if transac_element is not None:
+                    concept.firstCreateEventPerson = transac_element.text
 
-        for transac_grp_element in transac_grp_elements:
-            transac_element = transac_grp_element.find("transac[@type='origination']")
-
-            if transac_element is not None:
-                origination_date_element = transac_grp_element.find("date")
-                if origination_date_element is not None:
-                    origination_date = origination_date_element.text
-
-            transac_element = transac_grp_element.find("transac[@type='modification']")
-
-            if transac_element is not None:
-                manual_event_on_element = transac_grp_element.find("date")
-                if manual_event_on_element is not None:
-                    manual_event_on = manual_event_on_element.text
-
-        if origination_date:
-            origination_date = datetime.strptime(origination_date, "%Y-%m-%dT%H:%M:%S")
-            concept.firstCreateEventOn = origination_date.strftime('%d.%m.%Y')
-
-        if manual_event_on:
-            manual_event_on = datetime.strptime(manual_event_on, "%Y-%m-%dT%H:%M:%S")
-            concept.manualEventOn = manual_event_on.strftime('%d.%m.%Y')
+        if modification_transac_grp_element is not None:
+            modification_date_element = modification_transac_grp_element.find("date")
+            if modification_date_element is not None:
+                modification_date = modification_date_element.text
+                modification_date_object = datetime.strptime(modification_date, "%Y-%m-%dT%H:%M:%S")
+                concept.manualEventOn = modification_date_object.strftime('%d.%m.%Y')
+                transac_element = modification_transac_grp_element.find("transac")
+                if transac_element is not None:
+                    concept.manualEventPerson = transac_element.text
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):
