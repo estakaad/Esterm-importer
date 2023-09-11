@@ -60,9 +60,9 @@ class Word:
 class Concept:
     datasetCode: str
     manualEventOn: str
-    manualEventPerson: str
+    manualEventBy: str
     firstCreateEventOn: str
-    firstCreateEventPerson: str
+    firstCreateEventBy: str
     domains: List[Domain] = field(default_factory=list)
     definitions: List[Definition] = field(default_factory=list)
     notes: List[Note] = field(default_factory=list)
