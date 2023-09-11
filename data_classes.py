@@ -11,6 +11,7 @@ class Sourcelink:
     sourceId: int
     searchValue: str
     value: str
+    #name: str
 
 @dataclass
 class Definition:

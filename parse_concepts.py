@@ -139,9 +139,15 @@ def parse_mtf(root, name_to_id_map):
 
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
+
+                worksheet = descrip_element_value.replace("\n", "").replace("\t", "")
+                if ' ' not in worksheet:
+                    worksheet = 'Tööleht: ' + worksheet
+
                 concept.forums.append(data_classes.Forum(
-                    value=descrip_element_value.replace("\n", "").replace("\t", "")
-                ))
+                    value=worksheet)
+                )
+
                 if descrip_element_value:
                     logger.debug('Added tööleht to forums: %s', descrip_element_value.replace("\n", "").replace("\t", ""))
 
