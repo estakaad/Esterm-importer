@@ -203,6 +203,7 @@ def remove_whitespace_before_numbers(value: str) -> str:
 # Returns the usage ("Kontekst") value without the source link + sourcelinks
 def extract_usage_and_its_sourcelink(element, updated_sources):
     source_links = []
+    concept_notes = []
     full_text = ''.join(element.itertext())
     usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
     usage_value = usage_value.strip()
@@ -225,12 +226,27 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
 
     name = source_link_name if source_link_name else ''
 
-    source_links.append(
-        data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_name),
-                                value=source_name,
-                                name=name.strip(']')))
+    if 'PÄRING' in source_name:
+        source_links.append(
+            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'PÄRING'),
+                                    value='Päring',
+                                    name=''))
+        if source_info:
+            concept_notes.append(
+                data_classes.Note(
+                value='Päring: ' + source_info.replace('PÄRING', '').strip(),
+                lang='est',
+                publicity=False
+                )
+            )
 
-    return usage_value, source_links
+    else:
+        source_links.append(
+            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_name),
+                                    value=source_name,
+                                    name=name.strip(']')))
+
+    return usage_value, source_links, concept_notes
 
 
 ######################################
@@ -561,6 +577,13 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
                     name=''
                 )
 
+        elif "PÄRING" in item:
+            source_link = data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_ids_map, 'PÄRING'),
+                value='Päring',
+                name=''
+            )
+
         # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
         elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
             if item.startswith('[') and item.endswith(']'):
@@ -703,14 +726,21 @@ def create_name_to_id_mapping(sources):
 def find_source_by_name(name_to_ids_map, name):
     if name:
         name.strip('[]')
+
     source_ids = name_to_ids_map.get(name)
 
     if source_ids is None:
         logger.warning(f"Warning: Source ID for '{name}' not found.")
-        #print(name)
+
+        if name is not None:
+            if "PÄRING" in name:
+                return 53362
+            else:
+                return None
+        else:
         # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
         #return '53361'
-        return None
+            return None
 
     if len(source_ids) == 1:
         logger.info(f"Source ID for '{name}' is {source_ids[0]}")

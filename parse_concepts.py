@@ -170,7 +170,7 @@ def parse_mtf(root, name_to_id_map):
             logger.info('Added concept forum: %s', str(concept.forums))
 
         # Concept level data is parsed, now to parsing word (term) level data
-        words, definitions = parse_words(conceptGrp, name_to_id_map)
+        words, definitions, concept_notes = parse_words(conceptGrp, name_to_id_map)
 
         for word in words:
             concept.words.append(word)
@@ -178,6 +178,9 @@ def parse_mtf(root, name_to_id_map):
         for definition in definitions:
             #concept.definitions.append(xml_helpers.extract_definition_source_links(definition, updated_sources))
             concept.definitions.append(definition)
+
+        for note in concept_notes:
+            concept.notes.append(note)
 
         list_to_append.append(concept)
         logger.info('Finished parsing concept.')
@@ -190,6 +193,7 @@ def parse_words(conceptGrp, name_to_id_map):
 
     words = []
     definitions = []
+    notes_for_concept = []
     is_public = xml_helpers.are_terms_public(conceptGrp)
     logger.debug('Is concept public? %s', is_public)
 
@@ -259,7 +263,10 @@ def parse_words(conceptGrp, name_to_id_map):
 
                 if descrip_type == 'Kontekst':
 
-                    updated_value, source_links = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map)
+                    updated_value, source_links, concept_notes = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map)
+
+                    for note in concept_notes:
+                        notes_for_concept.append(note)
 
                     word.usages.append(
                         data_classes.Usage(
@@ -358,7 +365,7 @@ def parse_words(conceptGrp, name_to_id_map):
         if word.lexemeNotes:
             logger.info('Added word notes: %s', str(word.lexemeNotes))
 
-    return words, definitions
+    return words, definitions, notes_for_concept
 
 
 # Write aviation concepts, all other concepts and domains to separate JSON files
