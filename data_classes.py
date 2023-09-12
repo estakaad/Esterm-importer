@@ -9,9 +9,8 @@ class Domain:
 @dataclass
 class Sourcelink:
     sourceId: int
-    searchValue: str
     value: str
-    #name: str
+    name: str
 
 @dataclass
 class Definition:
@@ -55,6 +54,7 @@ class Word:
     usages: List[Usage] = field(default_factory=list)
     lexemeNotes: List[Lexemenote] = field(default_factory=list)
     lexemeSourceLinks: List[Sourcelink] = field(default_factory=list)
+
 
 @dataclass
 class Concept:

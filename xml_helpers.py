@@ -212,23 +212,23 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
 
     xref_element = element.find('.//xref')
     source_name = xref_element.text if xref_element is not None else ''
-    source_link_specific = None
+    source_link_name = None
 
     # 'Abiteenistujatele laienevad töölepingu seadus ja muud tööseadused niivõrd,
     # kuivõrd käesoleva seaduse või avalikku teenistust reguleerivate eriseadustega
     # ei sätestata teisiti. [<xref Tlink="Allikas:X0002">X0002</xref> §13-2]'
     if xref_element is not None and xref_element.tail:
-        source_link_specific = xref_element.tail.strip()
+        source_link_name = xref_element.tail.strip()
     # 'Parents who are raising children have the right to assistance from the state. [77184]'
     elif source_info:
         source_name = source_info
 
-    value_for_displaying = (source_name if source_name else '') + ((' ' +
-        source_link_specific) if source_link_specific else '')
+    name = source_link_name if source_link_name else ''
 
     source_links.append(
-        data_classes.Sourcelink(find_source_by_name(updated_sources, source_name), searchValue=source_name,
-                                value=value_for_displaying.strip(']')))
+        data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_name),
+                                value=source_name,
+                                name=name.strip(']')))
 
     return usage_value, source_links
 
@@ -267,8 +267,8 @@ def edit_note_with_multiple_languages(note):
 
 def edit_note_without_multiple_languages(note):
 
-    sourcelink_searchvalue = ''
-    sourcelink_display_value = ''
+    value = ''
+    name=''
 
     # Extract date
     date_pattern = r'[\{\[]\{*\w+\}*\s*\d+[\.\\]\d+[\.\\]\d+[\}\]]$'
@@ -308,11 +308,11 @@ def edit_note_without_multiple_languages(note):
             remaining_text = source.split('</xref>')[-1].strip()
 
             if inside_xref == 'EKSPERT':
-                sourcelink_searchvalue = remaining_text
-                sourcelink_display_value = inside_xref + ' ' + remaining_text.replace(']','')
+                value = remaining_text
+                name = ''
             else:
-                sourcelink_searchvalue = inside_xref
-                sourcelink_display_value = inside_xref + ((' ' + remaining_text.replace(']','')) if remaining_text else '')
+                value = inside_xref
+                name = remaining_text.replace(']','')
 
             last_instance_index = note_without_date.rfind(source)
 
@@ -322,7 +322,7 @@ def edit_note_without_multiple_languages(note):
 
     note = note_without_date + ((' ' + date) if date else '')
 
-    return note, sourcelink_searchvalue.replace(']',''), sourcelink_display_value
+    return note, value.replace(']',''), name
 
 
 ##########################################
@@ -350,16 +350,16 @@ def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element
                             value = match.strip()
                             source_links.append(data_classes.Sourcelink(
                                 sourceId=find_source_by_name(name_to_ids_map, search_value),
-                                searchValue=search_value,
-                                value=search_value + ' ' + value
+                                value=search_value,
+                                name=value
                             ))
                         else:
                             logger.warning(f'Error parsing definition: {definition_element.itertext()}')
                     else:
                         source_links.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_ids_map, link.strip()),
-                            searchValue=link.strip(),
-                            value=link.strip()
+                            value=link.strip(),
+                            name=''
                         ))
                 text_pattern = r'(.*)\s\[.*;.*\]'
                 text = re.search(text_pattern, ''.join(definition_element.itertext())).group(1)
@@ -375,8 +375,8 @@ def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element
         for link in links:
             source_links.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_ids_map, link.strip()),
-                searchValue=link.strip(),
-                value=link.strip()
+                value=link.strip(),
+                name=''
             ))
         text_pattern = r'(.*)\s\[.*;.*\]'
         text = re.search(text_pattern, ''.join(definition_element.itertext())).group(1)
@@ -497,8 +497,8 @@ def create_definition_object(lang, definition_element, updated_sources):
 
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(updated_sources, xref_link_value_str),
-            searchValue=search_value,
-            value=value
+            value=search_value,
+            name=text_after_xref_str
         ))
     else:
         if text_in_bracket and text_in_bracket.startswith('EKSPERT {'):
@@ -510,8 +510,8 @@ def create_definition_object(lang, definition_element, updated_sources):
 
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(updated_sources, search_value),
-            searchValue=search_value,
-            value=value
+            value=search_value,
+            name=''
         ))
 
     return data_classes.Definition(
@@ -547,17 +547,19 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
             if expert_item.startswith('<xref'):
                 xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', expert_item)
                 if xref_match:
-                    searchValue = expert_item[xref_match.end():].strip()
-                    value = xref_match.group(1) + ' '+ expert_item[xref_match.end():].strip()
+                    value = expert_item[xref_match.end():].strip()
                     source_link = data_classes.Sourcelink(
-                        sourceId=find_source_by_name(name_to_ids_map, searchValue), searchValue=searchValue, value=value)
+                        sourceId=find_source_by_name(name_to_ids_map, value),
+                        value=value,
+                        name='')
                 else:
                     logger.warning('EKSPERT in lexeme sourcelinks, but failed to extract the value.')
             else:
                 source_link = data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_ids_map, expert_item.replace("EKSPERT ", "", 1)),
-                    searchValue=expert_item.replace("EKSPERT ", "", 1),
-                    value=expert_item)
+                    value=expert_item.replace("EKSPERT ", "", 1),
+                    name=''
+                )
 
         # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
         elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
@@ -566,39 +568,41 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
 
             xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', item)
             if xref_match:
-                searchValue = xref_match.group(1)
-                value = item[xref_match.end():].strip()
-                source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, searchValue.strip('[]')),
-                                                      searchValue=searchValue.strip('[]'),
-                                                      value=(searchValue + ' ' + value).strip())
+                value = xref_match.group(1)
+                name = item[xref_match.end():].strip()
+                source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, value.strip('[]')),
+                                                      value=value.strip('[]'),
+                                                      name=name.strip()
+                                                      )
             else:
-                searchValue = item
                 value = item
-                source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, searchValue.strip('[]')),
-                                                      searchValue=searchValue.strip('[]'),
-                                                      value=value)
+                name = item
+                source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, value.strip('[]')),
+                                                      value=value.strip('[]'),
+                                                      name=name)
+
                 continue
         else:
             try:
                 # <xref Tlink="Allikas:TER-PLUS">TER-PLUS</xref>
                 item_element = ET.fromstring(item)
-                searchValue = item_element.text
-                value = item_element.tail if item_element.tail else ""
+                value = item_element.text
+                name = item_element.tail if item_element.tail else ""
             except ET.ParseError:
                 # If it's not XML, treat it as a valid string
                 # ÕL
                 # PS-2015/05
-                searchValue = item
-                value = ""
+                value = item
+                name = ""
 
-            value = value.strip()
+            name = name.strip()
 
             source_link = data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, searchValue),
-                searchValue=searchValue.strip('[]'),
-                value=(searchValue + ' ' + value).strip())
+                sourceId=find_source_by_name(name_to_ids_map, value),
+                value=value.strip('[]'),
+                name=name.strip()
+            )
 
-        #print(source_link)
         source_links.append(source_link)
 
     return source_links
@@ -666,6 +670,7 @@ def extract_lexeme_note_and_its_sourcelinks(string):
     # print('lexeme note date string: ' + date_string)
     # print('lexeme note source: ' + source)
     # print('lexeme note tail: ' + tail)
+
     return text_before_bracket, date_string, source, tail
 
 
