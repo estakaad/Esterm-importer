@@ -17,15 +17,15 @@ def parse_mtf(root, name_to_id_map):
     aviation_concepts = []
 
     # For testing #
-    counter = 1
+    #counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # For testing
-        if counter % 1000 == 0:
-            logger.info(f'counter: {counter}')
-            break
-
-        counter += 1
+        # if counter % 1000 == 0:
+        #     logger.info(f'counter: {counter}')
+        #     break
+        #
+        # counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest',
@@ -113,7 +113,6 @@ def parse_mtf(root, name_to_id_map):
                     ))
                 else:
                     if value:
-                        print(raw_note_value)
                         source_links = []
 
                         source_links.append(
@@ -282,23 +281,13 @@ def parse_words(conceptGrp, name_to_id_map):
                     sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
 
                     for link in sourcelinks:
-                        if link.value.startswith('EKSPERT'):
-                            word.lexemeSourceLinks.append(
-                                data_classes.Sourcelink(
-                                    sourceId=link.sourceId,
-                                    value=link.value,
-                                    name=link.name
-                                )
+                        word.lexemeSourceLinks.append(
+                            data_classes.Sourcelink(
+                                sourceId=link.sourceId,
+                                value=link.value,
+                                name=link.name
                             )
-                        else:
-                            word.lexemeSourceLinks.append(
-                                data_classes.Sourcelink(
-                                    sourceId=link.sourceId,
-                                    value=link.value,
-                                    name=link.name
-                                )
-                            )
-
+                        )
 
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip().replace('\u200b', '')
@@ -313,7 +302,7 @@ def parse_words(conceptGrp, name_to_id_map):
 
                         source_links.append(
                             data_classes.Sourcelink(
-                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, source),
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
                                 value=value,
                                 name=name
                             )

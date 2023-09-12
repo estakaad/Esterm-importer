@@ -31,7 +31,11 @@ name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
 # 3. Export concepts from XML. Returns files/output/concepts.json and files/output/aviation_concepts.json
 parse_concepts.transform_esterm_to_json(name_to_id_map)
 
-# 4. Import all concepts from file files/output/concepts.json or files/output/aviation_concepts.json.
+# TODO
+# 4. Check if word exists. If it does, add its ID
+
+
+# 5. Import all concepts from file files/output/concepts.json or files/output/aviation_concepts.json.
 # List of ID-s of concepts is saved to files/output/
 #requests_concepts.import_concepts('files/output/aviation_concepts.json')
 
