@@ -11,6 +11,7 @@ logger = log_config.get_logger()
 logger.handlers = []
 logger.propagate = False
 
+
 def set_up_requests():
     load_dotenv()
     api_key = os.environ.get("API_KEY")
@@ -93,3 +94,44 @@ def save_concept(concept):
                 concept_id)
 
     return concept_id
+
+
+def update_word_ids(filename, dataset):
+
+    with open(filename, 'r', encoding='utf-8') as file:
+        concepts = json.load(file)
+
+    for concept in concepts:
+        words = concept.get('words', [])
+        for word in words:
+            word_id = get_word_id(word['value'], word['lang'], dataset)
+            if word_id:
+                word['wordId'] = word_id
+
+    with open('files/import/concepts_with_word_ids.json', 'w', encoding='utf-8') as file:
+        json.dump(concepts, file, indent=4, ensure_ascii=False)
+
+
+def get_word_id(word, lang, dataset):
+    parameters, header = set_up_requests()
+
+    res = requests.get(
+        f'https://ekitest.tripledev.ee/ekilex/api/word/ids/{word}/{dataset}/{lang}',
+        params=parameters,
+        headers=header, timeout=3)
+
+    response = res.json()
+
+    if len(response) == 1:
+        word_id = response[0]
+        logger.info(f'There is one {word} in {dataset}')
+        return word_id
+    else:
+        if len(response) > 1:
+            logger.info(f'There are more than one {word} in {dataset}')
+        else:
+            logger.info(f'There is none {word} in {dataset}')
+        return None
+
+
+update_word_ids('test.json', 'eki')
