@@ -97,19 +97,42 @@ def save_concept(concept):
 
 
 def update_word_ids(filename, dataset):
-
     with open(filename, 'r', encoding='utf-8') as file:
         concepts = json.load(file)
+
+    words_without_id = []
+    words_with_more_than_one_id = []
 
     for concept in concepts:
         words = concept.get('words', [])
         for word in words:
-            word_id = get_word_id(word['value'], word['lang'], dataset)
-            if word_id:
-                word['wordId'] = word_id
+
+            word_ids = get_word_id(word['value'], word['lang'], dataset)
+            print(f"IDs for {word['value']}: {word_ids}")
+
+            if len(word_ids) == 1:
+                word['wordId'] = word_ids
+            elif len(word_ids) > 1:
+                words_with_more_than_one_id.append(word)
+            else:
+                words_without_id.append(word)
+
+    print("Words without ID:", words_without_id)
+    print("Words with more than one ID:", words_with_more_than_one_id)
+
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    words_without_id_file = f'files/import/{timestamp}_words_without_id.json'
+    words_with_more_than_one_id_file = f'files/import/{timestamp}_words_with_more_than_one_id.json'
+
+    with open(words_without_id_file, 'w', encoding='utf-8') as f:
+        json.dump(words_without_id, f, ensure_ascii=False, indent=4)
+
+    with open(words_with_more_than_one_id_file, 'w', encoding='utf-8') as f:
+        json.dump(words_with_more_than_one_id, f, ensure_ascii=False, indent=4)
 
     with open('files/import/concepts_with_word_ids.json', 'w', encoding='utf-8') as file:
         json.dump(concepts, file, indent=4, ensure_ascii=False)
+
 
 
 def get_word_id(word, lang, dataset):
@@ -120,18 +143,8 @@ def get_word_id(word, lang, dataset):
         params=parameters,
         headers=header, timeout=3)
 
-    response = res.json()
-
-    if len(response) == 1:
-        word_id = response[0]
-        logger.info(f'There is one {word} in {dataset}')
-        return word_id
+    if res.status_code == 200:
+        response = res.json()
+        return response
     else:
-        if len(response) > 1:
-            logger.info(f'There are more than one {word} in {dataset}')
-        else:
-            logger.info(f'There is none {word} in {dataset}')
         return None
-
-
-update_word_ids('test.json', 'eki')
