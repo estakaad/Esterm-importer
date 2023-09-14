@@ -21,9 +21,9 @@ def parse_mtf(root, name_to_id_map):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # For testing
-        if counter % 100 == 0:
-            logger.info(f'counter: {counter}')
-            break
+        if counter % 500 == 0:
+           logger.info(f'counter: {counter}')
+           break
 
         counter += 1
         # End
@@ -215,18 +215,19 @@ def parse_words(conceptGrp, name_to_id_map):
             definition = descripGrp.find('./descrip')
 
             semicolon_in_brackets = r'\s\[.*;.*\]'
+            notes_extracted_from_sourcelink = []
 
             if re.search(semicolon_in_brackets, ''.join(descripGrp.itertext())):
                 definition_object = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
             else:
-                definition_object, expert_note_object = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
+                definition_object, notes_extracted_from_sourcelink = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
 
             definitions.append(definition_object)
 
-            if expert_note_object:
-                if expert_note_object.value is not None:
-                    print('1: ' + definition_object)
-                    notes_for_concept.append(expert_note_object)
+            if notes_extracted_from_sourcelink:
+                for note in notes_extracted_from_sourcelink:
+                    #print('1: ' + definition_object)
+                    notes_for_concept.append(note)
 
         termGrps = languageGrp.xpath('termGrp')
 
@@ -270,7 +271,7 @@ def parse_words(conceptGrp, name_to_id_map):
                         definition_object, expert_note_object = xml_helpers.create_definition_object(word.lang, definition_element, name_to_id_map)
 
                         definitions.append(definition_object)
-                        print('2: ' + definition_object.value)
+
                         if expert_note_object:
                             notes_for_concept.append(expert_note_object)
 
@@ -280,7 +281,7 @@ def parse_words(conceptGrp, name_to_id_map):
 
                     if concept_notes:
                         for note in concept_notes:
-                            print('3: ' + updated_value)
+                            #print('3: ' + updated_value)
                             notes_for_concept.append(note)
 
                     word.usages.append(
@@ -300,12 +301,11 @@ def parse_words(conceptGrp, name_to_id_map):
                     # Remove the outer tags to get only the inner XML
                     inner_xml = full_string.split('>', 1)[1].rsplit('<', 1)[0].strip()
 
-                    sourcelinks, expert_note = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
+                    sourcelinks, concept_notes_from_sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
 
-                    if expert_note:
-                        if expert_note.value is not None:
-                            print('4: ' + 'test')
-                            notes_for_concept.append(expert_note)
+                    if concept_notes_from_sourcelinks:
+                        for note in concept_notes_from_sourcelinks:
+                            notes_for_concept.append(note)
 
                     for link in sourcelinks:
                         word.lexemeSourceLinks.append(
@@ -324,7 +324,7 @@ def parse_words(conceptGrp, name_to_id_map):
 
                     if expert_note:
                         if expert_note.value is not None:
-                            print('5: ' + source)
+                            #print('5: ' + source)
                             notes_for_concept.append(expert_note)
 
                     source_links = []

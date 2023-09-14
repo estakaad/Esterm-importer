@@ -204,6 +204,7 @@ def remove_whitespace_before_numbers(value: str) -> str:
 def extract_usage_and_its_sourcelink(element, updated_sources):
     source_links = []
     concept_notes = []
+
     full_text = ''.join(element.itertext())
     usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
     usage_value = usage_value.strip()
@@ -239,7 +240,45 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                 publicity=False
                 )
             )
-
+    if 'DGT' in source_name:
+        source_links.append(
+            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'DGT'),
+                                    value='Päring',
+                                    name=''))
+        if source_info:
+            concept_notes.append(
+                data_classes.Note(
+                value='DGT: ' + source_info.replace('DGT', '').strip(),
+                lang='est',
+                publicity=False
+                )
+            )
+    if 'PARLAMENT' in source_name:
+        source_links.append(
+            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'PARLAMENT'),
+                                    value='Parlament',
+                                    name=''))
+        if source_info:
+            concept_notes.append(
+                data_classes.Note(
+                value='Parlament: ' + source_info.replace('PARLAMENT', '').strip(),
+                lang='est',
+                publicity=False
+                )
+            )
+    if 'CONSILIUM' in source_name:
+        source_links.append(
+            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'CONSILIUM'),
+                                    value='Consilium',
+                                    name=''))
+        if source_info:
+            concept_notes.append(
+                data_classes.Note(
+                value='Consilium: ' + source_info.replace('CONSILIUM', '').strip(),
+                lang='est',
+                publicity=False
+                )
+            )
     else:
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_name),
@@ -332,6 +371,7 @@ def edit_note_without_multiple_languages(note):
                     lang='est',
                     publicity=False
                 )
+
             else:
                 value = inside_xref
                 name = remaining_text.replace(']','')
@@ -506,23 +546,41 @@ def fix_xml_fragments(fragments, tag_name):
 def create_definition_object(lang, definition_element, updated_sources):
     source_links = []
 
-    expert_note = None
+    notes_extracted_from_sourcelink = []
 
     text_before_xref_str, text_in_bracket, xref_link_value_str, text_after_xref_str = \
         check_definition_content(definition_element)
 
     if xref_link_value_str:
         if xref_link_value_str.startswith('EKSPERT {'):
-            expert_note = data_classes.Note(
+            notes_extracted_from_sourcelink.append(data_classes.Note(
                 value = 'Ekspert: ' + xref_link_value_str[9:-1],
                 lang='est',
                 publicity=False
-            )
+            ))
             value = 'EKSPERT'
             #value = 'EKSPERT ' + xref_link_value_str[9:-1] + (' ' + text_after_xref_str if text_after_xref_str else "")
         else:
             value = xref_link_value_str
+            #print('test 1: ' + value)
+            #print('test 2: ' + xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else ""))
             #value = xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else "")
+
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(updated_sources, xref_link_value_str),
+            value=value,
+            name=text_after_xref_str
+        ))
+
+        if xref_link_value_str.startswith('PÄRING {'):
+            notes_extracted_from_sourcelink.append(data_classes.Note(
+                value = 'Päring: ' + xref_link_value_str[8:-1],
+                lang='est',
+                publicity=False
+            ))
+            value = 'PÄRING'
+        else:
+            value = xref_link_value_str
 
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(updated_sources, xref_link_value_str),
@@ -531,11 +589,11 @@ def create_definition_object(lang, definition_element, updated_sources):
         ))
     else:
         if text_in_bracket and text_in_bracket.startswith('EKSPERT {'):
-            expert_note = data_classes.Note(
+            notes_extracted_from_sourcelink.append(data_classes.Note(
                 value = 'Ekspert: ' + text_in_bracket[9:-1],
                 lang='est',
                 publicity=False
-            )
+            ))
             value = 'EKSPERT'
             #value = 'EKSPERT ' + text_in_bracket[9:-1]
         else:
@@ -553,7 +611,7 @@ def create_definition_object(lang, definition_element, updated_sources):
         sourceLinks=source_links,
         definitionTypeCode='definitsioon')
 
-    return definition_object, expert_note
+    return definition_object, notes_extracted_from_sourcelink
 
 
 ############################################
@@ -563,11 +621,7 @@ def create_definition_object(lang, definition_element, updated_sources):
 # There can be multiple lexeme source links. Split them to separate sourcelink objects.
 def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
     source_links = []
-    expert_note = data_classes.Note(
-        value=None,
-        lang='est',
-        publicity=False
-    )
+    concept_notes = []
 
     # Pre-process the root string to replace '][' or '] [' with '];['
     # and also replace ',' (with optional space) with ';'
@@ -579,37 +633,58 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
     for item in list_of_raw_sourcelinks:
 
         item = item.strip()
+        handled_special_case = False
 
-        # Handle cases where source is an expert
-        if "EKSPERT" in item:
-            stripped_item = item.replace("[", "").replace("]", "")
-            expert_item = stripped_item.replace("{", "").replace("}", "")
-            if expert_item.startswith('<xref'):
-                xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', expert_item)
-                if xref_match:
-                    value = 'EKSPERT'
-                    expert_note.value = 'Ekspert: ' + expert_item[xref_match.end():].strip()
-                    source_link = data_classes.Sourcelink(
-                        sourceId=find_source_by_name(name_to_ids_map, value),
-                        value=value,
-                        name='')
+        special_cases = ['EKSPERT', 'CONSILIUM', 'DGT', 'PÄRING', 'PARLAMENT']
+
+        for case in special_cases:
+            if case in item:
+                stripped_item = item.replace("[", "").replace("]", "")
+                special_item = stripped_item.replace("{", "").replace("}", "")
+                if special_item.startswith('<xref'):
+                    xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', special_item)
+                    if xref_match:
+                        concept_notes.append(data_classes.Note(
+                            value=case + ': ' + special_item[xref_match.end():].strip().replace('EKSPERT ', ''),
+                            lang='est',
+                            publicity=False
+                        ))
+
+                        source_link = data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_ids_map, case),
+                            value=case,
+                            name='')
+                        source_links.append(source_link)
+                        handled_special_case = True
+                        break
+                    else:
+                        logger.warning(case + ' in lexeme sourcelinks, but failed to extract the value.')
                 else:
-                    logger.warning('EKSPERT in lexeme sourcelinks, but failed to extract the value.')
-            else:
-                expert_note.value = 'Ekspert: ' + expert_item.replace("EKSPERT ", "", 1)
+                    if special_item.replace(case + ' ', "", 1) != case:
+                        concept_notes.append(data_classes.Note(
+                            value=case + ': ' + special_item.replace(case + ' ', "", 1),
+                            lang='est',
+                            publicity=False
+                        ))
+                    else:
+                        concept_notes.append(data_classes.Note(
+                            value=case,
+                            lang='est',
+                            publicity=False
+                        ))
 
-                source_link = data_classes.Sourcelink(
-                    sourceId=find_source_by_name(name_to_ids_map, 'EKSPERT'),
-                    value='EKSPERT',
-                    name=''
-                )
+                    source_link = data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_ids_map, case),
+                        value=case,
+                        name=''
+                    )
+                    source_links.append(source_link)
+                    handled_special_case = True
+                    break
 
-        elif "PÄRING" in item:
-            source_link = data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, 'PÄRING'),
-                value='Päring',
-                name=''
-            )
+
+        if handled_special_case:
+            continue
 
         # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
         elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
@@ -655,7 +730,7 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
 
         source_links.append(source_link)
 
-    return source_links, expert_note
+    return source_links, concept_notes
 
 
 ######################################
@@ -713,12 +788,13 @@ def extract_lexeme_note_and_its_sourcelinks(string):
     text_before_bracket = text_before_bracket.replace('  ', ' ')
 
     if source.startswith('EKSPERT '):
-        source = 'EKSPERT'
+
         expert_note = data_classes.Note(
-            value='Ekspert: ' + source.replace("{", "").replace("}", ""),
+            value='Ekspert: ' + source.replace("{", "").replace("}", "").replace('EKSPERT ', ''),
             lang='est',
             publicity=False
         )
+        source = 'EKSPERT'
 
     if tail.startswith('EKSPERT '):
         source = 'EKSPERT'
@@ -774,6 +850,7 @@ def find_source_by_name(name_to_ids_map, name):
             if "PÄRING" in name:
                 return 53362
             else:
+                #print(name)
                 return None
         else:
         # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
