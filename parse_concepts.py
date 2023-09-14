@@ -17,15 +17,15 @@ def parse_mtf(root, name_to_id_map):
     aviation_concepts = []
 
     # For testing #
-    #counter = 1
+    counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # For testing
-        # if counter % 1000 == 0:
-        #     logger.info(f'counter: {counter}')
-        #     break
-        #
-        # counter += 1
+        if counter % 100 == 0:
+            logger.info(f'counter: {counter}')
+            break
+
+        counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest',
@@ -103,7 +103,7 @@ def parse_mtf(root, name_to_id_map):
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                 else:
-                    note, value, name = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
+                    note, value, name, expert_note = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
 
                 if note_value:
                     concept.notes.append(data_classes.Note(
@@ -112,6 +112,10 @@ def parse_mtf(root, name_to_id_map):
                         publicity=True
                     ))
                 else:
+                    if expert_note:
+                        if expert_note.value is not None:
+                            concept.notes.append(expert_note)
+                            logger.debug('Added concept expert note: %s', expert_note)
                     if value:
                         source_links = []
 
@@ -134,6 +138,7 @@ def parse_mtf(root, name_to_id_map):
                             lang='est',
                             publicity=True
                         ))
+
 
                 logger.debug('Added concept note: %s', descrip_element_value)
 
@@ -214,9 +219,14 @@ def parse_words(conceptGrp, name_to_id_map):
             if re.search(semicolon_in_brackets, ''.join(descripGrp.itertext())):
                 definition_object = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
             else:
-                definition_object = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
+                definition_object, expert_note_object = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
 
             definitions.append(definition_object)
+
+            if expert_note_object:
+                if expert_note_object.value is not None:
+                    print('1: ' + definition_object)
+                    notes_for_concept.append(expert_note_object)
 
         termGrps = languageGrp.xpath('termGrp')
 
@@ -257,16 +267,21 @@ def parse_words(conceptGrp, name_to_id_map):
 
                         definition_element = etree.fromstring(definition)
 
-                        definition_object = xml_helpers.create_definition_object(word.lang, definition_element, name_to_id_map)
+                        definition_object, expert_note_object = xml_helpers.create_definition_object(word.lang, definition_element, name_to_id_map)
 
                         definitions.append(definition_object)
+                        print('2: ' + definition_object.value)
+                        if expert_note_object:
+                            notes_for_concept.append(expert_note_object)
 
                 if descrip_type == 'Kontekst':
 
                     updated_value, source_links, concept_notes = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map)
 
-                    for note in concept_notes:
-                        notes_for_concept.append(note)
+                    if concept_notes:
+                        for note in concept_notes:
+                            print('3: ' + updated_value)
+                            notes_for_concept.append(note)
 
                     word.usages.append(
                         data_classes.Usage(
@@ -285,7 +300,12 @@ def parse_words(conceptGrp, name_to_id_map):
                     # Remove the outer tags to get only the inner XML
                     inner_xml = full_string.split('>', 1)[1].rsplit('<', 1)[0].strip()
 
-                    sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
+                    sourcelinks, expert_note = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
+
+                    if expert_note:
+                        if expert_note.value is not None:
+                            print('4: ' + 'test')
+                            notes_for_concept.append(expert_note)
 
                     for link in sourcelinks:
                         word.lexemeSourceLinks.append(
@@ -299,31 +319,25 @@ def parse_words(conceptGrp, name_to_id_map):
                 if descrip_type == 'Märkus':
                     note_value = ''.join(descripGrp.itertext()).strip().replace('\u200b', '')
 
-                    text_before_bracket, date_string, source, name = \
+                    text_before_bracket, date_string, source, name, expert_note = \
                         xml_helpers.extract_lexeme_note_and_its_sourcelinks(note_value)
+
+                    if expert_note:
+                        if expert_note.value is not None:
+                            print('5: ' + source)
+                            notes_for_concept.append(expert_note)
 
                     source_links = []
 
-                    if source.startswith('EKSPERT '):
-                        value = source.replace('EKSPERT ', '').strip()
+                    if source:
 
                         source_links.append(
                             data_classes.Sourcelink(
-                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
-                                value=value,
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, source),
+                                value=source,
                                 name=name
                             )
                         )
-                    else:
-                        if source:
-
-                            source_links.append(
-                                data_classes.Sourcelink(
-                                    sourceId=xml_helpers.find_source_by_name(name_to_id_map, source),
-                                    value=source,
-                                    name=name
-                                )
-                            )
 
                     if word.lang == 'est':
                         note_lang = 'est'

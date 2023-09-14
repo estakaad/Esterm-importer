@@ -285,6 +285,7 @@ def edit_note_without_multiple_languages(note):
 
     value = ''
     name=''
+    expert_note = None
 
     # Extract date
     date_pattern = r'[\{\[]\{*\w+\}*\s*\d+[\.\\]\d+[\.\\]\d+[\}\]]$'
@@ -324,8 +325,13 @@ def edit_note_without_multiple_languages(note):
             remaining_text = source.split('</xref>')[-1].strip()
 
             if inside_xref == 'EKSPERT':
-                value = remaining_text
+                value = 'EKSPERT'
                 name = ''
+                expert_note = data_classes.Note(
+                    value='Ekspert: ' + remaining_text,
+                    lang='est',
+                    publicity=False
+                )
             else:
                 value = inside_xref
                 name = remaining_text.replace(']','')
@@ -338,7 +344,7 @@ def edit_note_without_multiple_languages(note):
 
     note = note_without_date + ((' ' + date) if date else '')
 
-    return note, value.replace(']',''), name
+    return note, value.replace(']',''), name, expert_note
 
 
 ##########################################
@@ -500,41 +506,54 @@ def fix_xml_fragments(fragments, tag_name):
 def create_definition_object(lang, definition_element, updated_sources):
     source_links = []
 
+    expert_note = None
+
     text_before_xref_str, text_in_bracket, xref_link_value_str, text_after_xref_str = \
         check_definition_content(definition_element)
 
     if xref_link_value_str:
         if xref_link_value_str.startswith('EKSPERT {'):
-            search_value = xref_link_value_str[9:-1]
-            value = 'EKSPERT ' + xref_link_value_str[9:-1] + (' ' + text_after_xref_str if text_after_xref_str else "")
+            expert_note = data_classes.Note(
+                value = 'Ekspert: ' + xref_link_value_str[9:-1],
+                lang='est',
+                publicity=False
+            )
+            value = 'EKSPERT'
+            #value = 'EKSPERT ' + xref_link_value_str[9:-1] + (' ' + text_after_xref_str if text_after_xref_str else "")
         else:
-            search_value = xref_link_value_str
-            value = xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else "")
+            value = xref_link_value_str
+            #value = xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else "")
 
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(updated_sources, xref_link_value_str),
-            value=search_value,
+            value=value,
             name=text_after_xref_str
         ))
     else:
         if text_in_bracket and text_in_bracket.startswith('EKSPERT {'):
-            search_value = text_in_bracket[9:-1]
-            value = 'EKSPERT ' + text_in_bracket[9:-1]
+            expert_note = data_classes.Note(
+                value = 'Ekspert: ' + text_in_bracket[9:-1],
+                lang='est',
+                publicity=False
+            )
+            value = 'EKSPERT'
+            #value = 'EKSPERT ' + text_in_bracket[9:-1]
         else:
-            search_value = text_in_bracket
             value = text_in_bracket
 
         source_links.append(data_classes.Sourcelink(
-            sourceId=find_source_by_name(updated_sources, search_value),
-            value=search_value,
+            sourceId=find_source_by_name(updated_sources, value),
+            value=value,
             name=''
         ))
 
-    return data_classes.Definition(
+    definition_object = data_classes.Definition(
         value=text_before_xref_str,
         lang=lang,
         sourceLinks=source_links,
         definitionTypeCode='definitsioon')
+
+    return definition_object, expert_note
 
 
 ############################################
@@ -544,6 +563,11 @@ def create_definition_object(lang, definition_element, updated_sources):
 # There can be multiple lexeme source links. Split them to separate sourcelink objects.
 def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
     source_links = []
+    expert_note = data_classes.Note(
+        value=None,
+        lang='est',
+        publicity=False
+    )
 
     # Pre-process the root string to replace '][' or '] [' with '];['
     # and also replace ',' (with optional space) with ';'
@@ -563,7 +587,8 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
             if expert_item.startswith('<xref'):
                 xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', expert_item)
                 if xref_match:
-                    value = expert_item[xref_match.end():].strip()
+                    value = 'EKSPERT'
+                    expert_note.value = 'Ekspert: ' + expert_item[xref_match.end():].strip()
                     source_link = data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_ids_map, value),
                         value=value,
@@ -571,9 +596,11 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
                 else:
                     logger.warning('EKSPERT in lexeme sourcelinks, but failed to extract the value.')
             else:
+                expert_note.value = 'Ekspert: ' + expert_item.replace("EKSPERT ", "", 1)
+
                 source_link = data_classes.Sourcelink(
-                    sourceId=find_source_by_name(name_to_ids_map, expert_item.replace("EKSPERT ", "", 1)),
-                    value=expert_item.replace("EKSPERT ", "", 1),
+                    sourceId=find_source_by_name(name_to_ids_map, 'EKSPERT'),
+                    value='EKSPERT',
                     name=''
                 )
 
@@ -628,7 +655,7 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
 
         source_links.append(source_link)
 
-    return source_links
+    return source_links, expert_note
 
 
 ######################################
@@ -648,6 +675,7 @@ def extract_lexeme_note_and_its_sourcelinks(string):
     source = ''
     tail = ''
     text_before_bracket = string
+    expert_note = None
 
     matches = re.findall(pattern_for_finding_content_in_brackets, string)
 
@@ -685,16 +713,26 @@ def extract_lexeme_note_and_its_sourcelinks(string):
     text_before_bracket = text_before_bracket.replace('  ', ' ')
 
     if source.startswith('EKSPERT '):
-        source = source.replace("{", "").replace("}", "")
+        source = 'EKSPERT'
+        expert_note = data_classes.Note(
+            value='Ekspert: ' + source.replace("{", "").replace("}", ""),
+            lang='est',
+            publicity=False
+        )
 
     if tail.startswith('EKSPERT '):
-        source = tail.replace("{", "").replace("}", "")
+        source = 'EKSPERT'
+        expert_note = data_classes.Note(
+            value='Ekspert: ' + tail.replace("{", "").replace("}", ""),
+            lang='est',
+            publicity=False
+        )
     # print('lexeme note text before bracket: ' + text_before_bracket)
     # print('lexeme note date string: ' + date_string)
     # print('lexeme note source: ' + source)
     # print('lexeme note tail: ' + tail)
 
-    return text_before_bracket, date_string, source, tail
+    return text_before_bracket, date_string, source, tail, expert_note
 
 
 ######################################
