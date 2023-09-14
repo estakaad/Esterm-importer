@@ -21,7 +21,7 @@ def parse_mtf(root, name_to_id_map):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # For testing
-        if counter % 500 == 0:
+        if counter % 5 == 0:
            logger.info(f'counter: {counter}')
            break
 
@@ -71,7 +71,7 @@ def parse_mtf(root, name_to_id_map):
                 concept.firstCreateEventOn = origination_date_object.strftime('%d.%m.%Y')
                 transac_element = origination_transac_grp_element.find("transac")
                 if transac_element is not None:
-                    concept.firstCreateEventBy = transac_element.text
+                    concept.firstCreateEventBy = xml_helpers.map_initials_to_names(transac_element.text)
 
         if modification_transac_grp_element is not None:
             modification_date_element = modification_transac_grp_element.find("date")
@@ -81,7 +81,7 @@ def parse_mtf(root, name_to_id_map):
                 concept.manualEventOn = modification_date_object.strftime('%d.%m.%Y')
                 transac_element = modification_transac_grp_element.find("transac")
                 if transac_element is not None:
-                    concept.manualEventBy = transac_element.text
+                    concept.manualEventBy = xml_helpers.map_initials_to_names(transac_element.text)
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):
