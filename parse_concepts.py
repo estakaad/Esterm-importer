@@ -20,12 +20,12 @@ def parse_mtf(root, name_to_id_map):
     counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        # # # For testing
-        if counter % 5 == 0:
-           logger.info(f'counter: {counter}')
-           break
-
-        counter += 1
+        # # # # For testing
+        # if counter % 1000 == 0:
+        #    logger.info(f'counter: {counter}')
+        #    break
+        #
+        # counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest',
@@ -72,8 +72,8 @@ def parse_mtf(root, name_to_id_map):
                 transac_element = origination_transac_grp_element.find("transac")
                 if transac_element is not None:
                     concept.firstCreateEventBy = xml_helpers.map_initials_to_names(transac_element.text)
-                    if concept.firstCreateEventBy is None:
-                        print(transac_element.text)
+                    # if concept.firstCreateEventBy is None:
+                    #     print(transac_element.text)
 
         if modification_transac_grp_element is not None:
             modification_date_element = modification_transac_grp_element.find("date")
@@ -84,8 +84,8 @@ def parse_mtf(root, name_to_id_map):
                 transac_element = modification_transac_grp_element.find("transac")
                 if transac_element is not None:
                     concept.manualEventBy = xml_helpers.map_initials_to_names(transac_element.text)
-                    if concept.manualEventBy is None:
-                        print(transac_element.text)
+                    # if concept.manualEventBy is None:
+                    #     print(transac_element.text)
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):
@@ -210,17 +210,16 @@ def parse_words(conceptGrp, name_to_id_map):
         for descripGrp in languageGrp.xpath('descripGrp[descrip/@type="Definitsioon"]'):
 
             lang_grp = languageGrp.xpath('language')[0].get('lang')
-            logger.debug('def language: %s', lang_grp)
+            logger.debug('Definition language: %s', lang_grp)
             lang_grp = xml_helpers.match_language(lang_grp)
-            logger.debug(('def language after matching: %s', lang_grp))
+            logger.debug(('Definition language after matching: %s', lang_grp))
 
             definition = descripGrp.find('./descrip')
 
             semicolon_in_brackets = r'\s\[.*;.*\]'
-            notes_extracted_from_sourcelink = []
 
             if re.search(semicolon_in_brackets, ''.join(descripGrp.itertext())):
-                definition_object = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
+                definition_object, notes_extracted_from_sourcelink = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
             else:
                 definition_object, notes_extracted_from_sourcelink = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
 
@@ -228,7 +227,6 @@ def parse_words(conceptGrp, name_to_id_map):
 
             if notes_extracted_from_sourcelink:
                 for note in notes_extracted_from_sourcelink:
-                    #print('1: ' + definition_object)
                     notes_for_concept.append(note)
 
         termGrps = languageGrp.xpath('termGrp')
@@ -266,16 +264,23 @@ def parse_words(conceptGrp, name_to_id_map):
                     individual_definitions = xml_helpers.split_and_preserve_xml(descripGrp)
                     individual_definitions = xml_helpers.fix_xml_fragments(individual_definitions, 'descrip')
 
+                    semicolon_in_brackets = r'\s\[.*;.*\]'
+
                     for definition in individual_definitions:
 
                         definition_element = etree.fromstring(definition)
 
-                        definition_object, expert_note_object = xml_helpers.create_definition_object(word.lang, definition_element, name_to_id_map)
+                        if re.search(semicolon_in_brackets, ''.join(definition_element.itertext())):
+                            print(''.join(definition_element.itertext()))
+                            definition_object, note_objects = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(word.lang, definition_element, name_to_id_map)
+                        else:
+                            definition_object, note_objects = xml_helpers.create_definition_object(word.lang, definition_element, name_to_id_map)
 
                         definitions.append(definition_object)
 
-                        if expert_note_object:
-                            notes_for_concept.append(expert_note_object)
+                        if note_objects:
+                            for note in note_objects:
+                                notes_for_concept.append(note)
 
                 if descrip_type == 'Kontekst':
 

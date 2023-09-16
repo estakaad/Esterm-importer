@@ -392,71 +392,74 @@ def edit_note_without_multiple_languages(note):
 ##########################################
 
 
-# Handle multiple sourcelinks for one language group level definition
+# Handle multiple sourcelinks for one definition
 def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element, name_to_ids_map):
-    source_links = []
-    text = ''
-    if definition_element.xpath('xref'):
-        links_pattern = r'\s\[.*;.*\]'
-        links_match = re.search(links_pattern, ''.join(definition_element.itertext()))
-        if links_match:
-            links = links_match.group(0)
 
-            if links:
-                links = links.strip(' []').split(';')
-                for link in links:
-                    if '§' in link:
-                        match = re.search(r'§.*', link).group(0)
-                        if match:
-                            search_value = link.replace(match, '').strip()
-                            value = match.strip()
-                            source_links.append(data_classes.Sourcelink(
-                                sourceId=find_source_by_name(name_to_ids_map, search_value),
-                                value=search_value,
-                                name=value
-                            ))
-                        else:
-                            logger.warning(f'Error parsing definition: {definition_element.itertext()}')
-                    else:
-                        source_links.append(data_classes.Sourcelink(
-                            sourceId=find_source_by_name(name_to_ids_map, link.strip()),
-                            value=link.strip(),
-                            name=''
-                        ))
-                text_pattern = r'(.*)\s\[.*;.*\]'
-                text = re.search(text_pattern, ''.join(definition_element.itertext())).group(1)
-            else:
-                logger.error(f'Definition element contains xref but it cannot be split to separate links: {definition_element}')
-        else:
-            print(f'Cannot find pattern from links: {definition_element}')
+    source_link_objects = []
+    concept_notes_objects = []
 
-    else:
-        links_pattern = r'\s\[.*;.*\]'
-        links = re.search(links_pattern, ''.join(definition_element.itertext())).group(0)
-        links = links.strip(' []').split(';')
-        for link in links:
-            source_links.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, link.strip()),
-                value=link.strip(),
+    definition_text = re.split(r' \[', ''.join(definition_element.itertext()), 1)[0]
+
+    source_links_from_string = ''.join(definition_element.itertext()).replace(definition_text, '')
+    source_links_from_string = source_links_from_string.strip().strip('[]')
+    source_links_from_string = source_links_from_string.split('; ')
+
+    for link in source_links_from_string:
+        link = link.strip('[] \t\n\r')
+        if ' ' not in link:
+            source_link_objects.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_ids_map, link),
+                value=link,
                 name=''
             ))
-        text_pattern = r'(.*)\s\[.*;.*\]'
-        text = re.search(text_pattern, ''.join(definition_element.itertext())).group(1)
-    definition = None
-    if text:
-        definition = data_classes.Definition(
-            value=text,
-            lang=lang_grp,
-            definitionTypeCode='definitsioon',
-            sourceLinks=source_links
-        )
-    else:
-        logger.error(f'Cannot parse definition: {definition_element.itertext()}')
+        elif '§' in link:
+            value = re.split(r'§', link, 1)[0].strip()
+            name = "§ " + re.split(r'§', link, 1)[1].strip()
+            source_link_objects.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_ids_map, value),
+                value=value,
+                name=name
+            ))
+        elif 'EKSPERT' in link:
+            source_link_objects.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_ids_map, 'EKSPERT'),
+                value='Ekspert',
+                name=''
+            ))
+            concept_notes_objects.append(data_classes.Note(
+                value=link.replace('EKSPERT', 'EKSPERT: '),
+                lang='est',
+                publicity=False,
+            ))
+        elif 'PÄRING' in link:
+            source_link_objects.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_ids_map, 'PÄRING'),
+                value='Päring',
+                name=''
+            ))
+            concept_notes_objects.append(data_classes.Note(
+                value=link.replace('PÄRING', 'PÄRING: '),
+                lang='est',
+                publicity=False,
+            ))
+        else:
+            source_link_objects.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_ids_map, link),
+                value=link,
+                name=''
+            ))
 
-    if definition:
-        return definition
-    else:
-        return None
+    definition_object = data_classes.Definition(
+        value=definition_text.strip(),
+        lang=lang_grp,
+        definitionTypeCode='definitsioon',
+        sourceLinks=source_link_objects
+    )
+
+    #print(definition_text.strip())
+   # print(source_links)
+
+    return definition_object, concept_notes_objects
 
 # Function for splitting and preserving definition element content
 def split_and_preserve_xml(descrip_element):
@@ -545,7 +548,6 @@ def fix_xml_fragments(fragments, tag_name):
 # Parse definition, split it to definition value and sourcelink and return the definition object
 def create_definition_object(lang, definition_element, updated_sources):
     source_links = []
-
     notes_extracted_from_sourcelink = []
 
     text_before_xref_str, text_in_bracket, xref_link_value_str, text_after_xref_str = \
@@ -554,27 +556,14 @@ def create_definition_object(lang, definition_element, updated_sources):
     if xref_link_value_str:
         if xref_link_value_str.startswith('EKSPERT {'):
             notes_extracted_from_sourcelink.append(data_classes.Note(
-                value = 'Ekspert: ' + xref_link_value_str[9:-1],
+                value='Ekspert: ' + xref_link_value_str[9:-1],
                 lang='est',
                 publicity=False
             ))
             value = 'EKSPERT'
-            #value = 'EKSPERT ' + xref_link_value_str[9:-1] + (' ' + text_after_xref_str if text_after_xref_str else "")
-        else:
-            value = xref_link_value_str
-            #print('test 1: ' + value)
-            #print('test 2: ' + xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else ""))
-            #value = xref_link_value_str + (' ' + text_after_xref_str if text_after_xref_str else "")
-
-        source_links.append(data_classes.Sourcelink(
-            sourceId=find_source_by_name(updated_sources, xref_link_value_str),
-            value=value,
-            name=text_after_xref_str
-        ))
-
-        if xref_link_value_str.startswith('PÄRING {'):
+        elif xref_link_value_str.startswith('PÄRING {'):
             notes_extracted_from_sourcelink.append(data_classes.Note(
-                value = 'Päring: ' + xref_link_value_str[8:-1],
+                value='Päring: ' + xref_link_value_str[8:-1],
                 lang='est',
                 publicity=False
             ))
@@ -590,12 +579,11 @@ def create_definition_object(lang, definition_element, updated_sources):
     else:
         if text_in_bracket and text_in_bracket.startswith('EKSPERT {'):
             notes_extracted_from_sourcelink.append(data_classes.Note(
-                value = 'Ekspert: ' + text_in_bracket[9:-1],
+                value='Ekspert: ' + text_in_bracket[9:-1],
                 lang='est',
                 publicity=False
             ))
             value = 'EKSPERT'
-            #value = 'EKSPERT ' + text_in_bracket[9:-1]
         else:
             value = text_in_bracket
 
@@ -612,6 +600,7 @@ def create_definition_object(lang, definition_element, updated_sources):
         definitionTypeCode='definitsioon')
 
     return definition_object, notes_extracted_from_sourcelink
+
 
 
 ############################################
