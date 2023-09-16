@@ -944,7 +944,9 @@ def map_initials_to_names(initials):
         "TSR": "Terje Soomer",
         "TVN": "Tiina Veberson",
         "TRE": "Triin Randlane",
-        "TMU": "Toomas Muru"
+        "TMU": "Toomas Muru",
+        "MPO": "Merily Plado",
+        "KKA": "Kaisa Kesküla"
     }
 
     return names_and_initials.get(initials, None)

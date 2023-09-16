@@ -17,15 +17,15 @@ def parse_mtf(root, name_to_id_map):
     aviation_concepts = []
 
     # For testing #
-    #counter = 1
+    counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        # # For testing
-        # if counter % 5 == 0:
-        #    logger.info(f'counter: {counter}')
-        #    break
-        #
-        # counter += 1
+        # # # For testing
+        if counter % 5 == 0:
+           logger.info(f'counter: {counter}')
+           break
+
+        counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest',
@@ -72,6 +72,8 @@ def parse_mtf(root, name_to_id_map):
                 transac_element = origination_transac_grp_element.find("transac")
                 if transac_element is not None:
                     concept.firstCreateEventBy = xml_helpers.map_initials_to_names(transac_element.text)
+                    if concept.firstCreateEventBy is None:
+                        print(transac_element.text)
 
         if modification_transac_grp_element is not None:
             modification_date_element = modification_transac_grp_element.find("date")
@@ -82,6 +84,8 @@ def parse_mtf(root, name_to_id_map):
                 transac_element = modification_transac_grp_element.find("transac")
                 if transac_element is not None:
                     concept.manualEventBy = xml_helpers.map_initials_to_names(transac_element.text)
+                    if concept.manualEventBy is None:
+                        print(transac_element.text)
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):
@@ -146,11 +150,9 @@ def parse_mtf(root, name_to_id_map):
             elif descrip_element.get('type') == 'Tööleht':
 
                 worksheet = descrip_element_value.replace("\n", "").replace("\t", "")
-                if ' ' not in worksheet:
-                    worksheet = 'Tööleht: ' + worksheet
 
                 concept.forums.append(data_classes.Forum(
-                    value=worksheet)
+                    value='Tööleht: ' + worksheet)
                 )
 
                 if descrip_element_value:

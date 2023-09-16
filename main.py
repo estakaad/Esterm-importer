@@ -32,12 +32,13 @@ name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
 parse_concepts.transform_esterm_to_json(name_to_id_map)
 
 # 4. Check if word exists. If it does, add its ID
-requests_concepts.update_word_ids('files/output/aviation_concepts.json', 'eki')
+#requests_concepts.update_word_ids('files/output/concepts.json', 'eki')
+
 #requests_concepts.update_word_ids('files/output/concepts.json', 'eki')
 
 # 5. Import all concepts from file files/output/concepts.json or files/output/aviation_concepts.json.
 # List of ID-s of concepts is saved to files/output/
-#requests_concepts.import_concepts('files/output/aviation_concepts.json')
+#requests_concepts.import_concepts('files/import/avi_1409/avi_concepts_with_word_ids.json')
 
 
 ######################

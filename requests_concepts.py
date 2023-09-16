@@ -19,11 +19,11 @@ def set_up_requests():
 
     header = {"ekilex-api-key": api_key}
     parameters = {"crudRoleDataset": crud_role_dataset}
-
     return parameters, header
 
 
-def import_concepts(file, max_objects=5):
+def import_concepts(file, max_objects=1000000):
+
     with open(file, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
@@ -50,7 +50,6 @@ def import_concepts(file, max_objects=5):
 
                 concepts_not_saved.extend(data[counter+1:counter+1+remaining])
                 logger.error("Response code was 200 but no ID received. Stopping processing.")
-                break
 
         except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError,
                 requests.exceptions.Timeout, requests.exceptions.RequestException) as e:
@@ -59,11 +58,10 @@ def import_concepts(file, max_objects=5):
             remaining = max_objects - counter - 1
             concepts_not_saved.extend(data[counter+1:counter+1+remaining])
             logger.exception("Error: %s. Stopping processing.", e)
-            break
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    saved_filename = f'files/import/{timestamp}_concepts_saved.json'
-    not_saved_filename = f'files/import/{timestamp}_concepts_not_saved.json'
+    saved_filename = f'files/import/esterm_1409/{timestamp}_concepts_saved.json'
+    not_saved_filename = f'files/import/esterm_1409/{timestamp}_concepts_not_saved.json'
 
     with open(saved_filename, 'w', encoding='utf-8') as f:
         json.dump(concepts_saved, f, ensure_ascii=False, indent=4)
@@ -74,13 +72,11 @@ def import_concepts(file, max_objects=5):
 
 def save_concept(concept):
     parameters, header = set_up_requests()
-
     res = requests.post(
         "https://ekitest.tripledev.ee/ekilex/api/term-meaning/save",
         params=parameters,
         json=concept,
         headers=header, timeout=3)
-
     if res.status_code != 200:
         raise requests.exceptions.HTTPError(f"Received {res.status_code} status code.")
 
@@ -106,19 +102,22 @@ def update_word_ids(filename, dataset):
     for concept in concepts:
         words = concept.get('words', [])
         for word in words:
+            print(word['value'])
+            try:
+                word_ids = get_word_id(word['value'], word['lang'], dataset)
+            except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError):
+                print(f"Connection timed out for {word['value']}. Moving on to the next word.")
+                continue
 
-            word_ids = get_word_id(word['value'], word['lang'], dataset)
-            print(f"IDs for {word['value']}: {word_ids}")
-
-            if len(word_ids) == 1:
-                word['wordId'] = word_ids
-            elif len(word_ids) > 1:
-                words_with_more_than_one_id.append(word)
+            if word_ids:
+                if len(word_ids) == 1:
+                    word['wordId'] = word_ids[0]
+                elif len(word_ids) > 1:
+                    words_with_more_than_one_id.append(word['value'])
+                else:
+                    words_without_id.append(word['value'])
             else:
-                words_without_id.append(word)
-
-    print("Words without ID:", words_without_id)
-    print("Words with more than one ID:", words_with_more_than_one_id)
+                words_without_id.append(word['value'])
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     words_without_id_file = f'files/import/{timestamp}_words_without_id.json'
@@ -141,10 +140,14 @@ def get_word_id(word, lang, dataset):
     res = requests.get(
         f'https://ekitest.tripledev.ee/ekilex/api/word/ids/{word}/{dataset}/{lang}',
         params=parameters,
-        headers=header, timeout=3)
+        headers=header, timeout=5)
 
     if res.status_code == 200:
-        response = res.json()
-        return response
+        try:
+            response = res.json()
+            return response
+        except ValueError:
+            print(f"Error decoding JSON for word: {word} in dataset: {dataset} for language: {lang}")
+            return None
     else:
         return None
