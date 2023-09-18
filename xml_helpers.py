@@ -947,10 +947,15 @@ def map_initials_to_names(initials):
         "TRE": "Triin Randlane",
         "TMU": "Toomas Muru",
         "MPO": "Merily Plado",
-        "KKA": "Kaisa Kesküla"
+        "KKA": "Kaisa Kesküla",
+        "ÜAU": "Ülle Allsalu",
+        "ETM": "Eva Tamm",
+        "KJN": "Kairi Janson",
+        "EPD": "Elice Paemurd",
+        "KAN": "Kadi-Liis Aun"
     }
 
-    return names_and_initials.get(initials, None)
+    return names_and_initials.get(initials, initials)
 
 
 def handle_definition(definition_element_value, name_to_id_map, language):
