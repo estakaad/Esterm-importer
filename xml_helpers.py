@@ -950,3 +950,125 @@ def map_initials_to_names(initials):
     }
 
     return names_and_initials.get(initials, None)
+
+
+def handle_definition(definition_element_value, name_to_id_map, language):
+    split_definitions = [definition for definition in re.split(r'\d+\.\s', definition_element_value) if definition]
+
+    notes = []
+
+    match_links_pattern = r'(?<!^)\[[^[]+\]'
+
+    final_definitions = []
+
+    for split_definition in split_definitions:
+        split_definition = split_definition.strip().strip(';')
+        match_links = re.findall(match_links_pattern, split_definition)
+
+        source_links_for_definition = []
+
+        if match_links:
+            for link in match_links:
+                split_definition = split_definition.replace(link, '')
+                link = link.strip('[]')
+
+                if ';' in link:
+                    separate_links = re.split('; ', link)
+
+                    for link in separate_links:
+
+                        value, name, notes_from_source = separate_sourcelink_value_from_name(link.strip())
+                        notes.append(notes_from_source)
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, value),
+                            value=value,
+                            name=name
+                        ))
+
+                else:
+
+                    value, name, notes_from_source = separate_sourcelink_value_from_name(link.strip())
+                    notes.append(notes_from_source)
+                    source_links_for_definition.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, value),
+                        value=value,
+                        name=name
+                    ))
+        else:
+            continue
+
+        final_definitions.append(data_classes.Definition(
+            value=split_definition,
+            lang=language,
+            definitionTypeCode='definitsioon',
+            sourceLinks=source_links_for_definition
+            )
+        )
+
+    return final_definitions, notes
+
+
+def separate_sourcelink_value_from_name(sourcelink):
+
+    concept_notes = []
+
+    match_comma = re.search(r'(\d*,)', sourcelink)
+    match_space = re.search(r'(\d*\s)', sourcelink)
+
+    if '§' in sourcelink:
+        value = re.split(r'§', sourcelink, 1)[0].strip()
+        name = "§ " + re.split(r'§', sourcelink, 1)[1].strip()
+    elif match_comma:
+        value = match_comma.group(1).strip(',')
+        name = sourcelink.replace(value, '').strip(',').strip()
+    elif match_space:
+        value = match_space.group(1).strip()
+        name = sourcelink.replace(value, '')
+    elif 'ConvRT ' in sourcelink:
+        value = 'ConvRT'
+        name = sourcelink.replace('ConvRT ', '')
+    elif 'WIKIPEDIA ' in sourcelink:
+        value = 'WIKIPEDIA'
+        name = sourcelink.replace('WIKIPEDIA ', '')
+    elif 'MER,' in sourcelink:
+        value = 'MER'
+        name = sourcelink.replace('MER, ', '')
+    elif 'BLA7,' in sourcelink:
+        value = 'BLA7'
+        name = sourcelink.replace('BLA7, ', '')
+    elif 'BLA,' in sourcelink:
+        value = 'BLA'
+        name = sourcelink.replace('BLA, ', '')
+    elif 'ENE,' in sourcelink:
+        value = 'ENE'
+        name = sourcelink.replace('ENE, ', '')
+    elif 'OED ' in sourcelink:
+        value = 'OED'
+        name = sourcelink.replace('OED ', '')
+    elif 'EVS-EN 45020:2008 ' in sourcelink:
+        value = 'EVS-EN 45020:2008'
+        name = sourcelink.replace('EVS-EN 45020:2008 ', '')
+    elif '32006R0562 ' in sourcelink:
+        value = '32006R0562'
+        name = sourcelink.replace('32006R0562 ', '')
+    elif 'EKSPERT' in sourcelink:
+        value = 'EKSPERT'
+        name = ''
+        concept_notes.append(data_classes.Note(
+            value=sourcelink,
+            lang='est',
+            publicity=False
+        ))
+    elif 'PÄRING' in sourcelink:
+        value = 'PÄRING'
+        name = ''
+        concept_notes.append(data_classes.Note(
+            value=sourcelink,
+            lang='est',
+            publicity=False
+        ))
+    else:
+        value = sourcelink
+        name = ''
+
+    return value, name, concept_notes
