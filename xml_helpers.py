@@ -394,16 +394,22 @@ def edit_note_without_multiple_languages(note):
 
 # Handle multiple sourcelinks for one definition
 def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element, name_to_ids_map):
-
     source_link_objects = []
     concept_notes_objects = []
+    source_links_from_string = []
 
     definition_text = re.split(r' \[', ''.join(definition_element.itertext()), 1)[0]
+    #print('test 1 : ' + definition_element.itertext())
+    if ';' in ''.join(definition_element.itertext()):
+        source_links_from_string = ''.join(definition_element.itertext()).replace(definition_text, '')
+        source_links_from_string = source_links_from_string.strip().strip('[]')
+        source_links_from_string = source_links_from_string.split('; ')
+    elif '] [' in ''.join(definition_element.itertext()):
+        source_links_from_string = ''.join(definition_element.itertext()).replace(definition_text, '')
+        source_links_from_string = source_links_from_string.strip('[]')
+        source_links_from_string = source_links_from_string.split('] [')
 
-    source_links_from_string = ''.join(definition_element.itertext()).replace(definition_text, '')
-    source_links_from_string = source_links_from_string.strip().strip('[]')
-    source_links_from_string = source_links_from_string.split('; ')
-
+    #print(source_links_from_string)
     for link in source_links_from_string:
         link = link.strip('[] \t\n\r')
         if ' ' not in link:
@@ -456,9 +462,6 @@ def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element
         sourceLinks=source_link_objects
     )
 
-    #print(definition_text.strip())
-   # print(source_links)
-
     return definition_object, concept_notes_objects
 
 # Function for splitting and preserving definition element content
@@ -484,6 +487,14 @@ def split_and_preserve_xml(descrip_element):
 
     return individual_definitions
 
+
+# New try at splitting definition to definition and sourcelinks
+
+def split_definition_to_definition_and_sourcelinks(language, definition_element, name_to_id_map):
+
+
+
+    return definition_object, note_objects
 
 # Definition contains the definition value and its sourcelink names.
 # The sourcelinks manifest themselves in different formats.
