@@ -20,12 +20,12 @@ def parse_mtf(root, name_to_id_map):
     counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        # # # # For testing
-        if counter % 10000 == 0:
-           logger.info(f'counter: {counter}')
-           break
-
-        counter += 1
+        # # # # # For testing
+        # if counter % 10000 == 0:
+        #    logger.info(f'counter: {counter}')
+        #    break
+        #
+        # counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest',
@@ -370,14 +370,21 @@ def parse_words(conceptGrp, name_to_id_map):
                         for note in concept_notes:
                             #print('3: ' + updated_value)
                             notes_for_concept.append(note)
-
-                    word.usages.append(
-                        data_classes.Usage(
-                            value=updated_value,
-                            lang=xml_helpers.match_language(lang_term),
-                            publicity=word.lexemePublicity,
-                            sourceLinks=source_links)
-                    )
+                    if source_links:
+                        word.usages.append(
+                            data_classes.Usage(
+                                value=updated_value,
+                                lang=xml_helpers.match_language(lang_term),
+                                publicity=word.lexemePublicity,
+                                sourceLinks=source_links)
+                        )
+                    else:
+                        word.usages.append(
+                            data_classes.Usage(
+                                value=updated_value,
+                                lang=xml_helpers.match_language(lang_term),
+                                publicity=word.lexemePublicity)
+                        )
 
                 if descrip_type == 'Allikaviide':
 

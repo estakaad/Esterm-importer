@@ -280,10 +280,11 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                 )
             )
     else:
-        source_links.append(
-            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_name),
-                                    value=source_name,
-                                    name=name.strip(']')))
+        if source_name:
+            source_links.append(
+                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_name),
+                                        value=source_name,
+                                        name=name.strip(']')))
 
     return usage_value, source_links, concept_notes
 
@@ -953,6 +954,10 @@ def map_initials_to_names(initials):
 
 
 def handle_definition(definition_element_value, name_to_id_map, language):
+
+    if definition_element_value.startswith('any trailer designed'):
+        print(definition_element_value)
+
     split_definitions = [definition for definition in re.split(r'\d+\.\s', definition_element_value) if definition]
 
     notes = []
@@ -1018,12 +1023,6 @@ def separate_sourcelink_value_from_name(sourcelink):
     if '§' in sourcelink:
         value = re.split(r'§', sourcelink, 1)[0].strip()
         name = "§ " + re.split(r'§', sourcelink, 1)[1].strip()
-    elif match_comma:
-        value = match_comma.group(1).strip(',')
-        name = sourcelink.replace(value, '').strip(',').strip()
-    elif match_space:
-        value = match_space.group(1).strip()
-        name = sourcelink.replace(value, '')
     elif 'ConvRT ' in sourcelink:
         value = 'ConvRT'
         name = sourcelink.replace('ConvRT ', '')
@@ -1067,6 +1066,12 @@ def separate_sourcelink_value_from_name(sourcelink):
             lang='est',
             publicity=False
         ))
+    elif match_comma:
+        value = match_comma.group(1).strip(',')
+        name = sourcelink.replace(value, '').strip(',').strip()
+    elif match_space:
+        value = match_space.group(1).strip()
+        name = sourcelink.replace(value, '')
     else:
         value = sourcelink
         name = ''
