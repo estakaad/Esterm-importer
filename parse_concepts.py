@@ -21,11 +21,11 @@ def parse_mtf(root, name_to_id_map):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # # # For testing
-        # if counter % 1000 == 0:
-        #    logger.info(f'counter: {counter}')
-        #    break
-        #
-        # counter += 1
+        if counter % 10000 == 0:
+           logger.info(f'counter: {counter}')
+           break
+
+        counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest',
@@ -183,7 +183,6 @@ def parse_mtf(root, name_to_id_map):
             concept.words.append(word)
 
         for definition in definitions:
-            #concept.definitions.append(xml_helpers.extract_definition_source_links(definition, updated_sources))
             concept.definitions.append(definition)
 
         for note in concept_notes:
@@ -215,25 +214,35 @@ def parse_words(conceptGrp, name_to_id_map):
             logger.debug(('Definition language after matching: %s', lang_grp))
 
             definition = descripGrp.find('./descrip')
+            #
+            # semicolon_in_brackets = r'\s\[.*;.*\]$'
+            # links_in_brackets = r'.*\[.*\]\s\[.*\]$'
+            #
+            # print(''.join(descripGrp.itertext()))
+            #
+            # if re.search(semicolon_in_brackets, ''.join(descripGrp.itertext())):
+            #     print('test semico: ' ''.join(descripGrp.itertext()))
+            #     definition_object, notes_extracted_from_sourcelink = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
+            # elif re.search(links_in_brackets, ''.join((descripGrp.itertext()))):
+            #     print('test multi brack: ' ''.join(descripGrp.itertext()))
+            #     definition_object, notes_extracted_from_sourcelink = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
+            # else:
+            #     print('other: ' ''.join(descripGrp.itertext()))
+            #     definition_object, notes_extracted_from_sourcelink = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
+            #
+            definition_objects, concept_notes_from_sources = xml_helpers.handle_definition(''.join(descripGrp.itertext()), name_to_id_map, lang_grp)
 
-            semicolon_in_brackets = r'\s\[.*;.*\]$'
-            links_in_brackets = r'.*\[.*\]\s\[.*\]$'
+            for definition_object in definition_objects:
+                definitions.append(definition_object)
+                if definition_object.sourceLinks[0].sourceId == 'null':
+                    print(definition_object)
 
-            if re.search(semicolon_in_brackets, ''.join(descripGrp.itertext())):
-                #print('test 8798: ' ''.join(descripGrp.itertext()))
-                definition_object, notes_extracted_from_sourcelink = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
-            elif re.search(links_in_brackets, ''.join((descripGrp.itertext()))):
-                #print('test 56546546: ' ''.join(descripGrp.itertext()))
-                definition_object, notes_extracted_from_sourcelink = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
-            else:
-                #print('test 34234: ' ''.join(descripGrp.itertext()))
-                definition_object, notes_extracted_from_sourcelink = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
+            for con_note in concept_notes_from_sources:
+                notes_for_concept.append(con_note)
 
-            definitions.append(definition_object)
-
-            if notes_extracted_from_sourcelink:
-                for note in notes_extracted_from_sourcelink:
-                    notes_for_concept.append(note)
+            # if notes_extracted_from_sourcelink:
+            #     for note in notes_extracted_from_sourcelink:
+            #         notes_for_concept.append(note)
 
         termGrps = languageGrp.xpath('termGrp')
 
@@ -268,77 +277,90 @@ def parse_words(conceptGrp, name_to_id_map):
 
                 if descrip_type == 'Definitsioon':
                     definition_element_value = ''.join(descripGrp.itertext()).strip()
+
                     #print(definition_element_value)
-                    definition_object = None
+                    #definition_object = None
 
-                    split_definitions = [definition for definition in re.split(r'\d+\.\s', definition_element_value) if definition]
-
-                    match_links_pattern = r'\[[^[]+\]'
-                    source_links_for_definition = []
-
-                    for split_definition in split_definitions:
-                        split_definition = split_definition.strip().strip(';')
-                        #print('see on siis see definitsioon, millega toimetan: ' + split_definition)
-                        match_links = re.findall(match_links_pattern, split_definition)
-
-                        if match_links:
-                            for link in match_links:
-                                split_definition = split_definition.replace(link, '')
-                                link = link.strip('[]')
-                                if ';' in link:
-                                    separate_links = re.split('; ', link)
-                                    #print('semikooloniga')
-                                    #print(separate_links)
-                                    for link in separate_links:
-                                        value = link.strip()
-                                        if '§' in link:
-                                            value = re.split(r'§', link, 1)[0].strip()
-                                            name = "§ " + re.split(r'§', link, 1)[1].strip()
-                                        elif '1899' in link:
-                                            value = '1899'
-                                            name = link.replace('1899, ', '')
-                                        elif 'ConvRT' in link:
-                                            value = 'ConvRT'
-                                            name = link.replace('ConvRT ', '')
-                                        else:
-                                            value = link
-                                            name = ''
-                                        source_links_for_definition.append(data_classes.Sourcelink(
-                                            sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
-                                            value=value,
-                                            name=name
-                                        ))
-                                else:
-                                    if '§' in link:
-                                        value = re.split(r'§', link, 1)[0].strip()
-                                        name = "§ " + re.split(r'§', link, 1)[1].strip()
-                                    elif '1899' in link:
-                                        value = '1899'
-                                        name = link.replace('1899, ', '')
-                                    elif 'ConvRT' in link:
-                                        value = 'ConvRT'
-                                        name = link.replace('ConvRT ', '')
-                                    else:
-                                        value = link
-                                        name = ''
-                                    source_links_for_definition.append(data_classes.Sourcelink(
-                                        sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
-                                        value=value,
-                                        name=name
-                                    ))
-                        else:
-                            print('ei leidnud: ' + split_definition)
-
-
-                    definition_object = data_classes.Definition(
-                        value=split_definition,
-                        lang=word.lang,
-                        definitionTypeCode='definitsioon',
-                        sourceLinks=source_links_for_definition
-                    )
+                    # split_definitions = [definition for definition in re.split(r'\d+\.\s', definition_element_value) if definition]
+                    #
+                    # match_links_pattern = r'(?<!^)\[[^[]+\]'
+                    # source_links_for_definition = []
+                    #
+                    # for split_definition in split_definitions:
+                    #     split_definition = split_definition.strip().strip(';')
+                    #     #print('see on siis see definitsioon, millega toimetan: ' + split_definition)
+                    #     match_links = re.findall(match_links_pattern, split_definition)
+                    #
+                    #     if match_links:
+                    #         for link in match_links:
+                    #             split_definition = split_definition.replace(link, '')
+                    #             link = link.strip('[]')
+                    #             if ';' in link:
+                    #                 separate_links = re.split('; ', link)
+                    #                 #print('semikooloniga')
+                    #                 #print(separate_links)
+                    #                 for link in separate_links:
+                    #                     value = link.strip()
+                    #                     if '§' in link:
+                    #                         value = re.split(r'§', link, 1)[0].strip()
+                    #                         name = "§ " + re.split(r'§', link, 1)[1].strip()
+                    #                     elif '1899' in link:
+                    #                         value = '1899'
+                    #                         name = link.replace('1899, ', '')
+                    #                     elif '7149' in link:
+                    #                         value = '7149'
+                    #                         name = link.replace('7149, ', '')
+                    #                     elif 'ConvRT' in link:
+                    #                         value = 'ConvRT'
+                    #                         name = link.replace('ConvRT ', '')
+                    #                     else:
+                    #                         value = link
+                    #                         name = ''
+                    #                     source_links_for_definition.append(data_classes.Sourcelink(
+                    #                         sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
+                    #                         value=value,
+                    #                         name=name
+                    #                     ))
+                    #             else:
+                    #                 if '§' in link:
+                    #                     value = re.split(r'§', link, 1)[0].strip()
+                    #                     name = "§ " + re.split(r'§', link, 1)[1].strip()
+                    #                 elif '1899' in link:
+                    #                     value = '1899'
+                    #                     name = link.replace('1899, ', '')
+                    #                 elif '7149' in link:
+                    #                     value = '7149'
+                    #                     name = link.replace('7149, ', '')
+                    #                 elif 'ConvRT' in link:
+                    #                     value = 'ConvRT'
+                    #                     name = link.replace('ConvRT ', '')
+                    #                 else:
+                    #                     value = link
+                    #                     name = ''
+                    #                 source_links_for_definition.append(data_classes.Sourcelink(
+                    #                     sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
+                    #                     value=value,
+                    #                     name=name
+                    #                 ))
+                    #     else:
+                    #         continue
+                    #
+                    #
+                    # definition_object = data_classes.Definition(
+                    #     value=split_definition,
+                    #     lang=word.lang,
+                    #     definitionTypeCode='definitsioon',
+                    #     sourceLinks=source_links_for_definition
+                    # )
 
                     #print(definition_object)
-                    definitions.append(definition_object)
+                    definition_objects, con_notes = xml_helpers.handle_definition(definition_element_value, name_to_id_map, word.lang)
+
+                    for defi_object in definition_objects:
+                        definitions.append(defi_object)
+
+                    for con_note in con_notes:
+                        notes_for_concept.append(con_note)
 
                 if descrip_type == 'Kontekst':
 
