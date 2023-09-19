@@ -5,6 +5,8 @@ from langdetect import detect
 import re
 import data_classes
 import json
+import regex
+
 
 logger = log_config.get_logger()
 
@@ -1082,3 +1084,100 @@ def separate_sourcelink_value_from_name(sourcelink):
         name = ''
 
     return value, name, concept_notes
+
+
+def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
+    lexeme_notes = []
+    notes_for_concept = []
+    source_links = []
+
+    if lexeme_note_raw[-3:-1].isdigit():
+        if '.' in lexeme_note_raw[-6:-1]:
+            if lexeme_note_raw[-1] == ']':
+                parts = lexeme_note_raw.split('[')
+                note_parts = parts[:-1]
+                note = ''
+
+                for note_value in note_parts:
+                    note += note_value
+
+                date_and_initials = '[' + parts[-1]
+                date = regex.sub(r'\p{L}', '', date_and_initials, flags=re.UNICODE).replace('{}', '')
+
+                final_note = note + date.replace(' ', '')
+
+                note = note.strip()
+
+                if note.endswith(']'):
+                    sourcelink_value = note.rsplit(' ', 1)[1].strip(']')
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+                        value=sourcelink_value,
+                        name=None
+                    ))
+                    final_note = (note.replace(sourcelink_value, '') + date).replace(' ][ ', ' [')
+
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=final_note,
+                    lang=detect_language(final_note),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+
+
+            elif lexeme_note_raw[-1] == '}':
+                parts = lexeme_note_raw.split('{')
+                note_parts = parts[:-1]
+                note = ''
+
+                for note_value in note_parts:
+                    note += note_value
+
+                date_and_initials = '{' + parts[-1]
+                date = regex.sub(r'\p{L}', '', date_and_initials, flags=re.UNICODE).replace('{}', '')
+
+                final_note = note + date.replace(' ', '')
+
+                note = note.strip()
+
+                if note.endswith(']'):
+                    sourcelink_value = note.rsplit(' ', 1)[1].strip(']')
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+                        value=sourcelink_value,
+                        name=None
+                    ))
+                    final_note = (note.replace(sourcelink_value, '') + date).replace(' ][ ', ' [')
+
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=final_note,
+                    lang=detect_language(final_note),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+
+            else:
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw,
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+        else:
+            note_value = lexeme_note_raw.rsplit('[')[0]
+            sourcelink = lexeme_note_raw.rsplit('[')[1].strip(']')
+
+            source_links.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, sourcelink),
+                value=sourcelink,
+                name=None
+            ))
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_value,
+                lang=detect_language(note_value),
+                publicity=True,
+                sourceLinks=source_links
+            ))
+
+
+    return lexeme_notes, notes_for_concept
