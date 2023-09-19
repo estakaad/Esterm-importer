@@ -21,11 +21,11 @@ def parse_mtf(root, name_to_id_map):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # # # # For testing
-        if counter % 100 == 0:
-           logger.info(f'counter: {counter}')
-           break
-
-        counter += 1
+        # if counter % 100 == 0:
+        #    logger.info(f'counter: {counter}')
+        #    break
+        #
+        # counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest',
