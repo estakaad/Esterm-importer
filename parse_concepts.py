@@ -21,7 +21,7 @@ def parse_mtf(root, name_to_id_map):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # # # # For testing
-        if counter % 100 == 0:
+        if counter % 2000 == 0:
            logger.info(f'counter: {counter}')
            break
 
@@ -412,16 +412,61 @@ def parse_words(conceptGrp, name_to_id_map):
 
                 if descrip_type == 'Märkus':
                     lexeme_notes = []
+
                     lexeme_note_raw = ''.join(descripGrp.itertext()).strip()
-                    print(lexeme_note_raw)
+                    #print(lexeme_note_raw)
                     # [{MVS}09.06.2015] etc
                     pattern_for_initials_and_date = r'[\[|\{]\{*[^\[\]\{\}]*\}*\s*\d{2}\.\d{2}\.\d{4}[\]|\}]'
+                    # [{KKA}4.06.2013]
+                    # [{PSK}04/25/03]
+                    pattern_for_initials_and_date_2 = r'\[\{\w*\}\d{1,2}[\.|\/]\d{1,2}[\.|\/]\d{2,4}\]'
+
+                    # [SES 20.02.14]
+                    # [SES 10/02/03]
+                    pattern_for_initials_and_date_3 = r'\[\w*\s\d{1,2}[\/|\.]\d{1,2}[\/|\.]\d{1,2}\]'
+
                     pattern_for_sourcelink_in_the_end = r'\[.*\]$'
 
+                    match_for_initials_and_date_3 = re.search(pattern_for_initials_and_date_3, lexeme_note_raw)
+                    match_for_initials_and_date_2 = re.search(pattern_for_initials_and_date_2, lexeme_note_raw)
                     match_date_and_initials = re.search(pattern_for_initials_and_date, lexeme_note_raw)
                     match_sourcelink_in_the_end = re.search(pattern_for_sourcelink_in_the_end, lexeme_note_raw)
 
-                    if match_date_and_initials:
+                    if match_for_initials_and_date_3:
+                        #print('match_for_initials_and_date_3 + ' + lexeme_note_raw)
+                        date = match_for_initials_and_date_3.group()
+                        pattern = r'\d{1,2}[\/|\.]\d{1,2}[\/|\.]\d{1,2}\]'
+                        match = re.search(pattern, date)
+                        date_final = match.group().strip(']')
+                        #print(date)
+
+                        lexeme_note = data_classes.Lexemenote(
+                            value=lexeme_note_raw.replace(date, ' [' + date_final + ']'),
+                            lang=xml_helpers.detect_language(lexeme_note_raw),
+                            publicity=True
+                        )
+                        #print(lexeme_note)
+                        lexeme_notes.append(lexeme_note)
+
+                    elif match_for_initials_and_date_2:
+                        print('match_for_initials_and_date_2 + ' + lexeme_note_raw)
+                        date_with_initials = match_for_initials_and_date_2.group()
+                        parts = date_with_initials.split('}')
+                        date_without_initials = parts[1]
+                        print('date_without_initials: ' + '[' + date_without_initials)
+
+                        note = lexeme_note_raw.replace(date_with_initials, '[' + date_without_initials)
+
+                        lexeme_note = data_classes.Lexemenote(
+                            value=note,
+                            lang=xml_helpers.detect_language(note),
+                            publicity=True
+                        )
+                        #print(lexeme_note)
+                        lexeme_notes.append(lexeme_note)
+
+                    elif match_date_and_initials:
+                        print('match_date_and_initials: ' + lexeme_note_raw)
                         date = match_date_and_initials.group()
 
                         final_date = date[-11:]
@@ -444,12 +489,11 @@ def parse_words(conceptGrp, name_to_id_map):
                         if link:
                             #print(link.group())
                             sourcelink_value = link.group().strip('[]')
-                            definition = lexeme_note_without_date.replace(sourcelink_value, '')
+                            definition = lexeme_note_without_date.replace(link.group(), '').strip()
                             source_links = []
                             source_links.append(data_classes.Sourcelink(
                                 sourceId=xml_helpers.find_source_by_name(name_to_id_map, sourcelink_value),
-                                value=sourcelink_value,
-                                name=None
+                                value=sourcelink_value
                             ))
                             lexeme_note = data_classes.Lexemenote(
                                 value=definition + ' ' + final_date,
@@ -458,7 +502,7 @@ def parse_words(conceptGrp, name_to_id_map):
                                 sourceLinks=source_links
                             )
                             lexeme_notes.append(lexeme_note)
-                            print(lexeme_note)
+                            #print(lexeme_note)
                         else:
                             definition = lexeme_note_without_date
                             lexeme_note = data_classes.Lexemenote(
@@ -467,7 +511,7 @@ def parse_words(conceptGrp, name_to_id_map):
                                 publicity=True
                             )
                             lexeme_notes.append(lexeme_note)
-                            print(lexeme_note)
+                            #print(lexeme_note)
                             # print('definition: ' + definition + ' ' + final_date)
                             # print('sourcelink: ' + sourcelink_value)
                             # print('')
@@ -476,20 +520,39 @@ def parse_words(conceptGrp, name_to_id_map):
                         sourcelink_value = match_sourcelink_in_the_end.group().strip('[]')
                         definition = lexeme_note_raw.replace(sourcelink_value, '')
                         #print('definition: ' + definition)
-                        source_links = []
-                        source_links.append(data_classes.Sourcelink(
-                            sourceId=xml_helpers.find_source_by_name(name_to_id_map, sourcelink_value),
-                            value=sourcelink_value,
-                            name=None
-                        ))
-                        lexeme_note = data_classes.Lexemenote(
-                            value=definition,
-                            lang=xml_helpers.detect_language(definition),
-                            publicity=True,
-                            sourceLinks=source_links
-                        )
-                        lexeme_notes.append(lexeme_note)
-                        print(lexeme_note)
+                        if 'EKSPERT' in sourcelink_value:
+                            source_links = []
+                            source_links.append(data_classes.Sourcelink(
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'EKSPERT'),
+                                value=sourcelink_value
+                            ))
+                            notes_for_concept.append(data_classes.Note(
+                                value=sourcelink_value,
+                                lang='est',
+                                publicity=False
+                            ))
+                            lexeme_note = data_classes.Lexemenote(
+                                value=definition,
+                                lang=xml_helpers.detect_language(definition),
+                                publicity=True,
+                                sourceLinks=source_links
+                            )
+                            lexeme_notes.append(lexeme_note)
+                            #print(lexeme_note)
+                        else:
+                            source_links = []
+                            source_links.append(data_classes.Sourcelink(
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, sourcelink_value),
+                                value=sourcelink_value
+                            ))
+                            lexeme_note = data_classes.Lexemenote(
+                                value=definition,
+                                lang=xml_helpers.detect_language(definition),
+                                publicity=True,
+                                sourceLinks=source_links
+                            )
+                            lexeme_notes.append(lexeme_note)
+                            #print(lexeme_note)
                     else:
                         lexeme_note = data_classes.Lexemenote(
                             value=lexeme_note_raw,
@@ -497,13 +560,11 @@ def parse_words(conceptGrp, name_to_id_map):
                             publicity=True,
                         )
                         lexeme_notes.append(lexeme_note)
-                        print(lexeme_note)
-                        print('mis siin toimub? ' + lexeme_note_raw)
+                        #print(lexeme_note)
+                        #print('mis siin toimub? ' + lexeme_note_raw)
 
                     for note in lexeme_notes:
                         word.lexemeNotes.append(note)
-
-
 
             words.append(word)
 

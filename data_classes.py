@@ -10,7 +10,7 @@ class Domain:
 class Sourcelink:
     sourceId: int
     value: str
-    name: str
+    name: Optional[str] = ''
 
 @dataclass
 class Definition:
