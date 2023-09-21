@@ -72,25 +72,51 @@ def create_json(conceptGrp):
 
     for termGrp in conceptGrp.xpath('./languageGrp/termGrp'):
         term = termGrp.findtext('term')
+        full_title_note = None
+
         if term:
+            if term.endswith('...'):
+                for descrip in termGrp.xpath('.//descrip[@type="Märkus"]'):
+                    descrip_text = descrip.text
+                    if descrip_text:
+                        if 'Täispealkiri: ' in descrip_text:
+                            full_title_note = descrip_text.split('Täispealkiri: ')[1]
+                            term = full_title_note  # Add full title to term
+                            break
+                        elif descrip_text.startswith('...'):
+                            full_title_note = descrip_text
+                            term = term.strip('...')
+                            term += descrip_text.strip('... ')
+                            break
+
             json_object['sourceProperties'].append({
                 'type': 'SOURCE_NAME',
                 'valueText': term
             })
+
         for descrip in termGrp.xpath('.//descrip'):
             descrip_type = get_mapping_value(descrip.get('type'))
             if descrip_type:
+
                 descrip_value = descrip.text if descrip.text is not None else ''
                 original_type = descrip.get('type')
+
+                # Update 'Märkus' if full title was extracted
+                if descrip_type == 'NOTE' and full_title_note:
+                    if full_title_note in descrip_value:
+                        descrip_value = descrip_value.replace(full_title_note, '').strip()
+                        descrip_value = descrip_value.replace('Täispealkiri:', '').strip()
+
                 # Handle types which are not present in Ekilex.
                 # They are transformed as notes, but their original type is added to the note value
                 if descrip_type == 'NOTE' and original_type != 'Märkus':
                     descrip_value = f"{original_type}: {descrip_value}"
 
-                json_object['sourceProperties'].append({
-                    'type': descrip_type,
-                    'valueText': descrip_value
-                })
+                if not (descrip_type == 'NOTE' and descrip_value == ''):
+                    json_object['sourceProperties'].append({
+                        'type': descrip_type,
+                        'valueText': descrip_value
+                    })
 
     source_name_objects = []
     other_objects = []
@@ -140,43 +166,3 @@ def export_sources_from_xml(filename):
 
     logger.info('Finished parsing XML for souces.')
     return file
-
-
-# This is to be ran once all concepts are parsed, because until then the EKSPERT-type source sourcelinks are unknown
-def find_expert_values(data):
-    expert_values = set()
-    if isinstance(data, dict):
-        for key, value in data.items():
-            if isinstance(value, str) and value.startswith("EKSPERT"):
-                expert_values.add(value)
-            elif isinstance(value, (dict, list)):
-                expert_values.update(find_expert_values(value))
-    elif isinstance(data, list):
-        for item in data:
-            if isinstance(item, (dict, list)):
-                expert_values.update(find_expert_values(item))
-    return list(expert_values)
-
-
-def create_experts_objects_file(filename):
-    json_objects = []
-
-    with open(filename, 'r', encoding='utf-8') as f:
-        for line in f.readlines():
-            if line.startswith('EKSPERT '):
-                name = line[8:].strip()
-                json_object = {
-                    "type": "PERSON",
-                    "sourceProperties": [
-                        {
-                            "type": "SOURCE_NAME",
-                            "valueText": name
-                        }
-                    ]
-                }
-                json_objects.append(json_object)
-
-    with open('files/experts.json', 'w', encoding='utf-8') as f:
-        json.dump(json_objects, f, ensure_ascii=False, indent=4)
-
-    return f

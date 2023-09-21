@@ -628,6 +628,18 @@ def find_source_by_name(name_to_ids_map, name):
         if name is not None:
             if "PÄRING" in name:
                 return 53362
+            elif name == 'ICAO-9731/I/1':
+                return 53362
+            elif name == '32018L0850':
+                return 53362
+            elif name == '62014TJ0104':
+                return 53362
+            elif name == '10661':
+                return 53362
+            elif name == 'T45731':
+                return 53362
+            elif name == 'GG024':
+                return 53362
             else:
                 #print(name)
                 return None
@@ -906,6 +918,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif 'OED,' in sourcelink:
         value = 'OED'
         name = sourcelink.replace('OED', '')
+    elif 'B 737 OM' in sourcelink:
+        value = sourcelink
+        name = ''
     elif 'EVS-EN 45020:2008 ' in sourcelink:
         value = 'EVS-EN 45020:2008'
         name = sourcelink.replace('EVS-EN 45020:2008 ', '')
