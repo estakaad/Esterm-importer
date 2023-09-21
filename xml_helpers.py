@@ -640,8 +640,8 @@ def find_source_by_name(name_to_ids_map, name):
         logger.info(f"Source ID for '{name}' is {source_ids[0]}")
         return source_ids[0]
     else:
-        logger.warning(f"Warning: Duplicate entries found for '{name}'.")
-        return None
+        logger.warning(f"Warning: Duplicate entries found for '{name}', using the first.")
+        return source_ids[0]
 
 
 def map_initials_to_names(initials):
@@ -823,6 +823,24 @@ def separate_sourcelink_value_from_name(sourcelink):
         else:
             value = sourcelink
             name = ''
+    elif bool(re.match(r'^\d{5}\s,', sourcelink)):
+        if len(sourcelink) > 5:
+            value = sourcelink[:5]
+            name = sourcelink.replace(sourcelink[:6], '')
+        else:
+            value = sourcelink
+            name = ''
+    elif bool(re.match(r'^\d{5}-', sourcelink)):
+        if len(sourcelink) > 5:
+            value = sourcelink[:5]
+            name = sourcelink.replace(sourcelink[:5], '')
+        else:
+            value = sourcelink
+            name = ''
+    elif bool(re.match(r'^\d{5}-,', sourcelink)):
+        if len(sourcelink) > 5:
+            value = sourcelink[:5]
+            name = sourcelink.replace(sourcelink[:5], '')
     elif bool(re.match(r'^X.{6},', sourcelink)):
         if len(sourcelink) > 7:
             value = sourcelink[:7]
@@ -887,6 +905,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('X50043'):
         value = 'X50043'
         name = sourcelink.replace('X50043 ', '')
+    elif sourcelink.startswith('EVS 758:2009'):
+        value = sourcelink
+        name = ''
     elif bool(re.match(r'^T\d{5}', sourcelink)):
         if len(sourcelink) > 6:
             value = sourcelink[:6]

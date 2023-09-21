@@ -303,12 +303,13 @@ def parse_words(conceptGrp, name_to_id_map):
 
                     for link in links:
                         link = link.strip().strip('[]')
-                        print('test 1 ' + link)
+                        #print('test 1 ' + link)
                         value, name, c_notes = xml_helpers.separate_sourcelink_value_from_name(link)
 
                         sourceid = xml_helpers.find_source_by_name(name_to_id_map, value)
 
                         if sourceid is None:
+                            print('sourceid is null: ')
                             print(lexeme_sources)
                             print(value)
                             print('')
