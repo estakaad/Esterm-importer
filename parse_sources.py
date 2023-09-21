@@ -83,10 +83,26 @@ def create_json(conceptGrp):
                             full_title_note = descrip_text.split('Täispealkiri: ')[1]
                             term = full_title_note  # Add full title to term
                             break
+                        if 'täispealkiri: ' in descrip_text:
+                            full_title_note = descrip_text.split('täispealkiri: ')[1]
+                            term = full_title_note  # Add full title to term
+                            break
                         elif descrip_text.startswith('...'):
                             full_title_note = descrip_text
                             term = term.strip('...')
                             term += descrip_text.strip('... ')
+                            break
+            else:
+                for descrip in termGrp.xpath('.//descrip[@type="Märkus"]'):
+                    descrip_text = descrip.text
+                    if descrip_text:
+                        if 'Täispealkiri: ' in descrip_text:
+                            full_title_note = descrip_text.split('Täispealkiri: ')[1]
+                            term = full_title_note
+                            break
+                        elif 'täispealkiri: ' in descrip_text:
+                            full_title_note = descrip_text.split('täispealkiri: ')[1]
+                            term = full_title_note
                             break
 
             json_object['sourceProperties'].append({
@@ -105,7 +121,8 @@ def create_json(conceptGrp):
                 if descrip_type == 'NOTE' and full_title_note:
                     if full_title_note in descrip_value:
                         descrip_value = descrip_value.replace(full_title_note, '').strip()
-                        descrip_value = descrip_value.replace('Täispealkiri:', '').strip()
+                        descrip_value = descrip_value.replace('Täispealkiri:', '').strip().strip(';')
+                        descrip_value = descrip_value.replace('täispealkiri:', '').strip().strip(';')
 
                 # Handle types which are not present in Ekilex.
                 # They are transformed as notes, but their original type is added to the note value
