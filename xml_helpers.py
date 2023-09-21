@@ -869,6 +869,13 @@ def separate_sourcelink_value_from_name(sourcelink):
         else:
             value = sourcelink
             name = ''
+    elif bool(re.match(r'^X\d{5}\s', sourcelink)):
+        if len(sourcelink) > 6:
+            value = sourcelink[:6]
+            name = sourcelink.replace(sourcelink[:7], '')
+        else:
+            value = sourcelink
+            name = ''
     elif '§' in sourcelink:
         value = re.split(r'§', sourcelink, 1)[0].strip()
         name = "§ " + re.split(r'§', sourcelink, 1)[1].strip()
@@ -931,6 +938,30 @@ def separate_sourcelink_value_from_name(sourcelink):
             lang='est',
             publicity=False
         ))
+    elif 'DGT' in sourcelink:
+        value = 'DGT'
+        name = ''
+        concept_notes.append(data_classes.Note(
+            value=sourcelink,
+            lang='est',
+            publicity=False
+        ))
+    elif 'CONSILIUM' in sourcelink:
+        value = 'CONSILIUM'
+        name = ''
+        concept_notes.append(data_classes.Note(
+            value=sourcelink,
+            lang='est',
+            publicity=False
+        ))
+    elif 'DELEST' in sourcelink:
+        value = 'DELEST'
+        name = ''
+        concept_notes.append(data_classes.Note(
+            value=sourcelink,
+            lang='est',
+            publicity=False
+        ))
     elif sourcelink.startswith('ICAO'):
         value = sourcelink
         name = ''
@@ -962,6 +993,27 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = sourcelink
         name = ''
     elif sourcelink.startswith('ISO '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('A. '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('MKM '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('KRM'):
+        value = 'KRM'
+        name = sourcelink.replace('KRM', '')
+    elif sourcelink.startswith('JAR-OPS '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('JAR-FCL '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('HIV/AIDS '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('ГОСТ '):
         value = sourcelink
         name = ''
     elif match_comma:
