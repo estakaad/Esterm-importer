@@ -390,230 +390,6 @@ def edit_note_without_multiple_languages(note):
     return note, value.replace(']',''), name, expert_note
 
 
-##########################################
-## "Definitsioon" > concept.definitions ##
-##########################################
-
-
-# Handle multiple sourcelinks for one definition
-def handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition_element, name_to_ids_map):
-    source_link_objects = []
-    concept_notes_objects = []
-    source_links_from_string = []
-
-    definition_text = re.split(r' \[', ''.join(definition_element.itertext()), 1)[0]
-    #print('test 1 : ' + definition_element.itertext())
-    if ';' in ''.join(definition_element.itertext()):
-        source_links_from_string = ''.join(definition_element.itertext()).replace(definition_text, '')
-        source_links_from_string = source_links_from_string.strip().strip('[]')
-        source_links_from_string = source_links_from_string.split('; ')
-    elif '] [' in ''.join(definition_element.itertext()):
-        source_links_from_string = ''.join(definition_element.itertext()).replace(definition_text, '')
-        source_links_from_string = source_links_from_string.strip('[]')
-        source_links_from_string = source_links_from_string.split('] [')
-
-    #print(source_links_from_string)
-    for link in source_links_from_string:
-        link = link.strip('[] \t\n\r')
-        if ' ' not in link:
-            source_link_objects.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, link),
-                value=link,
-                name=''
-            ))
-        elif '§' in link:
-            value = re.split(r'§', link, 1)[0].strip()
-            name = "§ " + re.split(r'§', link, 1)[1].strip()
-            source_link_objects.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, value),
-                value=value,
-                name=name
-            ))
-        elif 'EKSPERT' in link:
-            source_link_objects.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, 'EKSPERT'),
-                value='Ekspert',
-                name=''
-            ))
-            concept_notes_objects.append(data_classes.Note(
-                value=link.replace('EKSPERT', 'EKSPERT: '),
-                lang='est',
-                publicity=False,
-            ))
-        elif 'PÄRING' in link:
-            source_link_objects.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, 'PÄRING'),
-                value='Päring',
-                name=''
-            ))
-            concept_notes_objects.append(data_classes.Note(
-                value=link.replace('PÄRING', 'PÄRING: '),
-                lang='est',
-                publicity=False,
-            ))
-        else:
-            source_link_objects.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, link),
-                value=link,
-                name=''
-            ))
-
-    definition_object = data_classes.Definition(
-        value=definition_text.strip(),
-        lang=lang_grp,
-        definitionTypeCode='definitsioon',
-        sourceLinks=source_link_objects
-    )
-
-    return definition_object, concept_notes_objects
-
-# Function for splitting and preserving definition element content
-def split_and_preserve_xml(descrip_element):
-    elements_and_text = list(descrip_element)
-    current_text = ""
-    individual_definitions = []
-    for item in elements_and_text:
-        if ET.iselement(item):
-            if re.search(r'\n\d\.', current_text):
-                individual_definitions.extend([d.strip() for d in re.split(r'\n\d\.', current_text) if d.strip()])
-                current_text = ""
-
-            if individual_definitions:
-                individual_definitions[-1] += ET.tostring(item, encoding='unicode')
-            else:
-                current_text += ET.tostring(item, encoding='unicode')
-        else:
-            current_text += item.strip()
-
-    if current_text:
-        individual_definitions.extend([d.strip() for d in re.split(r'\n\d\.', current_text) if d.strip()])
-
-    return individual_definitions
-
-
-# New try at splitting definition to definition and sourcelinks
-
-def split_definition_to_definition_and_sourcelinks(language, definition_element, name_to_id_map):
-
-
-
-    return definition_object, note_objects
-
-# Definition contains the definition value and its sourcelink names.
-# The sourcelinks manifest themselves in different formats.
-# This function splits the definition element to definition value and sourcelink names
-# TODO: What if there are multiple sourcelinks?
-#  <descrip type="Definitsioon">an instruction that specifies
-#  a funds transfer [<xref Tlink="en:EUR">EUR</xref>]
-#  [<xref Tlink="Allikas:TERMIUM">TERMIUM</xref>]</descrip>
-def check_definition_content(root):
-
-    if root.xpath('xref'):
-        text_before_xref = root.xpath('xref/preceding-sibling::text()')
-        xref_link_value = root.xpath('xref/text()')
-        text_after_xref = root.xpath('xref/following-sibling::text()')
-        text_before_xref_str = ''.join(text_before_xref).strip()
-    else:
-        text_before_xref_str = root.text if root.text else ''
-        xref_link_value = None
-        text_after_xref = None
-
-    xref_link_value_str = ''.join(xref_link_value).strip() if xref_link_value else None
-    text_after_xref_str = ''.join(text_after_xref).strip() if text_after_xref else None
-
-    if '[' in text_before_xref_str and ']' in text_before_xref_str:
-        text_before_bracket, text_in_bracket = text_before_xref_str.split('[', 1)
-        text_in_bracket = text_in_bracket.split(']', 1)[0]
-    else:
-        text_before_bracket = text_before_xref_str
-        text_in_bracket = None
-
-    if text_before_bracket.endswith('['):
-        text_before_bracket = text_before_bracket[:-1].strip()
-
-    if text_before_bracket.startswith('1. '):
-        text_before_bracket = text_before_bracket[len('1. '):]
-
-    if text_after_xref_str is not None:
-        if ']' in text_after_xref_str:
-            text_after_xref_str = ''.join(text_after_xref).replace(']', '').strip() if text_after_xref else ''
-
-    return text_before_bracket, text_in_bracket, xref_link_value_str, text_after_xref_str
-
-
-# In case definition contains more than one definition, it is split, but this breaks the XML tags.
-# This function adds the missing XML tags
-def fix_xml_fragments(fragments, tag_name):
-    fixed_fragments = []
-    for i, fragment in enumerate(fragments):
-        if i == 0:
-            if not fragment.strip().endswith(f"</{tag_name}>"):
-                fragment += f"</{tag_name}>"
-        elif i == len(fragments) - 1:
-            if not fragment.strip().startswith(f"<{tag_name}"):
-                fragment = f"<{tag_name}>" + fragment
-        else:
-            fragment = f"<{tag_name}>" + fragment + f"</{tag_name}>"
-
-        fixed_fragments.append(fragment)
-    return fixed_fragments
-
-
-# Parse definition, split it to definition value and sourcelink and return the definition object
-def create_definition_object(lang, definition_element, updated_sources):
-    source_links = []
-    notes_extracted_from_sourcelink = []
-
-    text_before_xref_str, text_in_bracket, xref_link_value_str, text_after_xref_str = \
-        check_definition_content(definition_element)
-
-    if xref_link_value_str:
-        if xref_link_value_str.startswith('EKSPERT {'):
-            notes_extracted_from_sourcelink.append(data_classes.Note(
-                value='Ekspert: ' + xref_link_value_str[9:-1],
-                lang='est',
-                publicity=False
-            ))
-            value = 'EKSPERT'
-        elif xref_link_value_str.startswith('PÄRING {'):
-            notes_extracted_from_sourcelink.append(data_classes.Note(
-                value='Päring: ' + xref_link_value_str[8:-1],
-                lang='est',
-                publicity=False
-            ))
-            value = 'PÄRING'
-        else:
-            value = xref_link_value_str
-
-        source_links.append(data_classes.Sourcelink(
-            sourceId=find_source_by_name(updated_sources, xref_link_value_str),
-            value=value,
-            name=text_after_xref_str
-        ))
-    else:
-        if text_in_bracket and text_in_bracket.startswith('EKSPERT {'):
-            notes_extracted_from_sourcelink.append(data_classes.Note(
-                value='Ekspert: ' + text_in_bracket[9:-1],
-                lang='est',
-                publicity=False
-            ))
-            value = 'EKSPERT'
-        else:
-            value = text_in_bracket
-
-        source_links.append(data_classes.Sourcelink(
-            sourceId=find_source_by_name(updated_sources, value),
-            value=value,
-            name=''
-        ))
-
-    definition_object = data_classes.Definition(
-        value=text_before_xref_str,
-        lang=lang,
-        sourceLinks=source_links,
-        definitionTypeCode='definitsioon')
-
-    return definition_object, notes_extracted_from_sourcelink
 
 
 
@@ -960,6 +736,11 @@ def map_initials_to_names(initials):
     return names_and_initials.get(initials, initials)
 
 
+##########################################
+## "Definitsioon" > concept.definitions ##
+##########################################
+
+
 def handle_definition(definition_element_value, name_to_id_map, language):
 
     if definition_element_value.startswith('any trailer designed'):
@@ -1025,14 +806,60 @@ def separate_sourcelink_value_from_name(sourcelink):
     concept_notes = []
 
     match_comma = re.search(r'(\d*,)', sourcelink)
-    match_space = re.search(r'(\d*\s)', sourcelink)
 
-    if '§' in sourcelink:
+    #print('test separate: ' + sourcelink)
+
+    if bool(re.match(r'^X\d{4}\s', sourcelink)):
+        if len(sourcelink) > 5:
+            value = sourcelink[:5]
+            name = sourcelink.replace(sourcelink[:6], '')
+        else:
+            value = sourcelink
+            name = ''
+    elif bool(re.match(r'^X\d{4},', sourcelink)):
+        if len(sourcelink) > 5:
+            value = sourcelink[:5]
+            name = sourcelink.replace(sourcelink[:5], '')
+        else:
+            value = sourcelink
+            name = ''
+    elif bool(re.match(r'^X.{6},', sourcelink)):
+        if len(sourcelink) > 7:
+            value = sourcelink[:7]
+            name = sourcelink.replace(sourcelink[:7], '')
+        else:
+            value = sourcelink
+            name = ''
+    elif bool(re.match(r'^GG\d{3}-', sourcelink)):
+        if len(sourcelink) > 5:
+            value = sourcelink[:5]
+            name = sourcelink.replace(sourcelink[:5], '')
+        else:
+            value = sourcelink
+            name = ''
+    elif bool(re.match(r'^X\d{4}E', sourcelink)):
+        if len(sourcelink) > 7:
+            value = sourcelink[:7]
+            name = sourcelink.replace(sourcelink[:7], '')
+        else:
+            value = sourcelink
+            name = ''
+    elif bool(re.match(r'^X\d{5}E', sourcelink)):
+        if len(sourcelink) > 7:
+            value = sourcelink[:7]
+            name = sourcelink.replace(sourcelink[:7], '')
+        else:
+            value = sourcelink
+            name = ''
+    elif '§' in sourcelink:
         value = re.split(r'§', sourcelink, 1)[0].strip()
         name = "§ " + re.split(r'§', sourcelink, 1)[1].strip()
     elif 'ConvRT ' in sourcelink:
         value = 'ConvRT'
         name = sourcelink.replace('ConvRT ', '')
+    elif sourcelink.startswith('MRS'):
+        value = sourcelink
+        name = ''
     elif 'WIKIPEDIA ' in sourcelink:
         value = 'WIKIPEDIA'
         name = sourcelink.replace('WIKIPEDIA ', '')
@@ -1057,6 +884,16 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif '32006R0562 ' in sourcelink:
         value = '32006R0562'
         name = sourcelink.replace('32006R0562 ', '')
+    elif sourcelink.startswith('X50043'):
+        value = 'X50043'
+        name = sourcelink.replace('X50043 ', '')
+    elif bool(re.match(r'^T\d{5}', sourcelink)):
+        if len(sourcelink) > 6:
+            value = sourcelink[:6]
+            name = sourcelink.replace(sourcelink[:6], '')
+        else:
+            value = sourcelink
+            name = ''
     elif 'EKSPERT' in sourcelink:
         value = 'EKSPERT'
         name = ''
@@ -1073,18 +910,58 @@ def separate_sourcelink_value_from_name(sourcelink):
             lang='est',
             publicity=False
         ))
+    elif sourcelink.startswith('ICAO'):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('TET,'):
+        value = 'TET'
+        name = sourcelink.replace('TET, ', '')
+    elif sourcelink.startswith('GG002'):
+        value = 'GG002'
+        name = sourcelink.replace('GG002', '')
+    elif sourcelink.startswith('WPG'):
+        value = 'WPG'
+        name = sourcelink.replace('WPG', '')
+    elif sourcelink.startswith('X40046'):
+        value = 'X40046'
+        name = sourcelink.replace('X40046', '')
+    elif sourcelink.startswith('X50028'):
+        value = 'X50028'
+        name = sourcelink.replace('X50028', '')
+    elif sourcelink.startswith('T70629'):
+        value = 'T70629'
+        name = sourcelink.replace('T70629', '')
+    elif sourcelink.startswith('EVS-ISO'):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('X30073 '):
+        value = 'X30073'
+        name = sourcelink.replace('X30073 ', '')
+    elif sourcelink.startswith('EVS-EN'):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('ISO '):
+        value = sourcelink
+        name = ''
     elif match_comma:
         value = match_comma.group(1).strip(',')
         name = sourcelink.replace(value, '').strip(',').strip()
-    elif match_space:
-        value = match_space.group(1).strip()
-        name = sourcelink.replace(value, '')
+    elif ' ' in sourcelink:
+        parts = sourcelink.split(' ')
+        value = parts[0]
+        #print('test 1 ' + value)
+        name = parts[1]
+        #print('test 2 ' + name)
     else:
         value = sourcelink
         name = ''
 
     return value, name, concept_notes
 
+
+##########################################
+## Word "Märkus" > word.lexemenotes ##
+##########################################
 
 def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
     lexeme_notes = []
@@ -1094,7 +971,7 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
     if not lexeme_note_raw[-3:-1].isdigit():
         return lexeme_notes, notes_for_concept
 
-    if '.' in lexeme_note_raw[-6:-1]:
+    if '.' or '/' in lexeme_note_raw[-6:-1]:
         delimiter = None
         if lexeme_note_raw[-1] == ']':
             delimiter = '['
@@ -1106,7 +983,7 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
             note = ''.join(parts[:-1])
             date_and_initials = delimiter + parts[-1]
             date = regex.sub(r'\p{L}', '', date_and_initials, flags=re.UNICODE).replace('{}', '')
-            final_note = note.strip() + date.replace(' ', '')
+            final_note = note.strip() + ' ' + date.replace(' ', '')
 
             if note.endswith(']'):
                 sourcelink_value = note.rsplit(' ', 1)[1].strip(']')

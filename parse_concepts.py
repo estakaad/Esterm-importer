@@ -21,7 +21,7 @@ def parse_mtf(root, name_to_id_map):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # # # # For testing
-        # if counter % 100 == 0:
+        # if counter % 10000 == 0:
         #    logger.info(f'counter: {counter}')
         #    break
         #
@@ -72,8 +72,6 @@ def parse_mtf(root, name_to_id_map):
                 transac_element = origination_transac_grp_element.find("transac")
                 if transac_element is not None:
                     concept.firstCreateEventBy = xml_helpers.map_initials_to_names(transac_element.text)
-                    # if concept.firstCreateEventBy is None:
-                    #     print(transac_element.text)
 
         if modification_transac_grp_element is not None:
             modification_date_element = modification_transac_grp_element.find("date")
@@ -84,8 +82,6 @@ def parse_mtf(root, name_to_id_map):
                 transac_element = modification_transac_grp_element.find("transac")
                 if transac_element is not None:
                     concept.manualEventBy = xml_helpers.map_initials_to_names(transac_element.text)
-                    # if concept.manualEventBy is None:
-                    #     print(transac_element.text)
 
         # Parse concept level descrip elements and add their values as attributes to Concept
         for descrip_element in conceptGrp.xpath('descripGrp/descrip'):
@@ -213,23 +209,6 @@ def parse_words(conceptGrp, name_to_id_map):
             lang_grp = xml_helpers.match_language(lang_grp)
             logger.debug(('Definition language after matching: %s', lang_grp))
 
-            definition = descripGrp.find('./descrip')
-            #
-            # semicolon_in_brackets = r'\s\[.*;.*\]$'
-            # links_in_brackets = r'.*\[.*\]\s\[.*\]$'
-            #
-            # print(''.join(descripGrp.itertext()))
-            #
-            # if re.search(semicolon_in_brackets, ''.join(descripGrp.itertext())):
-            #     print('test semico: ' ''.join(descripGrp.itertext()))
-            #     definition_object, notes_extracted_from_sourcelink = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
-            # elif re.search(links_in_brackets, ''.join((descripGrp.itertext()))):
-            #     print('test multi brack: ' ''.join(descripGrp.itertext()))
-            #     definition_object, notes_extracted_from_sourcelink = xml_helpers.handle_multiple_sourcelinks_for_lang_definition(lang_grp, definition, name_to_id_map)
-            # else:
-            #     print('other: ' ''.join(descripGrp.itertext()))
-            #     definition_object, notes_extracted_from_sourcelink = xml_helpers.create_definition_object(lang_grp, definition, name_to_id_map)
-            #
             definition_objects, concept_notes_from_sources = xml_helpers.handle_definition(''.join(descripGrp.itertext()), name_to_id_map, lang_grp)
 
             for definition_object in definition_objects:
@@ -240,9 +219,6 @@ def parse_words(conceptGrp, name_to_id_map):
             for con_note in concept_notes_from_sources:
                 notes_for_concept.append(con_note)
 
-            # if notes_extracted_from_sourcelink:
-            #     for note in notes_extracted_from_sourcelink:
-            #         notes_for_concept.append(note)
 
         termGrps = languageGrp.xpath('termGrp')
 
@@ -278,82 +254,6 @@ def parse_words(conceptGrp, name_to_id_map):
                 if descrip_type == 'Definitsioon':
                     definition_element_value = ''.join(descripGrp.itertext()).strip()
 
-                    #print(definition_element_value)
-                    #definition_object = None
-
-                    # split_definitions = [definition for definition in re.split(r'\d+\.\s', definition_element_value) if definition]
-                    #
-                    # match_links_pattern = r'(?<!^)\[[^[]+\]'
-                    # source_links_for_definition = []
-                    #
-                    # for split_definition in split_definitions:
-                    #     split_definition = split_definition.strip().strip(';')
-                    #     #print('see on siis see definitsioon, millega toimetan: ' + split_definition)
-                    #     match_links = re.findall(match_links_pattern, split_definition)
-                    #
-                    #     if match_links:
-                    #         for link in match_links:
-                    #             split_definition = split_definition.replace(link, '')
-                    #             link = link.strip('[]')
-                    #             if ';' in link:
-                    #                 separate_links = re.split('; ', link)
-                    #                 #print('semikooloniga')
-                    #                 #print(separate_links)
-                    #                 for link in separate_links:
-                    #                     value = link.strip()
-                    #                     if '§' in link:
-                    #                         value = re.split(r'§', link, 1)[0].strip()
-                    #                         name = "§ " + re.split(r'§', link, 1)[1].strip()
-                    #                     elif '1899' in link:
-                    #                         value = '1899'
-                    #                         name = link.replace('1899, ', '')
-                    #                     elif '7149' in link:
-                    #                         value = '7149'
-                    #                         name = link.replace('7149, ', '')
-                    #                     elif 'ConvRT' in link:
-                    #                         value = 'ConvRT'
-                    #                         name = link.replace('ConvRT ', '')
-                    #                     else:
-                    #                         value = link
-                    #                         name = ''
-                    #                     source_links_for_definition.append(data_classes.Sourcelink(
-                    #                         sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
-                    #                         value=value,
-                    #                         name=name
-                    #                     ))
-                    #             else:
-                    #                 if '§' in link:
-                    #                     value = re.split(r'§', link, 1)[0].strip()
-                    #                     name = "§ " + re.split(r'§', link, 1)[1].strip()
-                    #                 elif '1899' in link:
-                    #                     value = '1899'
-                    #                     name = link.replace('1899, ', '')
-                    #                 elif '7149' in link:
-                    #                     value = '7149'
-                    #                     name = link.replace('7149, ', '')
-                    #                 elif 'ConvRT' in link:
-                    #                     value = 'ConvRT'
-                    #                     name = link.replace('ConvRT ', '')
-                    #                 else:
-                    #                     value = link
-                    #                     name = ''
-                    #                 source_links_for_definition.append(data_classes.Sourcelink(
-                    #                     sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
-                    #                     value=value,
-                    #                     name=name
-                    #                 ))
-                    #     else:
-                    #         continue
-                    #
-                    #
-                    # definition_object = data_classes.Definition(
-                    #     value=split_definition,
-                    #     lang=word.lang,
-                    #     definitionTypeCode='definitsioon',
-                    #     sourceLinks=source_links_for_definition
-                    # )
-
-                    #print(definition_object)
                     definition_objects, con_notes = xml_helpers.handle_definition(definition_element_value, name_to_id_map, word.lang)
 
                     for defi_object in definition_objects:
@@ -368,7 +268,6 @@ def parse_words(conceptGrp, name_to_id_map):
 
                     if concept_notes:
                         for note in concept_notes:
-                            #print('3: ' + updated_value)
                             notes_for_concept.append(note)
                     if source_links:
                         word.usages.append(
@@ -390,25 +289,59 @@ def parse_words(conceptGrp, name_to_id_map):
 
                     descrip_element = descripGrp.xpath('./descrip[@type="Allikaviide"]')[0]
 
-                    full_string = tostring(descrip_element, encoding="utf-8").decode('utf-8')
+                    lexeme_sources = ''.join(descrip_element.itertext()).strip().strip('[]')
 
-                    # Remove the outer tags to get only the inner XML
-                    inner_xml = full_string.split('>', 1)[1].rsplit('<', 1)[0].strip()
+                    if ';' in lexeme_sources:
+                        links = lexeme_sources.split(';')
+                    elif '][' in lexeme_sources:
+                        links = lexeme_sources.split('][')
+                    elif '] [' in lexeme_sources:
+                        links = lexeme_sources.split('] [')
+                    else:
+                        links = [lexeme_sources]
 
-                    sourcelinks, concept_notes_from_sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
 
-                    if concept_notes_from_sourcelinks:
-                        for note in concept_notes_from_sourcelinks:
-                            notes_for_concept.append(note)
+                    for link in links:
+                        link = link.strip().strip('[]')
+                        print('test 1 ' + link)
+                        value, name, c_notes = xml_helpers.separate_sourcelink_value_from_name(link)
 
-                    for link in sourcelinks:
+                        sourceid = xml_helpers.find_source_by_name(name_to_id_map, value)
+
+                        if sourceid is None:
+                            print(lexeme_sources)
+                            print(value)
+                            print('')
+
                         word.lexemeSourceLinks.append(
                             data_classes.Sourcelink(
-                                sourceId=link.sourceId,
-                                value=link.value,
-                                name=link.name
+                                sourceId=sourceid,
+                                value=value,
+                                name=name
                             )
                         )
+                        for c_note in c_notes:
+                            notes_for_concept.append(c_note)
+
+                    # full_string = tostring(descrip_element, encoding="utf-8").decode('utf-8')
+                    #
+                    # # Remove the outer tags to get only the inner XML
+                    # inner_xml = full_string.split('>', 1)[1].rsplit('<', 1)[0].strip()
+                    #
+                    # sourcelinks, concept_notes_from_sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
+                    #
+                    # if concept_notes_from_sourcelinks:
+                    #     for note in concept_notes_from_sourcelinks:
+                    #         notes_for_concept.append(note)
+                    #
+                    # for link in sourcelinks:
+                    #     word.lexemeSourceLinks.append(
+                    #         data_classes.Sourcelink(
+                    #             sourceId=link.sourceId,
+                    #             value=link.value,
+                    #             name=link.name
+                    #         )
+                    #     )
 
                 if descrip_type == 'Märkus':
                     lexeme_note_raw = ''.join(descripGrp.itertext()).strip()
