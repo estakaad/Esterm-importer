@@ -903,6 +903,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif 'OED ' in sourcelink:
         value = 'OED'
         name = sourcelink.replace('OED ', '')
+    elif 'OED,' in sourcelink:
+        value = 'OED'
+        name = sourcelink.replace('OED', '')
     elif 'EVS-EN 45020:2008 ' in sourcelink:
         value = 'EVS-EN 45020:2008'
         name = sourcelink.replace('EVS-EN 45020:2008 ', '')
@@ -1014,6 +1017,9 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = sourcelink
         name = ''
     elif sourcelink.startswith('ГОСТ '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('Eesti '):
         value = sourcelink
         name = ''
     elif match_comma:
