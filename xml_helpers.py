@@ -223,6 +223,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
     # ei sätestata teisiti. [<xref Tlink="Allikas:X0002">X0002</xref> §13-2]'
     if xref_element is not None and xref_element.tail:
         source_link_name = xref_element.tail.strip()
+
     # 'Parents who are raising children have the right to assistance from the state. [77184]'
     elif source_info:
         source_name = source_info
@@ -629,17 +630,17 @@ def find_source_by_name(name_to_ids_map, name):
             if "PÄRING" in name:
                 return 53362
             elif name == 'ICAO-9731/I/1':
-                return 53362
-            elif name == '32018L0850':
-                return 53362
-            elif name == '62014TJ0104':
-                return 53362
-            elif name == '10661':
-                return 53362
-            elif name == 'T45731':
-                return 53362
-            elif name == 'GG024':
-                return 53362
+                return find_source_by_name(name_to_ids_map, 'ICAO-9731/I/11')
+            # elif name == '32018L0850':
+            #     return 53362
+            # elif name == '62014TJ0104':
+            #     return 53362
+            # elif name == '10661':
+            #     return 53362
+            # elif name == 'T45731':
+            #     return 53362
+            # elif name == 'GG024':
+            #     return 53362
             else:
                 #print(name)
                 return None
@@ -1019,6 +1020,15 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('MKM '):
         value = sourcelink
         name = ''
+    elif sourcelink.startswith('ESA '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('Endic'):
+        value = 'EnDic'
+        name = ''
+    elif sourcelink.startswith('GG003 '):
+        value = 'GG003'
+        name = sourcelink.replace('GG003', '')
     elif sourcelink.startswith('KRM'):
         value = 'KRM'
         name = sourcelink.replace('KRM', '')
@@ -1028,6 +1038,21 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('JAR-FCL '):
         value = sourcelink
         name = ''
+    elif 'tõlge' in sourcelink:
+        value = sourcelink.replace(' tõlge', '')
+        name = 'tõlge'
+    elif sourcelink.startswith('JAR '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('AC '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('SAR '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('MRL,'):
+        value = 'MRL'
+        name = sourcelink.replace('MRL, ', '')
     elif sourcelink.startswith('HIV/AIDS '):
         value = sourcelink
         name = ''
@@ -1037,6 +1062,12 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('Eesti '):
         value = sourcelink
         name = ''
+    elif sourcelink.startswith('Kaitsevägi'):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('BRITANNICA '):
+        value = 'BRITANNICA'
+        name = sourcelink.replace('BRITANNICA ', '')
     elif match_comma:
         value = match_comma.group(1).strip(',')
         name = sourcelink.replace(value, '').strip(',').strip()
