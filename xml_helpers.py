@@ -308,14 +308,20 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
                                             name=name.strip(']')))
-            if ',' in source_value:
+            elif ',' in source_value:
                 value = re.split(r',', source_value, 1)[0].strip()
                 name = re.split(r',', source_value, 1)[1].strip()
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
                                             name=name.strip(']')))
-
+            elif source_value.startswith('BRIANNICA '):
+                value = 'BRITANNICA'
+                name = source_value.replace('BRITANNICA ', '')
+                source_links.append(
+                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                            value=value,
+                                            name=name.strip(']')))
             else:
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_value),
@@ -869,6 +875,9 @@ def separate_sourcelink_value_from_name(sourcelink):
         else:
             value = sourcelink
             name = ''
+    elif bool(re.match(r'^X\d{5}-', sourcelink)):
+        value = sourcelink[:6]
+        name = sourcelink[6:]
     elif bool(re.match(r'^\d{5}\s,', sourcelink)):
         if len(sourcelink) > 5:
             value = sourcelink[:5]
@@ -922,6 +931,13 @@ def separate_sourcelink_value_from_name(sourcelink):
         else:
             value = sourcelink
             name = ''
+    elif sourcelink.startswith('FCL DRAFT REG'):
+        if sourcelink == 'FCL DRAFT REG':
+            value = 'FCL DRAFT REG'
+            name = ''
+        else:
+            value = 'FCL DRAFT REG'
+            name = sourcelink.replace('FCL DRAFT REG ', '')
     elif sourcelink.startswith('PakS-2021/05/02'):
         value = 'PakS-2021/05/2'
         name = sourcelink.replace('PakS-2021/05/02 ', '')
@@ -943,6 +959,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif 'BLA7,' in sourcelink:
         value = 'BLA7'
         name = sourcelink.replace('BLA7, ', '')
+    elif sourcelink.startswith('ONT, '):
+        value = 'ONT'
+        name = sourcelink.replace('ONT, ', '')
     elif 'BLA,' in sourcelink:
         value = 'BLA'
         name = sourcelink.replace('BLA, ', '')
@@ -1018,8 +1037,12 @@ def separate_sourcelink_value_from_name(sourcelink):
             publicity=False
         ))
     elif sourcelink.startswith('ICAO'):
-        value = sourcelink
-        name = ''
+        if 'tõlge' in  sourcelink:
+            value = sourcelink.replace(' tõlge', '')
+            name = 'tõlge'
+        else:
+            value = sourcelink
+            name = ''
     elif sourcelink.startswith('TET,'):
         value = 'TET'
         name = sourcelink.replace('TET, ', '')
@@ -1059,9 +1082,6 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('ESA '):
         value = sourcelink
         name = ''
-    elif sourcelink.startswith('MKM 8.03.2011 nr 20 '):
-        value = 'MKM 8.03.2011 nr 20'
-        name = sourcelink.replace('MKM 8.03.2011 nr 20 ', '')
     elif sourcelink.startswith('Endic'):
         value = 'EnDic'
         name = ''
@@ -1101,9 +1121,18 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('LENNU '):
         value = sourcelink
         name = ''
+    elif sourcelink.startswith('PART '):
+        value = sourcelink
+        name = ''
     elif sourcelink.startswith('MRL,'):
         value = 'MRL'
         name = sourcelink.replace('MRL, ', '')
+    elif sourcelink.startswith('CN '):
+        value = 'CN'
+        name = sourcelink.replace('CN ', '')
+    elif sourcelink.startswith('Cn '):
+        value = 'CN'
+        name = sourcelink.replace('Cn ', '')
     elif sourcelink.startswith('HIV/AIDS '):
         value = sourcelink
         name = ''
