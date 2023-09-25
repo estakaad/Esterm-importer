@@ -204,18 +204,22 @@ def remove_whitespace_before_numbers(value: str) -> str:
 
 # Returns the usage ("Kontekst") value without the source link + sourcelinks
 def extract_usage_and_its_sourcelink(element, updated_sources):
+    print(''.join(element.itertext()))
     source_links = []
     concept_notes = []
 
     full_text = ''.join(element.itertext())
     usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
     usage_value = usage_value.strip()
-
+    print(usage_value)
     source_info = source_info.strip()
     source_info = source_info.rstrip(']')
+    print(source_info)
 
     xref_element = element.find('.//xref')
-    source_name = xref_element.text if xref_element is not None else ''
+    source_value = xref_element.text.strip() if xref_element is not None else ''
+    if source_value == 'PakS-2021/05/02':
+        source_value = 'PakS-2021/05/2'
     source_link_name = None
 
     # 'Abiteenistujatele laienevad töölepingu seadus ja muud tööseadused niivõrd,
@@ -226,11 +230,11 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
 
     # 'Parents who are raising children have the right to assistance from the state. [77184]'
     elif source_info:
-        source_name = source_info
+        source_value = source_info
 
     name = source_link_name if source_link_name else ''
 
-    if 'PÄRING' in source_name:
+    if 'PÄRING' in source_value:
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'PÄRING'),
                                     value='Päring',
@@ -243,7 +247,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                 publicity=False
                 )
             )
-    if 'DGT' in source_name:
+    if 'DGT' in source_value:
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'DGT'),
                                     value='Päring',
@@ -256,7 +260,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                 publicity=False
                 )
             )
-    if 'PARLAMENT' in source_name:
+    if 'PARLAMENT' in source_value:
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'PARLAMENT'),
                                     value='Parlament',
@@ -269,7 +273,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                 publicity=False
                 )
             )
-    if 'CONSILIUM' in source_name:
+    if 'CONSILIUM' in source_value:
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'CONSILIUM'),
                                     value='Consilium',
@@ -282,12 +286,41 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                 publicity=False
                 )
             )
+    if 'EKSPERT' in source_value:
+        source_links.append(
+            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'EKSPERT'),
+                                    value='Ekspert',
+                                    name=''))
+        if source_info:
+            concept_notes.append(
+                data_classes.Note(
+                value='Ekspert: ' + source_info.replace('EKSPERT', '').strip(),
+                lang='est',
+                publicity=False
+                )
+            )
     else:
-        if source_name:
-            source_links.append(
-                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_name),
-                                        value=source_name,
-                                        name=name.strip(']')))
+        if source_value:
+            if '§' in source_value:
+                value = re.split(r'§', source_value, 1)[0].strip()
+                name = "§ " + re.split(r'§', source_value, 1)[1].strip()
+                source_links.append(
+                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                            value=value,
+                                            name=name.strip(']')))
+            if ',' in source_value:
+                value = re.split(r',', source_value, 1)[0].strip()
+                name = re.split(r',', source_value, 1)[1].strip()
+                source_links.append(
+                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                            value=value,
+                                            name=name.strip(']')))
+
+            else:
+                source_links.append(
+                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_value),
+                                            value=source_value,
+                                            name=name.strip(']')))
 
     return usage_value, source_links, concept_notes
 
@@ -889,6 +922,9 @@ def separate_sourcelink_value_from_name(sourcelink):
         else:
             value = sourcelink
             name = ''
+    elif sourcelink.startswith('PakS-2021/05/02'):
+        value = 'PakS-2021/05/2'
+        name = sourcelink.replace('PakS-2021/05/02 ', '')
     elif '§' in sourcelink:
         value = re.split(r'§', sourcelink, 1)[0].strip()
         name = "§ " + re.split(r'§', sourcelink, 1)[1].strip()
@@ -1023,17 +1059,26 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('ESA '):
         value = sourcelink
         name = ''
+    elif sourcelink.startswith('MKM 8.03.2011 nr 20 '):
+        value = 'MKM 8.03.2011 nr 20'
+        name = sourcelink.replace('MKM 8.03.2011 nr 20 ', '')
     elif sourcelink.startswith('Endic'):
         value = 'EnDic'
         name = ''
     elif sourcelink.startswith('GG003 '):
         value = 'GG003'
         name = sourcelink.replace('GG003', '')
+    elif sourcelink.startswith('GG003,'):
+        value = 'GG003'
+        name = sourcelink.replace('GG003, ', '')
     elif sourcelink.startswith('KRM'):
         value = 'KRM'
         name = sourcelink.replace('KRM', '')
     elif sourcelink.startswith('JAR-OPS '):
         value = sourcelink
+        name = ''
+    elif sourcelink == 'JAR 1':
+        value = 'JAR-1'
         name = ''
     elif sourcelink.startswith('JAR-FCL '):
         value = sourcelink
@@ -1048,6 +1093,12 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = sourcelink
         name = ''
     elif sourcelink.startswith('SAR '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('V00197, '):
+        value = 'V00197'
+        name = sourcelink.replace('V00197, ', '')
+    elif sourcelink.startswith('LENNU '):
         value = sourcelink
         name = ''
     elif sourcelink.startswith('MRL,'):
