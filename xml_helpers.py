@@ -204,17 +204,17 @@ def remove_whitespace_before_numbers(value: str) -> str:
 
 # Returns the usage ("Kontekst") value without the source link + sourcelinks
 def extract_usage_and_its_sourcelink(element, updated_sources):
-    print(''.join(element.itertext()))
+    #print(''.join(element.itertext()))
     source_links = []
     concept_notes = []
 
     full_text = ''.join(element.itertext())
     usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
     usage_value = usage_value.strip()
-    print(usage_value)
+    #print(usage_value)
     source_info = source_info.strip()
     source_info = source_info.rstrip(']')
-    print(source_info)
+    #print(source_info)
 
     xref_element = element.find('.//xref')
     source_value = xref_element.text.strip() if xref_element is not None else ''
@@ -315,9 +315,16 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
                                             name=name.strip(']')))
-            elif source_value.startswith('BRIANNICA '):
+            elif source_value.startswith('BRITANNICA '):
                 value = 'BRITANNICA'
                 name = source_value.replace('BRITANNICA ', '')
+                source_links.append(
+                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                            value=value,
+                                            name=name.strip(']')))
+            elif source_value.startswith('T40766 '):
+                value = 'T40766'
+                name = source_value.replace('T40766 ', '')
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
@@ -666,6 +673,7 @@ def find_source_by_name(name_to_ids_map, name):
         logger.warning(f"Warning: Source ID for '{name}' not found.")
 
         if name is not None:
+            print(name)
             if "PÄRING" in name:
                 return 53362
             elif name == 'ICAO-9731/I/1':
@@ -878,6 +886,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif bool(re.match(r'^X\d{5}-', sourcelink)):
         value = sourcelink[:6]
         name = sourcelink[6:]
+    elif bool(re.match(r'^X\d{5},', sourcelink)):
+        value = sourcelink[:6]
+        name = sourcelink.replace(value + ', ', '')
     elif bool(re.match(r'^\d{5}\s,', sourcelink)):
         if len(sourcelink) > 5:
             value = sourcelink[:5]
@@ -962,12 +973,30 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('ONT, '):
         value = 'ONT'
         name = sourcelink.replace('ONT, ', '')
+    elif sourcelink == 'LLT AS-WWW':
+        value = 'LLT AS-WWW'
+        name = ''
+    elif sourcelink == 'AIR OPS-AMC&amp;GM':
+        value = 'AIR OPS-AMC&amp;GM'
+        name = ''
     elif 'BLA,' in sourcelink:
         value = 'BLA'
         name = sourcelink.replace('BLA, ', '')
+    elif 'AMS ' in sourcelink:
+        value = sourcelink
+        name = ''
     elif 'ENE,' in sourcelink:
         value = 'ENE'
         name = sourcelink.replace('ENE, ', '')
+    elif sourcelink.startswith('ÜRO '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('Aquatic '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('JARUS '):
+        value = sourcelink
+        name = ''
     elif 'OED ' in sourcelink:
         value = 'OED'
         name = sourcelink.replace('OED ', '')
@@ -996,6 +1025,9 @@ def separate_sourcelink_value_from_name(sourcelink):
         else:
             value = sourcelink
             name = ''
+    elif bool(re.match(r'^T\d{4}\,', sourcelink)):
+        value = sourcelink[:5]
+        name = sourcelink.replace(sourcelink[:7], '')
     elif 'EKSPERT' in sourcelink:
         value = 'EKSPERT'
         name = ''
@@ -1014,6 +1046,14 @@ def separate_sourcelink_value_from_name(sourcelink):
         ))
     elif 'DGT' in sourcelink:
         value = 'DGT'
+        name = ''
+        concept_notes.append(data_classes.Note(
+            value=sourcelink,
+            lang='est',
+            publicity=False
+        ))
+    elif 'JURIST' in sourcelink:
+        value = 'JURIST'
         name = ''
         concept_notes.append(data_classes.Note(
             value=sourcelink,
@@ -1055,6 +1095,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('X40046'):
         value = 'X40046'
         name = sourcelink.replace('X40046', '')
+    elif sourcelink.startswith('MKM 8.06.2005 nr 66 '):
+        value = 'MKM 8.06.2005 nr 66'
+        name = sourcelink.replace('MKM 8.06.2005 nr 66 ', '')
     elif sourcelink.startswith('X50028'):
         value = 'X50028'
         name = sourcelink.replace('X50028', '')
@@ -1078,6 +1121,12 @@ def separate_sourcelink_value_from_name(sourcelink):
         name = ''
     elif sourcelink.startswith('MKM '):
         value = sourcelink
+        name = ''
+    elif sourcelink.startswith('ESA 95 '):
+        value = 'ESA 95'
+        name = sourcelink.replace('ESA 95 ', '')
+    elif sourcelink == 'GSFA Online':
+        value = 'GSFA Online'
         name = ''
     elif sourcelink.startswith('ESA '):
         value = sourcelink
@@ -1130,6 +1179,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('CN '):
         value = 'CN'
         name = sourcelink.replace('CN ', '')
+    elif sourcelink.startswith('CN, '):
+        value = 'CN'
+        name = sourcelink.replace('CN, ', '')
     elif sourcelink.startswith('Cn '):
         value = 'CN'
         name = sourcelink.replace('Cn ', '')
@@ -1148,6 +1200,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('BRITANNICA '):
         value = 'BRITANNICA'
         name = sourcelink.replace('BRITANNICA ', '')
+    elif sourcelink.startswith('WHO '):
+        value = sourcelink
+        name = ''
     elif match_comma:
         value = match_comma.group(1).strip(',')
         name = sourcelink.replace(value, '').strip(',').strip()
