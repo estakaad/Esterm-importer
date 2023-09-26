@@ -65,6 +65,7 @@ def create_json(conceptGrp):
         'type': '',
         'sourceProperties': []
     }
+    id = conceptGrp.find('concept').text
 
     type_descrip = conceptGrp.find('.//descrip[@type="Tüüp"]')
     if type_descrip is not None and type_descrip.text is not None:
@@ -148,6 +149,15 @@ def create_json(conceptGrp):
     source_name_objects.sort(key=lambda obj: len(obj["valueText"]))
 
     json_object["sourceProperties"] = source_name_objects + other_objects
+
+    json_object["sourceProperties"].append({
+                        'type': 'SOURCE_FILE',
+                        'valueText': 'esterm.xml'
+                    })
+    json_object["sourceProperties"].append({
+                        'type': 'EXTERNAL_SOURCE_ID',
+                        'valueText': id
+                    })
 
     logger.info(f'Finished creating JSON object from XML source. Source names: {source_name_objects}')
 
