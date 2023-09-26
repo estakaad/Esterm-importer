@@ -961,6 +961,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('MRS'):
         value = sourcelink
         name = ''
+    elif sourcelink.startswith('EVS: EN '):
+        value = sourcelink
+        name = ''
     elif 'WIKIPEDIA ' in sourcelink:
         value = 'WIKIPEDIA'
         name = sourcelink.replace('WIKIPEDIA ', '')
