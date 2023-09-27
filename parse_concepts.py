@@ -117,6 +117,8 @@ def parse_mtf(root, name_to_id_map):
                             concept.notes.append(expert_note)
                             logger.debug('Added concept expert note: %s', expert_note)
                     if value:
+
+                        value = value.strip('[]')
                         source_links = []
 
                         source_links.append(
@@ -305,6 +307,8 @@ def parse_words(conceptGrp, name_to_id_map):
                         link = link.strip().strip('[]')
                         #print('test 1 ' + link)
                         value, name, c_notes = xml_helpers.separate_sourcelink_value_from_name(link)
+
+                        value = value.strip('[]')
 
                         sourceid = xml_helpers.find_source_by_name(name_to_id_map, value)
 

@@ -1,4 +1,5 @@
 import logging
+import inspect
 import xml.etree.ElementTree as ET
 import log_config
 from langdetect import detect
@@ -673,6 +674,8 @@ def find_source_by_name(name_to_ids_map, name):
         logger.warning(f"Warning: Source ID for '{name}' not found.")
 
         if name is not None:
+            caller_name = inspect.currentframe().f_back.f_code.co_name
+            print(f"Called from: {caller_name}")
             print(name)
             if "PÄRING" in name:
                 return 53362
@@ -883,6 +886,9 @@ def separate_sourcelink_value_from_name(sourcelink):
         else:
             value = sourcelink
             name = ''
+    elif bool(re.match(r'^X\d{4}-', sourcelink)):
+        value = sourcelink[:5]
+        name = sourcelink.replace(sourcelink[:6], '')
     elif bool(re.match(r'^X\d{5}-', sourcelink)):
         value = sourcelink[:6]
         name = sourcelink[6:]
@@ -1197,6 +1203,15 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('Eesti '):
         value = sourcelink
         name = ''
+    elif sourcelink.startswith('T2026 '):
+        value = 'T2026'
+        name = sourcelink.replace('T2026 ', '')
+    elif sourcelink.startswith('T1071 '):
+        value = 'T1071'
+        name = sourcelink.replace('T1071 ', '')
+    elif sourcelink.startswith('VPL, '):
+        value = 'VPL'
+        name = sourcelink.replace('VPL, ', '')
     elif sourcelink.startswith('Kaitsevägi'):
         value = sourcelink
         name = ''
