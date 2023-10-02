@@ -985,9 +985,27 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink == 'LLT AS-WWW':
         value = 'LLT AS-WWW'
         name = ''
+    elif sourcelink.startswith('AIR OPS-'):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('ARV:'):
+        value = 'ARV'
+        name = sourcelink.replace('ARV: ', '')
+    elif sourcelink.startswith('RVMS '):
+        value = 'RVMS'
+        name = sourcelink.replace('RVMS ', '')
+    elif sourcelink.startswith('TEH, '):
+        value = 'TEH'
+        name = sourcelink.replace('TEH, ', '')
     elif sourcelink == 'AIR OPS-AMC&amp;GM':
         value = 'AIR OPS-AMC&amp;GM'
         name = ''
+    elif sourcelink.startswith('T1064 '):
+        value = 'T1064'
+        name = sourcelink.replace('T1064 ', '')
+    elif sourcelink.startswith('T2269 '):
+        value = 'T2269'
+        name = sourcelink.replace('T2269 ', '')
     elif 'BLA,' in sourcelink:
         value = 'BLA'
         name = sourcelink.replace('BLA, ', '')
