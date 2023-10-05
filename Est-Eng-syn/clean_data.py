@@ -1,3 +1,4 @@
+import csv
 import string
 import json
 import time
@@ -11,7 +12,46 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key = os.environ.get("API_KEY")
 
+def is_word_in_ys(word, api_key):
+    resp = requests.get(
+        url=api_url + 'word/ids/' + word + '/eki/est',
+        headers={
+            'ekilex-api-key': api_key,
+            'Content-type': 'application/json',
+            'Accept': 'application/json'
+        }
+    )
+
+    if resp.status_code == 200:
+        response_data = resp.json()
+        if response_data:
+            logging.info(f"Word {word} is present in ÜS")
+            return True
+        else:
+            logging.info(f"Object removed because word {word} is not present in ÜS")
+            return False
+    else:
+        return False
+
+
+def load_ys_file_to_set(filename):
+    ys_set = set()
+    with open(filename, 'r', encoding='utf-8') as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            ys_set.add(row[0])
+    return ys_set
+
+def is_word_in_ys_file(word, ys_set):
+    if word in ys_set:
+        return True
+    else:
+        return False
+
+
 base_data = 'failid/andmestik/keelevaraga/ekilex_import_data_inter.json'
+ys = 'failid/andmestik/YS/_SELECT_DISTINCT_word_value_FROM_lexeme_JOIN_word_ON_lexeme_word_202310051024.csv'
+api_url = 'https://ekitest.tripledev.ee/ekilex/api/'
 type = 'inter'
 
 current_datetime = datetime.now()
@@ -26,7 +66,8 @@ start_time = time.time()
 logging.basicConfig(filename=f'{output_directory}/logfile_{formatted_datetime}.log', level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
-api_url = 'https://ekitest.tripledev.ee/ekilex/api/'
+ys_set = load_ys_file_to_set(ys)
+
 
 # Load the original JSON data
 with open(base_data, 'r', encoding='utf-8') as f:
@@ -37,23 +78,14 @@ filtered_data = []
 
 for d in data:
     headword_value = d["headwordValue"]
-    resp = requests.get(
-        url=api_url + 'word/ids/' + headword_value + '/eki/est',
-        headers={
-            'ekilex-api-key': api_key,
-            'Content-type': 'application/json',
-            'Accept': 'application/json'
-        }
-    )
 
-    if resp.status_code == 200:
-        response_data = resp.json()
-        if response_data:
-            filtered_data.append(d)
-            logging.info(f"Word {headword_value} is present in ÜS")
-        else:
-            removed_items.append(d)
-            logging.info(f"Object removed because word {headword_value} is not present in ÜS")
+    #if is_word_in_ys(headword_value, api_key):
+    if is_word_in_ys_file(headword_value, ys_set):
+        filtered_data.append(d)
+        logging.info(f"Word {headword_value} is present in ÜS")
+    else:
+        removed_items.append(d)
+        logging.info(f"Word {headword_value} is not present in ÜS")
 
 
 logging.info(f'Count of words in ÜS: {str(len(filtered_data))}')
@@ -88,7 +120,6 @@ for d in filtered_data:
     words_to_remove = []
     removed_items_dict = {"headwordValue": headword_value, "synCandidateWords": []}
 
-    # Apply your rules here (this is where your original code for rules 1-8 would go)
     for item in d["synCandidateWords"]:
         # 1. Kas tõlkevaste kandidaat sisaldab tühikut või sidekriipsu?
         if ' ' not in item['value'] and '-' not in item['value']:
@@ -108,6 +139,8 @@ for d in filtered_data:
             has_kdictionary = False
             for definition in item['definitions']:
                 for sourceLink in definition['sourceLinks']:
+                    if sourceLink['sourceId'] == '20662':
+                        print(item['value'])
                     if sourceLink['value'] == 'KDictionary':
                         has_kdictionary = True
                         break  # leidis KDictionary, edasi pole vaja midagi kontrollida, need sõnad jäävad
