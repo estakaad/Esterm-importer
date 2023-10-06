@@ -967,27 +967,102 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('MRS'):
         value = sourcelink
         name = ''
+    elif sourcelink == 'EVS 911:2018':
+        value = sourcelink
+        name = ''
     elif sourcelink.startswith('EVS: EN '):
         value = sourcelink
         name = ''
+    elif sourcelink == 'PEL T 2-2013':
+        value = sourcelink
+        name = ''
+    elif sourcelink == 'EDD 2016/028/R':
+        value = sourcelink
+        name = ''
+    elif sourcelink == 'ASM käsiraamat':
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('SMT, '):
+        value = 'SMT'
+        name = sourcelink.replace('SMT, ', '')
+    elif sourcelink.startswith('MKM 8.03.2011 nr 20 '):
+        value = 'MKM 8.03.2011 nr 20'
+        name = sourcelink.replace('MKM 8.03.2011 nr 20 ', '')
+    elif 'Electropedia, ' in sourcelink:
+        value = 'Electropedia'
+        name = sourcelink.replace('Electropedia, ', '')
+    elif sourcelink == 'OPS T 1-2 M1':
+        value = sourcelink
+        name = ''
+    elif sourcelink == 'LEND JA PLANEERIMINE':
+        value = sourcelink
+        name = ''
+    elif sourcelink == 'VV 16.06.2011 nr 78':
+        value = sourcelink
+        name = ''
+    elif sourcelink == 'UAV reeglid':
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('LES, '):
+        value = 'LES'
+        name = sourcelink.replace('LES, ', '')
+    elif sourcelink.startswith('Choosing a Business'):
+        value = 'Choosing a Business Model That Will Grow Your Company'
+        name = sourcelink.replace('Choosing a Business Model That Will Grow Your Company', '')
+    elif 'wiktionary.org' in sourcelink:
+        value = 'WIKTIONARY'
+        name = sourcelink
     elif 'WIKIPEDIA ' in sourcelink:
         value = 'WIKIPEDIA'
         name = sourcelink.replace('WIKIPEDIA ', '')
+    elif 'Wikipedia, ' in sourcelink:
+        value = 'WIKIPEDIA'
+        name = sourcelink.replace('Wikipedia, ', '')
+    elif 'Wikipedia, ' in sourcelink:
+        value = 'WIKIPEDIA'
+        name = sourcelink.replace('Wikipedia, ', '')
+    elif sourcelink == 'Wikipedia':
+        value = 'WIKIPEDIA'
+        name = ''
+    elif 'webopedia' in sourcelink:
+        value = 'Webopedia'
+        name = sourcelink
+    elif sourcelink == 'A Dictionary of the Internet':
+        value = sourcelink
+        name = ''
     elif 'MER,' in sourcelink:
         value = 'MER'
         name = sourcelink.replace('MER, ', '')
+    elif 'techopedia' in sourcelink:
+        value = 'Techopedia: Dictionary'
+        name = sourcelink
+    elif 'Investopedia, Scalability' in sourcelink:
+        value = 'Investopedia, Scalability'
+        name = sourcelink.replace('Investopedia, Scalability', '')
     elif 'BLA7,' in sourcelink:
         value = 'BLA7'
         name = sourcelink.replace('BLA7, ', '')
+    elif sourcelink == 'ETSI EN 301 040 V2.1.1':
+        value = 'ETSI EN 301 040 V2.1.1'
+        name = ''
     elif sourcelink.startswith('ONT, '):
         value = 'ONT'
         name = sourcelink.replace('ONT, ', '')
     elif sourcelink == 'LLT AS-WWW':
         value = 'LLT AS-WWW'
         name = ''
+    elif sourcelink.startswith('EKS, '):
+        value = 'EKS'
+        name = sourcelink.replace('EKS, ', '')
     elif sourcelink.startswith('AIR OPS-'):
         value = sourcelink
         name = ''
+    elif sourcelink.startswith('EUR, '):
+        value = 'EUR'
+        name = sourcelink.replace('EUR, ', '')
+    elif sourcelink.startswith('MAV, '):
+        value = 'MAV'
+        name = sourcelink.replace('MAV, ', '')
     elif sourcelink.startswith('ARV:'):
         value = 'ARV'
         name = sourcelink.replace('ARV: ', '')
