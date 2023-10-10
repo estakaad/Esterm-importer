@@ -205,17 +205,14 @@ def remove_whitespace_before_numbers(value: str) -> str:
 
 # Returns the usage ("Kontekst") value without the source link + sourcelinks
 def extract_usage_and_its_sourcelink(element, updated_sources):
-    #print(''.join(element.itertext()))
     source_links = []
     concept_notes = []
 
     full_text = ''.join(element.itertext())
     usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
     usage_value = usage_value.strip()
-    #print(usage_value)
     source_info = source_info.strip()
     source_info = source_info.rstrip(']')
-    #print(source_info)
 
     xref_element = element.find('.//xref')
     source_value = xref_element.text.strip() if xref_element is not None else ''
@@ -630,10 +627,6 @@ def extract_lexeme_note_and_its_sourcelinks(string):
             lang='est',
             publicity=False
         )
-    # print('lexeme note text before bracket: ' + text_before_bracket)
-    # print('lexeme note date string: ' + date_string)
-    # print('lexeme note source: ' + source)
-    # print('lexeme note tail: ' + tail)
 
     return text_before_bracket, date_string, source, tail, expert_note
 
@@ -679,20 +672,7 @@ def find_source_by_name(name_to_ids_map, name):
             print(name)
             if "PÄRING" in name:
                 return 53362
-            elif name == 'ICAO-9731/I/1':
-                return find_source_by_name(name_to_ids_map, 'ICAO-9731/I/11')
-            # elif name == '32018L0850':
-            #     return 53362
-            # elif name == '62014TJ0104':
-            #     return 53362
-            # elif name == '10661':
-            #     return 53362
-            # elif name == 'T45731':
-            #     return 53362
-            # elif name == 'GG024':
-            #     return 53362
             else:
-                #print(name)
                 return None
         else:
         # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
@@ -869,8 +849,6 @@ def separate_sourcelink_value_from_name(sourcelink):
     concept_notes = []
 
     match_comma = re.search(r'(\d*,)', sourcelink)
-
-    #print('test separate: ' + sourcelink)
 
     if bool(re.match(r'^X\d{4}\s', sourcelink)):
         if len(sourcelink) > 5:
@@ -1305,12 +1283,21 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('VPL, '):
         value = 'VPL'
         name = sourcelink.replace('VPL, ', '')
+    elif sourcelink.startswith('IRIS '):
+        value = sourcelink
+        name = ''
     elif sourcelink.startswith('Kaitsevägi'):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('Aianduse '):
         value = sourcelink
         name = ''
     elif sourcelink.startswith('BRITANNICA '):
         value = 'BRITANNICA'
         name = sourcelink.replace('BRITANNICA ', '')
+    elif sourcelink.startswith('AKS '):
+        value = 'AKS'
+        name = sourcelink.replace('AKS ', '')
     elif sourcelink.startswith('WHO '):
         value = sourcelink
         name = ''
@@ -1320,9 +1307,7 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif ' ' in sourcelink:
         parts = sourcelink.split(' ')
         value = parts[0]
-        #print('test 1 ' + value)
         name = parts[1]
-        #print('test 2 ' + name)
     else:
         value = sourcelink
         name = ''

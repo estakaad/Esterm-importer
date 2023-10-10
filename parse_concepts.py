@@ -215,7 +215,7 @@ def parse_words(conceptGrp, name_to_id_map):
 
             for definition_object in definition_objects:
                 if definition_object.sourceLinks and definition_object.sourceLinks[0].value.startswith('http'):
-                    definition_object.value += '[' + definition_object.sourceLinks[0].value + ']'
+                    definition_object.value += ' [' + definition_object.sourceLinks[0].value + ']'
                     del definition_object.sourceLinks[0]
                 definitions.append(definition_object)
                 if definition_object.sourceLinks and definition_object.sourceLinks[0].sourceId == 'null':
@@ -234,7 +234,7 @@ def parse_words(conceptGrp, name_to_id_map):
                 lang='est',
                 lexemePublicity=is_public)
 
-            # Get word (term) language and assign as attribute lang
+            # Get word (term) language and assign as attribute langf
             lang_term = languageGrp.xpath('language')[0].get('lang')
             word.lang = xml_helpers.match_language(lang_term)
             word.value = termGrp.xpath('term')[0].text
@@ -276,7 +276,7 @@ def parse_words(conceptGrp, name_to_id_map):
                             notes_for_concept.append(note)
                     if source_links:
                         if source_links[0].value.startswith('http'):
-                            value = updated_value + '[' + source_links[0].value + ']'
+                            value = updated_value + ' [' + source_links[0].value + ']'
                             word.usages.append(
                                 data_classes.Usage(
                                     value=value,
@@ -323,9 +323,6 @@ def parse_words(conceptGrp, name_to_id_map):
                         value = value.strip('[]')
 
                         sourceid = xml_helpers.find_source_by_name(name_to_id_map, value)
-
-                        if sourceid is None:
-                            print(value)
 
                         word.lexemeSourceLinks.append(
                             data_classes.Sourcelink(
