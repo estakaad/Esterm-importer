@@ -214,8 +214,11 @@ def parse_words(conceptGrp, name_to_id_map):
             definition_objects, concept_notes_from_sources = xml_helpers.handle_definition(''.join(descripGrp.itertext()), name_to_id_map, lang_grp)
 
             for definition_object in definition_objects:
+                if definition_object.sourceLinks and definition_object.sourceLinks[0].value.startswith('http'):
+                    definition_object.value += '[' + definition_object.sourceLinks[0].value + ']'
+                    del definition_object.sourceLinks[0]
                 definitions.append(definition_object)
-                if definition_object.sourceLinks[0].sourceId == 'null':
+                if definition_object.sourceLinks and definition_object.sourceLinks[0].sourceId == 'null':
                     print(definition_object)
 
             for con_note in concept_notes_from_sources:
@@ -272,13 +275,23 @@ def parse_words(conceptGrp, name_to_id_map):
                         for note in concept_notes:
                             notes_for_concept.append(note)
                     if source_links:
-                        word.usages.append(
-                            data_classes.Usage(
-                                value=updated_value,
-                                lang=xml_helpers.match_language(lang_term),
-                                publicity=word.lexemePublicity,
-                                sourceLinks=source_links)
-                        )
+                        if source_links[0].value.startswith('http'):
+                            value = updated_value + '[' + source_links[0].value + ']'
+                            word.usages.append(
+                                data_classes.Usage(
+                                    value=value,
+                                    lang=xml_helpers.match_language(lang_term),
+                                    publicity=word.lexemePublicity)
+                            )
+                            del source_links[0]
+                        else:
+                            word.usages.append(
+                                data_classes.Usage(
+                                    value=updated_value,
+                                    lang=xml_helpers.match_language(lang_term),
+                                    publicity=word.lexemePublicity,
+                                    sourceLinks=source_links)
+                            )
                     else:
                         word.usages.append(
                             data_classes.Usage(
@@ -305,7 +318,6 @@ def parse_words(conceptGrp, name_to_id_map):
 
                     for link in links:
                         link = link.strip().strip('[]')
-                        #print('test 1 ' + link)
                         value, name, c_notes = xml_helpers.separate_sourcelink_value_from_name(link)
 
                         value = value.strip('[]')
@@ -313,10 +325,7 @@ def parse_words(conceptGrp, name_to_id_map):
                         sourceid = xml_helpers.find_source_by_name(name_to_id_map, value)
 
                         if sourceid is None:
-                            #print('sourceid is null: ')
-                            #print(lexeme_sources)
                             print(value)
-                            #print('')
 
                         word.lexemeSourceLinks.append(
                             data_classes.Sourcelink(
@@ -328,25 +337,6 @@ def parse_words(conceptGrp, name_to_id_map):
                         for c_note in c_notes:
                             notes_for_concept.append(c_note)
 
-                    # full_string = tostring(descrip_element, encoding="utf-8").decode('utf-8')
-                    #
-                    # # Remove the outer tags to get only the inner XML
-                    # inner_xml = full_string.split('>', 1)[1].rsplit('<', 1)[0].strip()
-                    #
-                    # sourcelinks, concept_notes_from_sourcelinks = xml_helpers.split_lexeme_sourcelinks_to_individual_sourcelinks(inner_xml, name_to_id_map)
-                    #
-                    # if concept_notes_from_sourcelinks:
-                    #     for note in concept_notes_from_sourcelinks:
-                    #         notes_for_concept.append(note)
-                    #
-                    # for link in sourcelinks:
-                    #     word.lexemeSourceLinks.append(
-                    #         data_classes.Sourcelink(
-                    #             sourceId=link.sourceId,
-                    #             value=link.value,
-                    #             name=link.name
-                    #         )
-                    #     )
 
                 if descrip_type == 'Märkus':
                     lexeme_note_raw = ''.join(descripGrp.itertext()).strip()
