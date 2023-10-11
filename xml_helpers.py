@@ -238,65 +238,75 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                                     value='Päring',
                                     name=''))
         if source_info:
-            concept_notes.append(
-                data_classes.Note(
-                value='Päring: ' + source_info.replace('PÄRING', '').strip(),
-                lang='est',
-                publicity=False
-                )
-            )
+            print('EKSPERTIDE_INFO_FAILI: ' + 'PÄRING: ' + source_info.replace('PÄRING', '').strip('{}'))
+            # concept_notes.append(
+            #     data_classes.Note(
+            #     value='Päring: ' + source_info.replace('PÄRING', '').strip(),
+            #     lang='est',
+            #     publicity=False
+            #     )
+            # )
     if 'DGT' in source_value:
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'DGT'),
-                                    value='Päring',
+                                    value='Dgt',
                                     name=''))
         if source_info:
-            concept_notes.append(
-                data_classes.Note(
-                value='DGT: ' + source_info.replace('DGT', '').strip(),
-                lang='est',
-                publicity=False
-                )
-            )
+            print('EKSPERTIDE_INFO_FAILI: ' + 'DGT: ' + source_info.replace('DGT', '').strip().strip('{}'))
+
+            # concept_notes.append(
+            #     data_classes.Note(
+            #     value='DGT: ' + source_info.replace('DGT', '').strip(),
+            #     lang='est',
+            #     publicity=False
+            #     )
+            # )
     if 'PARLAMENT' in source_value:
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'PARLAMENT'),
                                     value='Parlament',
                                     name=''))
         if source_info:
-            concept_notes.append(
-                data_classes.Note(
-                value='Parlament: ' + source_info.replace('PARLAMENT', '').strip(),
-                lang='est',
-                publicity=False
-                )
-            )
+            print('EKSPERTIDE_INFO_FAILI: ' + 'PARLAMENT: ' + source_info.replace('PARLAMENT', '').strip('{}'))
+            #
+            # concept_notes.append(
+            #     data_classes.Note(
+            #     value='Parlament: ' + source_info.replace('PARLAMENT', '').strip(),
+            #     lang='est',
+            #     publicity=False
+            #     )
+            # )
     if 'CONSILIUM' in source_value:
+
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'CONSILIUM'),
                                     value='Consilium',
                                     name=''))
         if source_info:
-            concept_notes.append(
-                data_classes.Note(
-                value='Consilium: ' + source_info.replace('CONSILIUM', '').strip(),
-                lang='est',
-                publicity=False
-                )
-            )
+            print('EKSPERTIDE_INFO_FAILI: ' + 'CONSILIUM: ' + source_info.replace('CONSILIUM', '').strip('{}'))
+            #
+            # concept_notes.append(
+            #     data_classes.Note(
+            #     value='Consilium: ' + source_info.replace('CONSILIUM', '').strip(),
+            #     lang='est',
+            #     publicity=False
+            #     )
+            # )
     if 'EKSPERT' in source_value:
         source_links.append(
             data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'EKSPERT'),
                                     value='Ekspert',
                                     name=''))
         if source_info:
-            concept_notes.append(
-                data_classes.Note(
-                value='Ekspert: ' + source_info.replace('EKSPERT', '').strip(),
-                lang='est',
-                publicity=False
-                )
-            )
+            print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + source_info.replace('EKSPERT', '').strip('{}'))
+            #
+            # concept_notes.append(
+            #     data_classes.Note(
+            #     value='Ekspert: ' + source_info.replace('EKSPERT', '').strip(),
+            #     lang='est',
+            #     publicity=False
+            #     )
+            # )
     else:
         if source_value:
             if '§' in source_value:
@@ -412,13 +422,16 @@ def edit_note_without_multiple_languages(note):
             remaining_text = source.split('</xref>')[-1].strip()
 
             if inside_xref == 'EKSPERT':
-                value = 'EKSPERT'
+                value = 'Ekspert'
                 name = ''
-                expert_note = data_classes.Note(
-                    value='Ekspert: ' + remaining_text,
-                    lang='est',
-                    publicity=False
-                )
+
+                print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + remaining_text.strip('[]{} '))
+
+                # expert_note = data_classes.Note(
+                #     value='Ekspert: ' + remaining_text,
+                #     lang='est',
+                #     publicity=False
+                # )
 
             else:
                 value = inside_xref
@@ -468,15 +481,17 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
                 if special_item.startswith('<xref'):
                     xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', special_item)
                     if xref_match:
-                        concept_notes.append(data_classes.Note(
-                            value=case + ': ' + special_item[xref_match.end():].strip().replace('EKSPERT ', ''),
-                            lang='est',
-                            publicity=False
-                        ))
+                        #
+                        # concept_notes.append(data_classes.Note(
+                        #     value=case + ': ' + special_item[xref_match.end():].strip().replace('EKSPERT ', ''),
+                        #     lang='est',
+                        #     publicity=False
+                        # ))
+                        print('EKSPERTIDE_INFO_FAILI: ' + case.upper() + ': ' + special_item[xref_match.end():].strip().replace(case.upper() + ' ', ''))
 
                         source_link = data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_ids_map, case),
-                            value=case,
+                            value=case.capitalize(),
                             name='')
                         source_links.append(source_link)
                         handled_special_case = True
@@ -613,20 +628,25 @@ def extract_lexeme_note_and_its_sourcelinks(string):
 
     if source.startswith('EKSPERT '):
 
-        expert_note = data_classes.Note(
-            value='Ekspert: ' + source.replace("{", "").replace("}", "").replace('EKSPERT ', ''),
-            lang='est',
-            publicity=False
-        )
-        source = 'EKSPERT'
+        print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + source.replace("{", "").replace("}", "").replace('EKSPERT ', ''))
+
+        # expert_note = data_classes.Note(
+        #     value='Ekspert: ' + source.replace("{", "").replace("}", "").replace('EKSPERT ', ''),
+        #     lang='est',
+        #     publicity=False
+        # )
+        source = 'Ekspert'
 
     if tail.startswith('EKSPERT '):
         source = 'EKSPERT'
-        expert_note = data_classes.Note(
-            value='Ekspert: ' + tail.replace("{", "").replace("}", ""),
-            lang='est',
-            publicity=False
-        )
+
+        print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + tail.replace("{", "").replace("}", ""))
+
+        # expert_note = data_classes.Note(
+        #     value='Ekspert: ' + tail.replace("{", "").replace("}", ""),
+        #     lang='est',
+        #     publicity=False
+        # )
 
     return text_before_bracket, date_string, source, tail, expert_note
 
@@ -659,7 +679,7 @@ def create_name_to_id_mapping(sources):
 # Return ID if there is exactly one match. Return None, if there are 0 matches or more than one matches.
 def find_source_by_name(name_to_ids_map, name):
     if name:
-        name.strip('[]')
+        name = name.strip('[]')
 
     source_ids = name_to_ids_map.get(name)
 
@@ -668,17 +688,13 @@ def find_source_by_name(name_to_ids_map, name):
 
         if name is not None:
             caller_name = inspect.currentframe().f_back.f_code.co_name
-            print(f"Called from: {caller_name}")
-            print(name)
-            if "PÄRING" in name:
-                return 53362
-            else:
-                return None
-        else:
-        # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
-        #return '53361'
-            return None
+            #print(f"Called from: {caller_name}")
+            #print(name)
 
+        # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
+        return '53385'
+
+    # Now check for length
     if len(source_ids) == 1:
         logger.info(f"Source ID for '{name}' is {source_ids[0]}")
         return source_ids[0]
@@ -1109,53 +1125,65 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = sourcelink[:5]
         name = sourcelink.replace(sourcelink[:7], '')
     elif 'EKSPERT' in sourcelink:
-        value = 'EKSPERT'
+        value = 'Ekspert'
         name = ''
-        concept_notes.append(data_classes.Note(
-            value=sourcelink,
-            lang='est',
-            publicity=False
-        ))
+        print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + sourcelink.replace('EKSPERT', '').strip(' {}'))
+        #
+        # concept_notes.append(data_classes.Note(
+        #     value=sourcelink,
+        #     lang='est',
+        #     publicity=False
+        # ))
     elif 'PÄRING' in sourcelink:
-        value = 'PÄRING'
+        value = 'Päring'
         name = ''
-        concept_notes.append(data_classes.Note(
-            value=sourcelink,
-            lang='est',
-            publicity=False
-        ))
+        print('EKSPERTIDE_INFO_FAILI: ' + 'PÄRING: ' + sourcelink.replace('PÄRING', '').strip(' {}'))
+        #
+        # concept_notes.append(data_classes.Note(
+        #     value=sourcelink,
+        #     lang='est',
+        #     publicity=False
+        # ))
     elif 'DGT' in sourcelink:
-        value = 'DGT'
+        value = 'Dgt'
         name = ''
-        concept_notes.append(data_classes.Note(
-            value=sourcelink,
-            lang='est',
-            publicity=False
-        ))
+        print('EKSPERTIDE_INFO_FAILI: ' + 'DGT: ' + sourcelink.replace('DGT', '').strip(' {}'))
+
+        # concept_notes.append(data_classes.Note(
+        #     value=sourcelink,
+        #     lang='est',
+        #     publicity=False
+        # ))
     elif 'JURIST' in sourcelink:
-        value = 'JURIST'
+        value = 'Jurist'
         name = ''
-        concept_notes.append(data_classes.Note(
-            value=sourcelink,
-            lang='est',
-            publicity=False
-        ))
+        print('EKSPERTIDE_INFO_FAILI: ' + 'JURIST: ' + sourcelink.replace('JURIST', '').strip(' {}'))
+        #
+        # concept_notes.append(data_classes.Note(
+        #     value=sourcelink,
+        #     lang='est',
+        #     publicity=False
+        # ))
     elif 'CONSILIUM' in sourcelink:
-        value = 'CONSILIUM'
+        value = 'Consilium'
         name = ''
-        concept_notes.append(data_classes.Note(
-            value=sourcelink,
-            lang='est',
-            publicity=False
-        ))
+        print('EKSPERTIDE_INFO_FAILI: ' + 'CONSILIUM: ' + sourcelink.replace('CONSILIUM', '').strip(' {}'))
+        #
+        # concept_notes.append(data_classes.Note(
+        #     value=sourcelink,
+        #     lang='est',
+        #     publicity=False
+        # ))
     elif 'DELEST' in sourcelink:
-        value = 'DELEST'
+        value = 'Delest'
         name = ''
-        concept_notes.append(data_classes.Note(
-            value=sourcelink,
-            lang='est',
-            publicity=False
-        ))
+        print('EKSPERTIDE_INFO_FAILI: ' + 'DELEST: ' + sourcelink.replace('DELEST', '').strip(' {}'))
+        #
+        # concept_notes.append(data_classes.Note(
+        #     value=sourcelink,
+        #     lang='est',
+        #     publicity=False
+        # ))
     elif sourcelink.startswith('ICAO'):
         if 'tõlge' in  sourcelink:
             value = sourcelink.replace(' tõlge', '')
