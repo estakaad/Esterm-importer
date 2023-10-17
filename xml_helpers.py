@@ -238,7 +238,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                                     value='Päring',
                                     name=''))
         if source_info:
-            print('EKSPERTIDE_INFO_FAILI: ' + 'PÄRING: ' + source_info.replace('PÄRING', '').strip('{}'))
+            print('EKSPERTIDE_INFO_FAILI: ' + 'PÄRING: ' + source_info.replace('PÄRING', '').strip('{} '))
             # concept_notes.append(
             #     data_classes.Note(
             #     value='Päring: ' + source_info.replace('PÄRING', '').strip(),
@@ -299,6 +299,8 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
                                     name=''))
         if source_info:
             print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + source_info.replace('EKSPERT', '').strip('{}'))
+            if source_info == 'MA-EKSPERT':
+                print(source_info)
             #
             # concept_notes.append(
             #     data_classes.Note(
@@ -627,7 +629,6 @@ def extract_lexeme_note_and_its_sourcelinks(string):
     text_before_bracket = text_before_bracket.replace('  ', ' ')
 
     if source.startswith('EKSPERT '):
-
         print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + source.replace("{", "").replace("}", "").replace('EKSPERT ', ''))
 
         # expert_note = data_classes.Note(
@@ -1124,10 +1125,21 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif bool(re.match(r'^T\d{4}\,', sourcelink)):
         value = sourcelink[:5]
         name = sourcelink.replace(sourcelink[:7], '')
+    elif sourcelink == 'LLT AS-EKSPERT':
+        value = 'LLT AS-EKSPERT'
+        name = ''
+    elif sourcelink == 'MA-EKSPERT':
+        value = 'MA-EKSPERT'
+        name = ''
+    elif sourcelink.replace('EKSPERT', '').strip(' {}').lower() == 'ants rsis':
+        value = 'Ekspert'
+        name = ''
+        print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + 'Ants Ärsis')
     elif 'EKSPERT' in sourcelink:
         value = 'Ekspert'
         name = ''
         print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + sourcelink.replace('EKSPERT', '').strip(' {}'))
+
         #
         # concept_notes.append(data_classes.Note(
         #     value=sourcelink,
@@ -1137,7 +1149,7 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif 'PÄRING' in sourcelink:
         value = 'Päring'
         name = ''
-        print('EKSPERTIDE_INFO_FAILI: ' + 'PÄRING: ' + sourcelink.replace('PÄRING', '').strip(' {}'))
+        print('EKSPERTIDE_INFO_FAILI: ' + 'PÄRING: ' + sourcelink.replace('PÄRING ', '').strip(' {}'))
         #
         # concept_notes.append(data_classes.Note(
         #     value=sourcelink,
