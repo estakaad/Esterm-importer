@@ -36,8 +36,6 @@ def excel_to_json(input_filename, output_filename):
 
 
 def create_experts_sources(output_json, expert_info_from_esterm, expert_info_for_api_calls):
-    import json
-    import csv
 
     with open(output_json, "r", encoding='utf-8') as json_file:
         json_data = json.load(json_file)
@@ -54,13 +52,36 @@ def create_experts_sources(output_json, expert_info_from_esterm, expert_info_for
     api_list = []
 
     for entry in csv_data:
-        api_dict = {"type": "PERSON", "isPublic": False}
+        api_dict = {"id": 60180, "type": "PERSON", "isPublic": False}
         name = entry["name"]
         api_dict["name"] = entry["type"]
         api_dict["description"] = name
         if name in json_dict:
-            api_dict["description"] += ", " + json_dict[name]
+            api_dict["description"] += " – " + json_dict[name]
         api_list.append(api_dict)
 
     with open(expert_info_for_api_calls, "w", encoding='utf-8') as api_file:
         json.dump(api_list, api_file, indent=4, ensure_ascii=False)
+
+def create_name_and_type_to_id_mapping_for_expert_sources(expert_sources):
+    name_type_to_ids = {}
+    for source in expert_sources:
+        source_id = source['id']
+        source_name = source['name']
+        source_description = source['description']
+
+        if source_description == source_name or source_description.startswith(f"{source_name} – "):
+            key = (source_name, source_description)
+        else:
+            key = (source_name, source_description)
+
+        name_type_to_ids[key] = source_id
+
+    return name_type_to_ids
+
+
+def get_expert_source_id_by_name_and_type(name, type, type_desc_to_ids):
+    for (source_type, source_description), source_id in type_desc_to_ids.items():
+        if source_type == type and (source_description == name or source_description.startswith(f"{name} – ")):
+            return source_id
+    return None

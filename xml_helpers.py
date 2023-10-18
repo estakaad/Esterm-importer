@@ -1,6 +1,8 @@
 import logging
 import inspect
 import xml.etree.ElementTree as ET
+
+import expert_sources_helpers
 import log_config
 from langdetect import detect
 import re
@@ -200,7 +202,7 @@ def detect_language(note):
 ##################################
 
 # Returns the usage ("Kontekst") value without the source link + sourcelinks
-def extract_usage_and_its_sourcelink(element, updated_sources):
+def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_ids_map):
     source_links = []
     concept_notes = []
 
@@ -229,53 +231,60 @@ def extract_usage_and_its_sourcelink(element, updated_sources):
     name = source_link_name if source_link_name else ''
 
     if 'PÄRING' in source_value:
-        source_links.append(
-            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'PÄRING'),
-                                    value='Päring',
-                                    name=''))
         expert_name = source_info.replace('PÄRING', '').strip('{} ')
         expert_type = 'PÄRING'
+
+        source_links.append(
+            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
+                                    value='Päring',
+                                    name=''))
+
         if source_info:
             print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'PÄRING: ' + source_info.replace('PÄRING', '').strip('{} '))
 
     if 'DGT' in source_value:
-        source_links.append(
-            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'DGT'),
-                                    value='Dgt',
-                                    name=''))
         expert_name = source_info.replace('DGT', '').strip().strip('{}')
         expert_type = 'DGT'
+
+        source_links.append(
+            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
+                                    value='Dgt',
+                                    name=''))
+
         if source_info:
             print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'DGT: ' + source_info.replace('DGT', '').strip().strip('{}'))
 
     if 'PARLAMENT' in source_value:
-        source_links.append(
-            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'PARLAMENT'),
-                                    value='Parlament',
-                                    name=''))
         expert_name = source_info.replace('PARLAMENT', '').strip(' {}')
         expert_type = 'PARLAMENT'
+
+        source_links.append(
+            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
+                                    value='Parlament',
+                                    name=''))
+
         if source_info:
             print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'PARLAMENT: ' + source_info.replace('PARLAMENT', '').strip(' {}'))
 
     if 'CONSILIUM' in source_value:
-
-        source_links.append(
-            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'CONSILIUM'),
-                                    value='Consilium',
-                                    name=''))
         expert_name = source_info.replace('CONSILIUM', '').strip(' {}')
         expert_type = 'CONSILIUM'
+        source_links.append(
+            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
+                                    value='Consilium',
+                                    name=''))
+
         if source_info:
             print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'CONSILIUM: ' + source_info.replace('CONSILIUM', '').strip(' {}'))
 
     if 'EKSPERT' in source_value:
-        source_links.append(
-            data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'EKSPERT'),
-                                    value='Ekspert',
-                                    name=''))
         expert_name = source_info.replace('EKSPERT', '').strip(' {}')
         expert_type = 'EKSPERT'
+        source_links.append(
+            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
+                                    value='Ekspert',
+                                    name=''))
+
         if source_info:
             print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'EKSPERT: ' + source_info.replace('EKSPERT', '').strip(' {}'))
             if source_info == 'MA-EKSPERT':
@@ -357,6 +366,8 @@ def edit_note_without_multiple_languages(note):
     value = ''
     name=''
     expert_note = None
+    expert_name = None
+    expert_type = None
 
     # Extract date
     date_pattern = r'[\{\[]\{*\w+\}*\s*\d+[\.\\]\d+[\.\\]\d+[\}\]]$'
@@ -396,8 +407,6 @@ def edit_note_without_multiple_languages(note):
             remaining_text = source.split('</xref>')[-1].strip()
 
             if inside_xref == 'EKSPERT':
-                value = 'Ekspert'
-                name = ''
 
                 expert_name = remaining_text.strip('[]{} ')
                 expert_type = 'EKSPERT'
@@ -415,7 +424,7 @@ def edit_note_without_multiple_languages(note):
 
     note = note_without_date + ((' ' + date) if date else '')
 
-    return note, value.replace(']',''), name, expert_note
+    return note, value.replace(']',''), name, expert_note, expert_name, expert_type
 
 
 ############################################
@@ -423,7 +432,7 @@ def edit_note_without_multiple_languages(note):
 ############################################
 
 # There can be multiple lexeme source links. Split them to separate sourcelink objects.
-def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
+def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map, expert_sources_map):
     source_links = []
     concept_notes = []
 
@@ -455,7 +464,7 @@ def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map):
                         print('EKSPERTIDE_INFO_FAILI: ' + case.upper() + ': ' + special_item[xref_match.end():].strip(' {}').replace(case.upper() + ' ', ''))
 
                         source_link = data_classes.Sourcelink(
-                            sourceId=find_source_by_name(name_to_ids_map, case),
+                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_sources_map),
                             value=case.capitalize(),
                             name='')
                         source_links.append(source_link)
@@ -547,11 +556,11 @@ def create_name_to_id_mapping(sources):
     name_to_ids = {}
     for source in sources:
         source_id = source['id']
-        logger.info(f"Processing source ID: {source_id}")  # Debug line
+        logger.info(f"Processing source ID: {source_id}")
         for prop in source['sourceProperties']:
             prop_type = prop['type']
             prop_value = prop['valueText']
-            logger.info(f"  Prop type: {prop_type}, Prop value: {prop_value}")  # Debug line
+            logger.info(f"  Prop type: {prop_type}, Prop value: {prop_value}")
             if prop_type == 'SOURCE_NAME':
                 name = prop_value
                 if name in name_to_ids:
@@ -574,8 +583,8 @@ def find_source_by_name(name_to_ids_map, name):
 
         if name is not None:
             caller_name = inspect.currentframe().f_back.f_code.co_name
-            #print(f"Called from: {caller_name}")
-            #print(name)
+            print(f"Called from: {caller_name}")
+            print(name)
 
         # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
         return '53385'
@@ -686,7 +695,7 @@ def map_initials_to_names(initials):
 ##########################################
 
 
-def handle_definition(definition_element_value, name_to_id_map, language):
+def handle_definition(definition_element_value, name_to_id_map, language, expert_names_to_ids_map):
 
     if definition_element_value.startswith('any trailer designed'):
         print(definition_element_value)
@@ -715,7 +724,7 @@ def handle_definition(definition_element_value, name_to_id_map, language):
 
                     for link in separate_links:
 
-                        value, name, notes_from_source = separate_sourcelink_value_from_name(link.strip())
+                        value, name, notes_from_source, expert_name, expert_type = separate_sourcelink_value_from_name(link.strip())
                         notes.append(notes_from_source)
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, value),
@@ -725,7 +734,7 @@ def handle_definition(definition_element_value, name_to_id_map, language):
 
                 else:
 
-                    value, name, notes_from_source = separate_sourcelink_value_from_name(link.strip())
+                    value, name, notes_from_source, expert_name, expert_type = separate_sourcelink_value_from_name(link.strip())
                     notes.append(notes_from_source)
                     source_links_for_definition.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, value),
@@ -747,6 +756,9 @@ def handle_definition(definition_element_value, name_to_id_map, language):
 
 
 def separate_sourcelink_value_from_name(sourcelink):
+
+    expert_name = None
+    expert_type = None
 
     concept_notes = []
 
@@ -1217,7 +1229,7 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = sourcelink
         name = ''
 
-    return value, name, concept_notes
+    return value, name, concept_notes, expert_name, expert_type
 
 
 ##########################################

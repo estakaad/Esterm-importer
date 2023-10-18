@@ -1,6 +1,8 @@
 from datetime import datetime
 from lxml import etree
 import json
+
+import expert_sources_helpers
 import xml_helpers
 import os
 import data_classes
@@ -12,7 +14,7 @@ logger = log_config.get_logger()
 
 
 # Parse the whole Esterm XML and return aviation concepts, all other concepts and the sources of the concepts
-def parse_mtf(root, name_to_id_map):
+def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
     concepts = []
     aviation_concepts = []
 
@@ -20,12 +22,12 @@ def parse_mtf(root, name_to_id_map):
     counter = 1
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
-        # # # # # # For testing
-        # if counter % 10000 == 0:
+        # # # # # For testing
+        # if counter % 1000 == 0:
         #    logger.info(f'counter: {counter}')
         #    break
-
-        counter += 1
+        #
+        # counter += 1
         # End
 
         concept = data_classes.Concept(datasetCode='estermtest',
@@ -42,7 +44,7 @@ def parse_mtf(root, name_to_id_map):
             logger.debug('Concept is actually a source. Skipping it.')
             continue
         elif type_of_concept == 'domain':
-            logger.debug('Concept is acutally a domain. Skipping it.')
+            logger.debug('Concept is actually a domain. Skipping it.')
             continue
         elif type_of_concept == 'aviation':
             list_to_append = aviation_concepts
@@ -103,7 +105,7 @@ def parse_mtf(root, name_to_id_map):
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                 else:
-                    note, value, name, expert_note = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
+                    note, value, name, expert_note, expert_name, expert_type = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
 
                 if note_value:
                     concept.notes.append(data_classes.Note(
@@ -116,6 +118,7 @@ def parse_mtf(root, name_to_id_map):
                         if expert_note.value is not None:
                             concept.notes.append(expert_note)
                             logger.debug('Added concept expert note: %s', expert_note)
+
                     if value:
 
                         value = value.strip('[]')
@@ -126,6 +129,20 @@ def parse_mtf(root, name_to_id_map):
                                 sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
                                 value=value,
                                 name=name
+                            )
+                        )
+                        concept.notes.append(data_classes.Note(
+                            value=note,
+                            lang='est',
+                            publicity=True,
+                            sourceLinks=source_links
+                        ))
+                    elif expert_name:
+                        source_links.append(
+                            data_classes.Sourcelink(
+                                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
+                                value=expert_type,
+                                name=''
                             )
                         )
                         concept.notes.append(data_classes.Note(
@@ -175,7 +192,7 @@ def parse_mtf(root, name_to_id_map):
             logger.info('Added concept forum: %s', str(concept.forums))
 
         # Concept level data is parsed, now to parsing word (term) level data
-        words, definitions, concept_notes = parse_words(conceptGrp, name_to_id_map)
+        words, definitions, concept_notes = parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map)
 
         for word in words:
             concept.words.append(word)
@@ -193,7 +210,7 @@ def parse_mtf(root, name_to_id_map):
 
 
 # Parse word elements in one concept in XML
-def parse_words(conceptGrp, name_to_id_map):
+def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
 
     words = []
     definitions = []
@@ -211,7 +228,7 @@ def parse_words(conceptGrp, name_to_id_map):
             lang_grp = xml_helpers.match_language(lang_grp)
             logger.debug(('Definition language after matching: %s', lang_grp))
 
-            definition_objects, concept_notes_from_sources = xml_helpers.handle_definition(''.join(descripGrp.itertext()), name_to_id_map, lang_grp)
+            definition_objects, concept_notes_from_sources = xml_helpers.handle_definition(''.join(descripGrp.itertext()), name_to_id_map, lang_grp, expert_names_to_ids_map)
 
             for definition_object in definition_objects:
                 if definition_object.sourceLinks and definition_object.sourceLinks[0].value.startswith('http'):
@@ -259,7 +276,7 @@ def parse_words(conceptGrp, name_to_id_map):
                 if descrip_type == 'Definitsioon':
                     definition_element_value = ''.join(descripGrp.itertext()).strip()
 
-                    definition_objects, con_notes = xml_helpers.handle_definition(definition_element_value, name_to_id_map, word.lang)
+                    definition_objects, con_notes = xml_helpers.handle_definition(definition_element_value, name_to_id_map, word.lang, expert_names_to_ids_map)
 
                     for defi_object in definition_objects:
                         definitions.append(defi_object)
@@ -269,7 +286,7 @@ def parse_words(conceptGrp, name_to_id_map):
 
                 if descrip_type == 'Kontekst':
 
-                    updated_value, source_links, concept_notes = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map)
+                    updated_value, source_links, concept_notes = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map, expert_names_to_ids_map)
 
                     if concept_notes:
                         for note in concept_notes:
@@ -318,19 +335,29 @@ def parse_words(conceptGrp, name_to_id_map):
 
                     for link in links:
                         link = link.strip().strip('[]')
-                        value, name, c_notes = xml_helpers.separate_sourcelink_value_from_name(link)
+                        value, name, c_notes, expert_name, expert_type = xml_helpers.separate_sourcelink_value_from_name(link)
 
                         value = value.strip('[]')
 
-                        sourceid = xml_helpers.find_source_by_name(name_to_id_map, value)
-
-                        word.lexemeSourceLinks.append(
-                            data_classes.Sourcelink(
-                                sourceId=sourceid,
-                                value=value,
-                                name=name
+                        if expert_name:
+                            sourceid = expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map)
+                            word.lexemeSourceLinks.append(
+                                data_classes.Sourcelink(
+                                    sourceId=sourceid,
+                                    value=expert_type,
+                                    name=''
+                                )
                             )
-                        )
+                        else:
+                            sourceid = xml_helpers.find_source_by_name(name_to_id_map, value)
+
+                            word.lexemeSourceLinks.append(
+                                data_classes.Sourcelink(
+                                    sourceId=sourceid,
+                                    value=value,
+                                    name=name
+                                )
+                            )
                         for c_note in c_notes:
                             notes_for_concept.append(c_note)
 
@@ -390,7 +417,7 @@ def print_concepts_to_json(concepts, aviation_concepts):
             logger.info('Finished writing concepts: %s.', filename)
 
 
-def transform_esterm_to_json(name_to_id_map):
+def transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map):
 # Opening the file, parsing, writing JSON files
     with open('files/input/esterm.xml', 'rb') as file:
         xml_content = file.read()
@@ -398,7 +425,7 @@ def transform_esterm_to_json(name_to_id_map):
     parser = etree.XMLParser(encoding='UTF-16')
     root = etree.fromstring(xml_content, parser=parser)
 
-    concepts, aviation_concepts = parse_mtf(root, name_to_id_map)
+    concepts, aviation_concepts = parse_mtf(root, name_to_id_map, expert_names_to_ids_map)
 
     print_concepts_to_json(concepts, aviation_concepts)
 

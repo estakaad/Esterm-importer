@@ -1,5 +1,5 @@
 # Estermi ja lennunduse terminikogude import Ekilexi
-## 1. Allikate import
+## 1. Allikad
 ### 1.1. Allikate parsimine
 #### 1.1.1. Ekspert-tüüpi allikate parsimine
 1.1.1.1. Terminoloogidelt on saadud Exceli tabel ekspertide infoga. Sellest võetakse kokkulepitu ja tehakse edasiseks töötlemiseks JSON fail.  
