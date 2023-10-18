@@ -2,11 +2,6 @@ import pandas as pd
 import json
 
 
-input_excel = 'files/input/eksperdid.xlsx'
-output_json = 'files/input/eksperdid.json'
-expert_info_from_esterm = 'files/input/eksperdid_estermist.csv'
-expert_info_for_api_calls = 'files/output/expert_sources.json'
-
 def excel_to_json(input_filename, output_filename):
     df = pd.read_excel(input_filename)
 
@@ -69,6 +64,3 @@ def create_experts_sources(output_json, expert_info_from_esterm, expert_info_for
 
     with open(expert_info_for_api_calls, "w", encoding='utf-8') as api_file:
         json.dump(api_list, api_file, indent=4, ensure_ascii=False)
-
-#excel_to_json(input_excel, output_json)
-#create_experts_sources(output_json, expert_info_from_esterm, expert_info_for_api_calls)

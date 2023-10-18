@@ -92,8 +92,8 @@ def get_or_create_source(source):
 
 
 def assign_ids_to_all_sources(input_file):
-    sources_with_ids_file = 'files/output/sources_with_ids.json'
-    ids_of_created_sources_file = 'files/output/ids_of_created_sources.json'
+    sources_with_ids_file = 'files/output/sources/sources_with_ids.json'
+    ids_of_created_sources_file = 'files/output/sources/ids_of_created_sources.json'
     updated_sources = []
     ids_of_created_sources = []
 

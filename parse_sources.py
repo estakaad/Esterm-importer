@@ -189,8 +189,8 @@ def export_sources_from_xml(filename):
     json_objects = replace_type(json_objects)
 
     # Write sources to sources.json
-    with open('files/output/sources.json', 'w', encoding='utf-8') as file:
+    with open('files/output/sources/sources.json', 'w', encoding='utf-8') as file:
         json.dump(json_objects, file, indent=4, ensure_ascii=False)
 
-    logger.info('Finished parsing XML for souces.')
+    logger.info('Finished parsing XML for sources.')
     return file
