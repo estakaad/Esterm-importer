@@ -15,13 +15,13 @@ esterm_filename = 'files/input/esterm.xml'
 # - EKSPERT, PÄRING, CONSILIUM, DELEST, DGT, PARLAMENT type sources from esterm.xml
 # - metadata from eksperdid.xlsx
 # #
-# input_excel = 'files/input/ekspertide_lisainfo.xlsx'
-# output_json = 'files/output/sources/eksperdid.json'
-# expert_info_from_esterm = 'files/input/eksperdid_estermist.csv'
-# expert_info_for_api_calls = 'files/output/sources/expert_sources.json'
-#
-# expert_sources_helpers.excel_to_json(input_excel, output_json)
-# expert_sources_helpers.create_experts_sources(output_json, expert_info_from_esterm, expert_info_for_api_calls)
+input_excel = 'files/input/ekspertide_lisainfo.xlsx'
+output_json = 'files/output/sources/eksperdid.json'
+expert_info_from_esterm = 'files/input/eksperdid_estermist.csv'
+expert_info_for_api_calls = 'files/output/sources/expert_sources.json'
+
+expert_sources_helpers.excel_to_json(input_excel, output_json)
+expert_sources_helpers.create_experts_sources(output_json, expert_info_from_esterm, expert_info_for_api_calls)
 
 # 2. Export sources from XML input/esterm.xml.
 # Returns sources files/output/sources/sources.json
