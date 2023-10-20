@@ -91,4 +91,4 @@ def get_expert_source_id_by_name_and_type(name, type, type_desc_to_ids):
         if source_type == type and (source_description == name or source_description.startswith(f"{name} – ")):
             return source_id
     print(type + ',' + name)
-    return '60181 + ' + name
+    return '60181'

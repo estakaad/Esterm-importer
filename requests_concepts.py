@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 import log_config
 from datetime import datetime
+import copy
+from time import sleep
 
 
 logger = log_config.get_logger()
@@ -15,14 +17,14 @@ logger.propagate = False
 def set_up_requests():
     load_dotenv()
     api_key = os.environ.get("API_KEY")
-    crud_role_dataset = os.environ.get("AVI")
+    crud_role_dataset = os.environ.get("ESTERM")
 
     header = {"ekilex-api-key": api_key}
     parameters = {"crudRoleDataset": crud_role_dataset}
     return parameters, header
 
 
-def import_concepts(file, max_objects=1000000):
+def import_concepts(file, max_objects=5000000):
     with open(file, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
@@ -31,40 +33,35 @@ def import_concepts(file, max_objects=1000000):
     concepts_not_saved = []
 
     for concept in data:
+        concept_copy = copy.copy(concept)
+
         if max_objects is not None and counter >= max_objects:
             break
 
         # Remove empty 'notes' entries
-        if 'notes' in concept:
-            concept['notes'] = [note for note in concept['notes'] if note != [] and note != {}]
+        if 'notes' in concept_copy:
+            concept_copy['notes'] = [note for note in concept_copy['notes'] if note != [] and note != {}]
 
         try:
-            concept_id = save_concept(concept)
+            concept_id = save_concept(concept_copy)
 
             if concept_id:
-                transformed_concept = concept
-                transformed_concept['id'] = concept_id
-                concepts_saved.append(transformed_concept)
+                concept_copy['id'] = concept_id
+                concepts_saved.append(concept_copy)
                 counter += 1
-
             else:
-                concepts_not_saved.append(concept)
-                remaining = max_objects - counter - 1
-
-                concepts_not_saved.extend(data[counter+1:counter+1+remaining])
-                logger.error("Response code was 200 but no ID received. Stopping processing.")
+                concepts_not_saved.append(concept_copy)
+                logger.error("Response code was 200 but no ID received.")
 
         except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError,
                 requests.exceptions.Timeout, requests.exceptions.RequestException) as e:
             concepts_not_saved.append(concept)
-
-            remaining = max_objects - counter - 1
-            concepts_not_saved.extend(data[counter+1:counter+1+remaining])
-            logger.exception("Error: %s. Stopping processing.", e)
+            logger.exception("Error: %s.", e)
+            break
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    saved_filename = f'files/import/avi_2010/{timestamp}_concepts_saved.json'
-    not_saved_filename = f'files/import/avi_2010/{timestamp}_concepts_not_saved.json'
+    saved_filename = f'files/import/esterm_2010/{timestamp}_concepts_saved.json'
+    not_saved_filename = f'files/import/esterm_2010/{timestamp}_concepts_not_saved.json'
 
     with open(saved_filename, 'w', encoding='utf-8') as f:
         json.dump(concepts_saved, f, ensure_ascii=False, indent=4)
@@ -74,25 +71,42 @@ def import_concepts(file, max_objects=1000000):
 
 
 def save_concept(concept):
+    retries = 3
+    timeout = 5
+
     parameters, header = set_up_requests()
-    res = requests.post(
-        "https://ekitest.tripledev.ee/ekilex/api/term-meaning/save",
-        params=parameters,
-        json=concept,
-        headers=header, timeout=3)
-    if res.status_code != 200:
-        raise requests.exceptions.HTTPError(f"Received {res.status_code} status code.")
 
-    response_json = res.json()
-    concept_id = response_json.get('id')
-
-    logger.info("URL: %s - Concept: %s - Status Code: %s - Concept ID: %s",
+    while retries > 0:
+        try:
+            res = requests.post(
                 "https://ekitest.tripledev.ee/ekilex/api/term-meaning/save",
-                concept,
-                res.status_code,
-                concept_id)
+                params=parameters,
+                json=concept,
+                headers=header,
+                timeout=timeout
+            )
 
-    return concept_id
+            if res.status_code != 200:
+                raise requests.exceptions.HTTPError(f"Received {res.status_code} status code.")
+
+            response_json = res.json()
+            concept_id = response_json.get('id')
+
+            logger.info("URL: %s - Concept: %s - Status Code: %s - Concept ID: %s",
+                        "https://ekitest.tripledev.ee/ekilex/api/term-meaning/save",
+                        concept,
+                        res.status_code,
+                        concept_id)
+
+            return concept_id
+
+        except (requests.exceptions.ReadTimeout, requests.exceptions.HTTPError):
+            retries -= 1
+            if retries > 0:
+                sleep(2)
+
+    logger.error("Failed to save concept after maximum retries.")
+    return None
 
 
 def update_word_ids(filename, dataset):
