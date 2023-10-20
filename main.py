@@ -14,7 +14,7 @@ esterm_filename = 'files/input/esterm.xml'
 # 1. Compile JSON with expert sources. Contains
 # - EKSPERT, PÄRING, CONSILIUM, DELEST, DGT, PARLAMENT type sources from esterm.xml
 # - metadata from eksperdid.xlsx
-# #
+# # #
 input_excel = 'files/input/ekspertide_lisainfo.xlsx'
 output_json = 'files/output/sources/eksperdid.json'
 expert_info_from_esterm = 'files/input/eksperdid_estermist.csv'
@@ -32,8 +32,8 @@ expert_sources_helpers.create_experts_sources(output_json, expert_info_from_este
 # Add ID-s of created sources to files/output/sources//ids_of_created_sources.json
 # Return file output/sources/sources_with_ids.json
 #
-# sources_output_json_filename = 'files/output/sources/sources.json'
-# updated_sources_file = requests_sources.assign_ids_to_all_sources(sources_output_json_filename)
+#sources_output_json_filename = 'files/output/sources/sources.json'
+#updated_sources_file = requests_sources.assign_ids_to_all_sources(sources_output_json_filename)
 
 # 4. Add expert sources. No need to check if it exists, because we know they don't.
 # Add IDs to files/output/sources/expert_sources.json
@@ -41,18 +41,18 @@ expert_sources_helpers.create_experts_sources(output_json, expert_info_from_este
 # Until then, use dummy ID 60180.
 #
 # # # 5. Map source names to their ID-s
-with open('files/output/sources/sources_with_ids-testimiseks.json', 'r', encoding='utf-8') as f:
-     updated_sources = json.load(f)
+#with open('files/output/sources/sources_with_ids-testimiseks.json', 'r', encoding='utf-8') as f:
+#     updated_sources = json.load(f)
 
-name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
+#name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
 
-with open('files/output/sources/expert_sources.json', 'r', encoding='utf-8') as f:
-     expert_sources = json.load(f)
+#with open('files/output/sources/expert_sources.json', 'r', encoding='utf-8') as f:
+#     expert_sources = json.load(f)
 
-expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)
+#expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)
 #
 # # 6. Export concepts from XML. Returns files/output/concepts.json and files/output/aviation_concepts.json
-parse_concepts.transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map)
+#parse_concepts.transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map)
 
 # 7. Check if word exists. If it does, add its ID
 #requests_concepts.update_word_ids('files/output/concepts.json', 'eki')

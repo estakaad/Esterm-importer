@@ -2,30 +2,34 @@ import pandas as pd
 import json
 import csv
 
+
 def excel_to_json(input_filename, output_filename):
     df = pd.read_excel(input_filename)
-
     json_list = []
 
-    column_names = df.columns[5:93].tolist()
+    column_names = df.columns[1:9].tolist()
 
     for index, row in df.iterrows():
         entry = {}
-
-        if pd.notna(row['Eksperdi eesnimi']) or pd.notna(row['Middle_Name']) or pd.notna(row['Eksperdi perekonnanimi']):
-            entry['name'] = ' '.join(
-                filter(pd.notna, [row['Eksperdi eesnimi'], row['Middle_Name'], row['Eksperdi perekonnanimi']]))
-        else:
-            entry['name'] = row['Terminikomisjon/\ntöörühm/erialaliit vm']
-
         description_values = []
-        for col_name, val in zip(column_names, row.iloc[5:93]):
-            if col_name == 'Notes\nMärkmed':
-                continue
-            if pd.notna(val):
-                formatted_col_name = col_name.replace("\n", " / ")
-                description_values.append(f"{formatted_col_name}: {str(val)}")
 
+        # Check if the names are present
+        has_name = pd.notna(row['Eksperdi eesnimi']) or pd.notna(row['Eksperdi perekonnanimi'])
+
+        # If names are present, use them. Otherwise, use the Terminikomisjon/töörühm value.
+        if has_name:
+            entry['name'] = ' '.join(filter(pd.notna, [row['Eksperdi eesnimi'], row['Eksperdi perekonnanimi']]))
+        else:
+            entry['name'] = row['Terminikomisjon/töörühm']
+
+        # Iterate through each of the columns to build the description.
+        for col_name, val in zip(column_names, row.iloc[1:9]):
+            if col_name not in ["Eksperdi eesnimi", "Eksperdi perekonnanimi"]:
+                if pd.notna(val) and val != entry['name']:
+                    formatted_col_name = col_name.replace("\n", " / ")
+                    description_values.append(f"{formatted_col_name}: {str(val)}")
+
+        # If there are any description values, join them and add to the entry.
         if description_values:
             entry['description'] = '. '.join(description_values) + '.'
 

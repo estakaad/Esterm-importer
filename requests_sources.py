@@ -68,10 +68,12 @@ def create_source(source):
             logger.info(f'Created source {source}. Response: {response_data}')
             return response_data['id']
         except json.JSONDecodeError:
-            logger.warning(f"Failed to parse JSON from response when creating source "
-                           f"{source['sourceProperties'][0]['valueText']}. Response text: {response.text}")
+            logger.warning(source)
+            logger.warning(f"Failed to parse JSON from response when creating source Response text: {response.text}")
+
     else:
-        logger.warning(f"Received non-200 response when creating source {source['sourceProperties'][0]['valueText']}. "
+        logger.warning(source)
+        logger.warning(f"Received non-200 response when creating source. "
                        f"Status code: {response.status_code}, Response text: {response.text}")
     return None
 

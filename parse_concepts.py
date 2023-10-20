@@ -105,7 +105,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                 else:
-                    note, value, name, expert_note, expert_name, expert_type = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
+                    note, value, name, expert_name, expert_type = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
 
                 if note_value:
                     concept.notes.append(data_classes.Note(
@@ -114,13 +114,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
                         publicity=True
                     ))
                 else:
-                    if expert_note:
-                        if expert_note.value is not None:
-                            concept.notes.append(expert_note)
-                            logger.debug('Added concept expert note: %s', expert_note)
-
                     if value:
-
                         value = value.strip('[]')
                         source_links = []
 

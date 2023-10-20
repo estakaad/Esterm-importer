@@ -365,7 +365,6 @@ def edit_note_without_multiple_languages(note):
 
     value = ''
     name=''
-    expert_note = None
     expert_name = None
     expert_type = None
 
@@ -424,126 +423,126 @@ def edit_note_without_multiple_languages(note):
 
     note = note_without_date + ((' ' + date) if date else '')
 
-    return note, value.replace(']',''), name, expert_note, expert_name, expert_type
+    return note, value.replace(']',''), name, expert_name, expert_type
 
 
 ############################################
 ## "Allikaviide" > word.lexemesourcelinks ##
 ############################################
-
-# There can be multiple lexeme source links. Split them to separate sourcelink objects.
-def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map, expert_sources_map):
-    source_links = []
-    concept_notes = []
-
-    # Pre-process the root string to replace '][' or '] [' with '];['
-    # and also replace ',' (with optional space) with ';'
-    root = re.sub(r'\]\s*\[|,\s*', '];[', root)
-
-    # Now split by semicolon, as all source links are now separated by it
-    list_of_raw_sourcelinks = root.split(';')
-
-    for item in list_of_raw_sourcelinks:
-
-        item = item.strip()
-        handled_special_case = False
-
-        special_cases = ['EKSPERT', 'CONSILIUM', 'DGT', 'PÄRING', 'PARLAMENT']
-
-        for case in special_cases:
-            if case in item:
-                stripped_item = item.replace("[", "").replace("]", "")
-                special_item = stripped_item.replace("{", "").replace("}", "")
-                if special_item.startswith('<xref'):
-                    xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', special_item)
-                    if xref_match:
-
-                        expert_name = special_item[xref_match.end():].strip(' {}').replace(case.upper() + ' ', '')
-                        expert_type = case.upper()
-
-                        # print('EKSPERTIDE_INFO_FAILI: ' + case.upper() + ': ' + special_item[xref_match.end():].strip(' {}').replace(case.upper() + ' ', ''))
-
-                        source_link = data_classes.Sourcelink(
-                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_sources_map),
-                            value=case.capitalize(),
-                            name='')
-                        source_links.append(source_link)
-                        handled_special_case = True
-                        break
-                    else:
-                        logger.warning(case + ' in lexeme sourcelinks, but failed to extract the value.')
-                else:
-                    if special_item.replace(case + ' ', "", 1) != case:
-                        concept_notes.append(data_classes.Note(
-                            value=case + ': ' + special_item.replace(case + ' ', "", 1),
-                            lang='est',
-                            publicity=False
-                        ))
-                    else:
-                        concept_notes.append(data_classes.Note(
-                            value=case,
-                            lang='est',
-                            publicity=False
-                        ))
-
-                    source_link = data_classes.Sourcelink(
-                        sourceId=find_source_by_name(name_to_ids_map, case),
-                        value=case,
-                        name=''
-                    )
-                    source_links.append(source_link)
-                    handled_special_case = True
-                    break
-
-
-        if handled_special_case:
-            continue
-
-        # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
-        elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
-            if item.startswith('[') and item.endswith(']'):
-                item = item[1:-1]
-
-            xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', item)
-            if xref_match:
-                value = xref_match.group(1)
-                name = item[xref_match.end():].strip()
-                source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, value.strip('[]')),
-                                                      value=value.strip('[]'),
-                                                      name=name.strip()
-                                                      )
-            else:
-                value = item
-                name = item
-                source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, value.strip('[]')),
-                                                      value=value.strip('[]'),
-                                                      name=name)
-
-                continue
-        else:
-            try:
-                # <xref Tlink="Allikas:TER-PLUS">TER-PLUS</xref>
-                item_element = ET.fromstring(item)
-                value = item_element.text
-                name = item_element.tail if item_element.tail else ""
-            except ET.ParseError:
-                # If it's not XML, treat it as a valid string
-                # ÕL
-                # PS-2015/05
-                value = item
-                name = ""
-
-            name = name.strip()
-
-            source_link = data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_ids_map, value),
-                value=value.strip('[]'),
-                name=name.strip()
-            )
-
-        source_links.append(source_link)
-
-    return source_links, concept_notes
+#
+# # There can be multiple lexeme source links. Split them to separate sourcelink objects.
+# def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map, expert_sources_map):
+#     source_links = []
+#     concept_notes = []
+#
+#     # Pre-process the root string to replace '][' or '] [' with '];['
+#     # and also replace ',' (with optional space) with ';'
+#     root = re.sub(r'\]\s*\[|,\s*', '];[', root)
+#
+#     # Now split by semicolon, as all source links are now separated by it
+#     list_of_raw_sourcelinks = root.split(';')
+#
+#     for item in list_of_raw_sourcelinks:
+#
+#         item = item.strip()
+#         handled_special_case = False
+#
+#         special_cases = ['EKSPERT', 'CONSILIUM', 'DGT', 'PÄRING', 'PARLAMENT']
+#
+#         for case in special_cases:
+#             if case in item:
+#                 stripped_item = item.replace("[", "").replace("]", "")
+#                 special_item = stripped_item.replace("{", "").replace("}", "")
+#                 if special_item.startswith('<xref'):
+#                     xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', special_item)
+#                     if xref_match:
+#
+#                         expert_name = special_item[xref_match.end():].strip(' {}').replace(case.upper() + ' ', '')
+#                         expert_type = case.upper()
+#
+#                         # print('EKSPERTIDE_INFO_FAILI: ' + case.upper() + ': ' + special_item[xref_match.end():].strip(' {}').replace(case.upper() + ' ', ''))
+#
+#                         source_link = data_classes.Sourcelink(
+#                             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_sources_map),
+#                             value=case.capitalize(),
+#                             name='')
+#                         source_links.append(source_link)
+#                         handled_special_case = True
+#                         break
+#                     else:
+#                         logger.warning(case + ' in lexeme sourcelinks, but failed to extract the value.')
+#                 else:
+#                     if special_item.replace(case + ' ', "", 1) != case:
+#                         concept_notes.append(data_classes.Note(
+#                             value=case + ': ' + special_item.replace(case + ' ', "", 1),
+#                             lang='est',
+#                             publicity=False
+#                         ))
+#                     else:
+#                         concept_notes.append(data_classes.Note(
+#                             value=case,
+#                             lang='est',
+#                             publicity=False
+#                         ))
+#
+#                     source_link = data_classes.Sourcelink(
+#                         sourceId=find_source_by_name(name_to_ids_map, case),
+#                         value=case,
+#                         name=''
+#                     )
+#                     source_links.append(source_link)
+#                     handled_special_case = True
+#                     break
+#
+#
+#         if handled_special_case:
+#             continue
+#
+#         # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
+#         elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
+#             if item.startswith('[') and item.endswith(']'):
+#                 item = item[1:-1]
+#
+#             xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', item)
+#             if xref_match:
+#                 value = xref_match.group(1)
+#                 name = item[xref_match.end():].strip()
+#                 source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, value.strip('[]')),
+#                                                       value=value.strip('[]'),
+#                                                       name=name.strip()
+#                                                       )
+#             else:
+#                 value = item
+#                 name = item
+#                 source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, value.strip('[]')),
+#                                                       value=value.strip('[]'),
+#                                                       name=name)
+#
+#                 continue
+#         else:
+#             try:
+#                 # <xref Tlink="Allikas:TER-PLUS">TER-PLUS</xref>
+#                 item_element = ET.fromstring(item)
+#                 value = item_element.text
+#                 name = item_element.tail if item_element.tail else ""
+#             except ET.ParseError:
+#                 # If it's not XML, treat it as a valid string
+#                 # ÕL
+#                 # PS-2015/05
+#                 value = item
+#                 name = ""
+#
+#             name = name.strip()
+#
+#             source_link = data_classes.Sourcelink(
+#                 sourceId=find_source_by_name(name_to_ids_map, value),
+#                 value=value.strip('[]'),
+#                 name=name.strip()
+#             )
+#
+#         source_links.append(source_link)
+#
+#     return source_links, concept_notes
 
 
 ######################################
@@ -1260,7 +1259,7 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
     if not lexeme_note_raw[-3:-1].isdigit():
         return lexeme_notes, notes_for_concept
 
-    if '.' or '/' in lexeme_note_raw[-6:-1]:
+    if '.' in lexeme_note_raw[-6:-1] or '/' in lexeme_note_raw[-6:-1]:
         delimiter = None
         if lexeme_note_raw[-1] == ']':
             delimiter = '['
