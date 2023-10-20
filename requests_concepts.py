@@ -23,7 +23,6 @@ def set_up_requests():
 
 
 def import_concepts(file, max_objects=1000000):
-
     with open(file, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
@@ -34,6 +33,10 @@ def import_concepts(file, max_objects=1000000):
     for concept in data:
         if max_objects is not None and counter >= max_objects:
             break
+
+        # Remove empty 'notes' entries
+        if 'notes' in concept:
+            concept['notes'] = [note for note in concept['notes'] if note != [] and note != {}]
 
         try:
             concept_id = save_concept(concept)
@@ -60,8 +63,8 @@ def import_concepts(file, max_objects=1000000):
             logger.exception("Error: %s. Stopping processing.", e)
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    saved_filename = f'files/import/esterm_1409/{timestamp}_concepts_saved.json'
-    not_saved_filename = f'files/import/esterm_1409/{timestamp}_concepts_not_saved.json'
+    saved_filename = f'files/import/avi_2010/{timestamp}_concepts_saved.json'
+    not_saved_filename = f'files/import/avi_2010/{timestamp}_concepts_not_saved.json'
 
     with open(saved_filename, 'w', encoding='utf-8') as f:
         json.dump(concepts_saved, f, ensure_ascii=False, indent=4)
@@ -102,26 +105,30 @@ def update_word_ids(filename, dataset):
     for concept in concepts:
         words = concept.get('words', [])
         for word in words:
-            print(word['value'])
+            #print(word['value'])
             try:
                 word_ids = get_word_id(word['value'], word['lang'], dataset)
             except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError):
-                print(f"Connection timed out for {word['value']}. Moving on to the next word.")
+                logger.info(f"Connection timed out for {word['value']}. Moving on to the next word.")
                 continue
 
             if word_ids:
                 if len(word_ids) == 1:
                     word['wordId'] = word_ids[0]
+                    logger.info(f'{word} with ID {word_ids[0]}')
                 elif len(word_ids) > 1:
                     words_with_more_than_one_id.append(word['value'])
+                    logger.info(f'Word {word} has more than one lexemes in ÜS')
                 else:
                     words_without_id.append(word['value'])
+                    logger.info(f'Word {word} has does not have lexemes in ÜS (Case 1)')
             else:
                 words_without_id.append(word['value'])
+                logger.info(f'Word {word} has does not have lexemes in ÜS (Case 2)')
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    words_without_id_file = f'files/import/{timestamp}_words_without_id.json'
-    words_with_more_than_one_id_file = f'files/import/{timestamp}_words_with_more_than_one_id.json'
+    words_without_id_file = f'files/import/esterm_2010/{timestamp}_words_without_id.json'
+    words_with_more_than_one_id_file = f'files/import/esterm_2010/{timestamp}_words_with_more_than_one_id.json'
 
     with open(words_without_id_file, 'w', encoding='utf-8') as f:
         json.dump(words_without_id, f, ensure_ascii=False, indent=4)
@@ -129,7 +136,7 @@ def update_word_ids(filename, dataset):
     with open(words_with_more_than_one_id_file, 'w', encoding='utf-8') as f:
         json.dump(words_with_more_than_one_id, f, ensure_ascii=False, indent=4)
 
-    with open('files/import/concepts_with_word_ids.json', 'w', encoding='utf-8') as file:
+    with open('files/import/esterm_2010/esterm_concepts_with_word_ids.json', 'w', encoding='utf-8') as file:
         json.dump(concepts, file, indent=4, ensure_ascii=False)
 
 

@@ -232,7 +232,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
 
     if 'PÄRING' in source_value:
         expert_name = source_info.replace('PÄRING', '').strip('{} ')
-        expert_type = 'PÄRING'
+        expert_type = 'Päring'
 
         source_links.append(
             data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
@@ -248,7 +248,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
 
         source_links.append(
             data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
-                                    value='Dgt',
+                                    value='DGT',
                                     name=''))
 
         #if source_info:
@@ -256,7 +256,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
 
     if 'PARLAMENT' in source_value:
         expert_name = source_info.replace('PARLAMENT', '').strip(' {}')
-        expert_type = 'PARLAMENT'
+        expert_type = 'Parlament'
 
         source_links.append(
             data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
@@ -268,7 +268,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
 
     if 'CONSILIUM' in source_value:
         expert_name = source_info.replace('CONSILIUM', '').strip(' {}')
-        expert_type = 'CONSILIUM'
+        expert_type = 'Consilium'
         source_links.append(
             data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
                                     value='Consilium',
@@ -279,7 +279,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
 
     if 'EKSPERT' in source_value:
         expert_name = source_info.replace('EKSPERT', '').strip(' {}')
-        expert_type = 'EKSPERT'
+        expert_type = 'Ekspert'
         source_links.append(
             data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
                                     value='Ekspert',
@@ -408,7 +408,7 @@ def edit_note_without_multiple_languages(note):
             if inside_xref == 'EKSPERT':
 
                 expert_name = remaining_text.strip('[]{} ')
-                expert_type = 'EKSPERT'
+                expert_type = 'Ekspert'
                 # print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + remaining_text.strip('[]{} '))
 
             else:
@@ -1050,19 +1050,19 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = 'Ekspert'
         name = ''
         expert_name = 'Ants Ärsis'
-        expert_type = 'EKSPERT'
+        expert_type = 'Ekspert'
         #print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + 'Ants Ärsis')
     elif 'EKSPERT' in sourcelink:
         value = 'Ekspert'
         name = ''
         expert_name = sourcelink.replace('EKSPERT', '').strip(' {}')
-        expert_type = 'EKSPERT'
+        expert_type = 'Ekspert'
         #print('EKSPERTIDE_INFO_FAILI separate_sourcelink_value_from_name: ' + 'EKSPERT: ' + sourcelink.replace('EKSPERT', '').strip(' {}'))
     elif 'PÄRING' in sourcelink:
         value = 'Päring'
         name = ''
         expert_name = sourcelink.replace('PÄRING ', '').strip(' {}')
-        expert_type = 'PÄRING'
+        expert_type = 'Päring'
         #print('EKSPERTIDE_INFO_FAILI separate_sourcelink_value_from_name: ' + 'PÄRING: ' + sourcelink.replace('PÄRING ', '').strip(' {}'))
     elif 'DGT' in sourcelink:
         value = 'Dgt'
@@ -1074,19 +1074,19 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = 'Jurist'
         name = ''
         expert_name = sourcelink.replace('JURIST', '').strip(' {}')
-        expert_type = 'JURIST'
+        expert_type = 'Jurist'
         #print('EKSPERTIDE_INFO_FAILI separate_sourcelink_value_from_name: ' + 'JURIST: ' + sourcelink.replace('JURIST', '').strip(' {}'))
     elif 'CONSILIUM' in sourcelink:
         value = 'Consilium'
         name = ''
         expert_name = sourcelink.replace('CONSILIUM', '').strip(' {}')
-        expert_type = 'CONSILIUM'
+        expert_type = 'Consilium'
         #print('EKSPERTIDE_INFO_FAILI separate_sourcelink_value_from_name: ' + 'CONSILIUM: ' + sourcelink.replace('CONSILIUM', '').strip(' {}'))
     elif 'DELEST' in sourcelink:
         value = 'Delest'
         name = ''
         expert_name = sourcelink.replace('DELEST', '').strip(' {}')
-        expert_type = 'DELEST'
+        expert_type = 'Delest'
         #print('EKSPERTIDE_INFO_FAILI separate_sourcelink_value_from_name: ' + 'DELEST: ' + sourcelink.replace('DELEST', '').strip(' {}'))
     elif sourcelink.startswith('ICAO'):
         if 'tõlge' in  sourcelink:

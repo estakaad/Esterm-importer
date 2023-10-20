@@ -56,7 +56,7 @@ def create_experts_sources(output_json, expert_info_from_esterm, expert_info_for
     api_list = []
 
     for entry in csv_data:
-        api_dict = {"id": 60180, "type": "PERSON", "isPublic": False}
+        api_dict = {"type": "PERSON", "isPublic": False}
         name = entry["name"]
         api_dict["name"] = entry["type"]
         api_dict["description"] = name
@@ -85,6 +85,8 @@ def create_name_and_type_to_id_mapping_for_expert_sources(expert_sources):
 
 
 def get_expert_source_id_by_name_and_type(name, type, type_desc_to_ids):
+    if name == '':
+        name = type.upper()
     for (source_type, source_description), source_id in type_desc_to_ids.items():
         if source_type == type and (source_description == name or source_description.startswith(f"{name} – ")):
             return source_id

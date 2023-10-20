@@ -77,6 +77,34 @@ def create_source(source):
                        f"Status code: {response.status_code}, Response text: {response.text}")
     return None
 
+def assign_ids_to_expert_sources(input_filename):
+    ids_of_created_expert_sources_filename = 'files/output/sources/expert_sources_with_ids.json'
+    ids_of_created_sources_file = 'files/output/sources/ids_of_created_expert_sources.json'
+    updated_sources = []
+    ids_of_created_expert_sources = []
+
+    logger.info(f'Started assigning ID-s to all expert sources {input_filename}')
+
+    with open(input_filename, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+        for source in data:
+            source_id = create_source(source)
+            if source_id:
+                logger.info(f'Created expert source with ID {source_id}')
+                source['id'] = source_id
+                updated_sources.append(source)
+                ids_of_created_expert_sources.append(source_id)
+
+    with open(ids_of_created_expert_sources_filename, 'w', encoding='utf-8') as f:
+        json.dump(updated_sources, f, ensure_ascii=False, indent=4)
+
+    with open(ids_of_created_sources_file, 'w', encoding='utf-8') as f:
+        json.dump(ids_of_created_expert_sources, f, ensure_ascii=False, indent=4)
+
+    logger.info(f'Number of existing sources: {len(ids_of_created_expert_sources)}')
+    return ids_of_created_expert_sources_filename
+
 
 # Try getting existing source's ID, if source doesn't exist, create a new one and return its ID.
 # If source already existed, return False. If source was created, return True.
