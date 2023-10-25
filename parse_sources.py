@@ -167,10 +167,10 @@ def create_json(conceptGrp):
 
 # Parse Esterm XML, filter out sources and transform them to JSON objects. Add expert sources.
 # Return output/sources.json
-def export_sources_from_xml(filename):
+def export_sources_from_xml(esterm_filename, sources_without_ids_filename):
     logger.info('Started parsing XML for sources.')
 
-    with open(filename, 'rb') as file:
+    with open(esterm_filename, 'rb') as file:
         xml_content = file.read()
 
     parser = etree.XMLParser(encoding='UTF-16')
@@ -189,7 +189,7 @@ def export_sources_from_xml(filename):
     json_objects = replace_type(json_objects)
 
     # Write sources to sources.json
-    with open('files/output/sources/sources.json', 'w', encoding='utf-8') as file:
+    with open(sources_without_ids_filename, 'w', encoding='utf-8') as file:
         json.dump(json_objects, file, indent=4, ensure_ascii=False)
 
     logger.info('Finished parsing XML for sources.')

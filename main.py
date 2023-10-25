@@ -24,8 +24,9 @@ esterm_filename = 'files/input/esterm.xml'
 # expert_sources_helpers.create_experts_sources(output_json, expert_info_from_esterm, expert_info_for_api_calls)
 
 # 2. Export sources from XML input/esterm.xml.
-# Returns sources files/output/sources/sources.json
-#file = parse_sources.export_sources_from_xml(esterm_filename)
+# # Returns sources files/output/sources/sources.json
+# sources_without_ids_filename = 'files/output/sources/sources.json'
+# file = parse_sources.export_sources_from_xml(esterm_filename, sources_without_ids_filename)
 
 # 3. Get ID-s of existing sources. If source doesn't exist yet, create it and get its ID.
 # Add the sources with their ID-s to file output/sources/sources_with_ids.json
@@ -72,4 +73,4 @@ sources_added_ids_filename = 'files/output/sources/ids_of_created_sources-test.j
 ######################
 # Delete created sources
 
-requests_sources.delete_created_sources(sources_added_ids_filename)
+#requests_sources.delete_created_sources(sources_added_ids_filename)
