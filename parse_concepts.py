@@ -1,7 +1,6 @@
 from datetime import datetime
 from lxml import etree
 import json
-
 import expert_sources_helpers
 import xml_helpers
 import os

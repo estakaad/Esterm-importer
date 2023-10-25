@@ -583,7 +583,7 @@ def find_source_by_name(name_to_ids_map, name):
         if name is not None:
             caller_name = inspect.currentframe().f_back.f_code.co_name
             #print(f"Called from: {caller_name}")
-            #print(name)
+            print(name)
 
         # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
         return '53385'
@@ -1056,8 +1056,13 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = 'Ekspert'
         name = ''
         expert_name = sourcelink.replace('EKSPERT', '').strip(' {}')
-        expert_type = 'Ekspert'
-        #print('EKSPERTIDE_INFO_FAILI separate_sourcelink_value_from_name: ' + 'EKSPERT: ' + sourcelink.replace('EKSPERT', '').strip(' {}'))
+        if len(expert_name) > len('EKSPERT'):
+            expert_name = sourcelink.replace('EKSPERT', '').strip(' {}')
+            expert_type = 'Ekspert'
+        else:
+            expert_name = 'Ekspert'
+            expert_type = 'Ekspert'
+            #print('EKSPERTIDE_INFO_FAILI separate_sourcelink_value_from_name: ' + 'EKSPERT: ' + sourcelink.replace('EKSPERT', '').strip(' {}'))
     elif 'PÄRING' in sourcelink:
         value = 'Päring'
         name = ''
@@ -1065,7 +1070,7 @@ def separate_sourcelink_value_from_name(sourcelink):
         expert_type = 'Päring'
         #print('EKSPERTIDE_INFO_FAILI separate_sourcelink_value_from_name: ' + 'PÄRING: ' + sourcelink.replace('PÄRING ', '').strip(' {}'))
     elif 'DGT' in sourcelink:
-        value = 'Dgt'
+        value = 'DGT'
         name = ''
         expert_name = sourcelink.replace('DGT', '').strip(' {}')
         expert_type = 'DGT'

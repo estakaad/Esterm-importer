@@ -14,17 +14,22 @@ logger.handlers = []
 logger.propagate = False
 
 
-def set_up_requests():
+def set_up_requests(dataset):
     load_dotenv()
     api_key = os.environ.get("API_KEY")
-    crud_role_dataset = os.environ.get("ESTERM")
+    if 'est' in dataset:
+        crud_role_dataset = os.environ.get("ESTERM")
+    elif 'avi' in dataset:
+        crud_role_dataset = os.environ.get("AVI")
+    else:
+        print(dataset)
 
     header = {"ekilex-api-key": api_key}
     parameters = {"crudRoleDataset": crud_role_dataset}
     return parameters, header
 
 
-def import_concepts(file, max_objects=5000000):
+def import_concepts(file, dataset, max_objects=5000000):
     with open(file, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
@@ -43,7 +48,7 @@ def import_concepts(file, max_objects=5000000):
             concept_copy['notes'] = [note for note in concept_copy['notes'] if note != [] and note != {}]
 
         try:
-            concept_id = save_concept(concept_copy)
+            concept_id = save_concept(concept_copy, dataset)
 
             if concept_id:
                 concept_copy['id'] = concept_id
@@ -70,11 +75,11 @@ def import_concepts(file, max_objects=5000000):
         json.dump(concepts_not_saved, f, ensure_ascii=False, indent=4)
 
 
-def save_concept(concept):
+def save_concept(concept, dataset):
     retries = 3
     timeout = 5
 
-    parameters, header = set_up_requests()
+    parameters, header = set_up_requests(dataset)
 
     while retries > 0:
         try:
@@ -109,7 +114,7 @@ def save_concept(concept):
     return None
 
 
-def update_word_ids(filename, dataset):
+def update_word_ids(filename, dataset, concepts_dataset):
     with open(filename, 'r', encoding='utf-8') as file:
         concepts = json.load(file)
 
@@ -121,7 +126,7 @@ def update_word_ids(filename, dataset):
         for word in words:
             #print(word['value'])
             try:
-                word_ids = get_word_id(word['value'], word['lang'], dataset)
+                word_ids = get_word_id(word['value'], word['lang'], dataset, concepts_dataset)
             except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError):
                 logger.info(f"Connection timed out for {word['value']}. Moving on to the next word.")
                 continue
@@ -141,8 +146,12 @@ def update_word_ids(filename, dataset):
                 logger.info(f'Word {word} has does not have lexemes in ÜS (Case 2)')
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    words_without_id_file = f'files/import/esterm_2010/{timestamp}_words_without_id.json'
-    words_with_more_than_one_id_file = f'files/import/esterm_2010/{timestamp}_words_with_more_than_one_id.json'
+    words_without_id_file = f'files/import/{concepts_dataset}/{timestamp}_words_without_id.json'
+    words_with_more_than_one_id_file = f'files/import/{concepts_dataset}/{timestamp}_words_with_more_than_one_id.json'
+
+
+    with open(f'files/import/{concepts_dataset}/{concepts_dataset}_concepts_with_word_ids.json', 'w', encoding='utf-8') as file:
+        json.dump(concepts, file, indent=4, ensure_ascii=False)
 
     with open(words_without_id_file, 'w', encoding='utf-8') as f:
         json.dump(words_without_id, f, ensure_ascii=False, indent=4)
@@ -150,13 +159,11 @@ def update_word_ids(filename, dataset):
     with open(words_with_more_than_one_id_file, 'w', encoding='utf-8') as f:
         json.dump(words_with_more_than_one_id, f, ensure_ascii=False, indent=4)
 
-    with open('files/import/esterm_2010/esterm_concepts_with_word_ids.json', 'w', encoding='utf-8') as file:
-        json.dump(concepts, file, indent=4, ensure_ascii=False)
 
 
 
-def get_word_id(word, lang, dataset):
-    parameters, header = set_up_requests()
+def get_word_id(word, lang, dataset, concepts_dataset):
+    parameters, header = set_up_requests(concepts_dataset)
 
     res = requests.get(
         f'https://ekitest.tripledev.ee/ekilex/api/word/ids/{word}/{dataset}/{lang}',

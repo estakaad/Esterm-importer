@@ -121,9 +121,8 @@ def get_or_create_source(source):
     return new_id, True
 
 
-def assign_ids_to_all_sources(input_file):
-    sources_with_ids_file = 'files/output/sources/sources_with_ids.json'
-    ids_of_created_sources_file = 'files/output/sources/ids_of_created_sources.json'
+def assign_ids_to_all_sources(input_file, sources_with_ids_filename, ids_of_created_sources_filename):
+
     updated_sources = []
     ids_of_created_sources = []
 
@@ -146,13 +145,13 @@ def assign_ids_to_all_sources(input_file):
                     count_existing_sources += 1
 
     # Create a file with sources and their ID-s
-    with open(sources_with_ids_file, 'w', encoding='utf-8') as source_files_with_ids:
+    with open(sources_with_ids_filename, 'w', encoding='utf-8') as source_files_with_ids:
         json.dump(updated_sources, source_files_with_ids, ensure_ascii=False, indent=4)
 
     logger.info('Created file with sources and their ID-s')
 
     # Create a file with list of ID-s of created sources
-    with open(ids_of_created_sources_file, 'w', encoding='utf-8') as f:
+    with open(ids_of_created_sources_filename, 'w', encoding='utf-8') as f:
         json.dump(ids_of_created_sources, f, ensure_ascii=False, indent=4)
 
     logger.info('Created file list of ID-s of created sources')
