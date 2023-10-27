@@ -14,7 +14,7 @@ esterm_filename = 'files/input/esterm.xml'
 # # 1. Compile JSON with expert sources. Contains
 # # - EKSPERT, PÄRING, CONSILIUM, DELEST, DGT, PARLAMENT type sources from esterm.xml
 # # - metadata from eksperdid.xlsx
-# # # # # #
+# # # # # # #
 # input_excel = 'files/input/ekspertide_lisainfo.xlsx'
 # output_json = 'files/output/sources/eksperdid.json'
 # expert_info_from_esterm = 'files/input/eksperdid_estermist.csv'
@@ -32,16 +32,19 @@ esterm_filename = 'files/input/esterm.xml'
 # Add the sources with their ID-s to file output/sources/sources_with_ids.json
 # Add ID-s of created sources to files/output/sources/ids_of_created_sources.json
 # Return file output/sources/sources_with_ids.json
-#
-sources_without_ids_filename = 'files/output/sources/sources-test.json'
-sources_with_ids_filename = 'files/output/sources/sources_with_ids-test.json'
-sources_added_ids_filename = 'files/output/sources/ids_of_created_sources-test.json'
-#updated_sources_file = requests_sources.assign_ids_to_all_sources(sources_without_ids_filename, sources_with_ids_filename, sources_added_ids_filename)
+# # #
+# sources_without_ids_filename = 'files/output/sources/sources-271023.json'
+# sources_with_ids_filename = 'files/output/sources/sources_with_ids-271023.json'
+# sources_added_ids_filename = 'files/output/sources/ids_of_created_sources-test-271023.json'
+# updated_sources_file = requests_sources.assign_ids_to_all_sources(sources_without_ids_filename, sources_with_ids_filename, sources_added_ids_filename)
 
 # 4. Add expert sources. No need to check if it exists, because we know they don't.
-# # Add IDs to files/output/sources/expert_sources.json
-# expert_sources_output_json_filename = 'files/output/sources/expert_sources.json'
-# updated_expert_sources_file = requests_sources.assign_ids_to_expert_sources(expert_sources_output_json_filename)
+# Add IDs to files/output/sources/expert_sources.json
+expert_sources_without_ids_filename = 'files/output/sources/expert_sources.json'
+expert_sources_with_ids_filename = 'files/output/sources/expert_sources_with_ids.json'
+ids_of_created_expert_sources_file = 'files/output/sources/ids_of_created_expert_sources.json'
+updated_expert_sources_file = requests_sources.assign_ids_to_expert_sources(
+    expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file)
 #
 # # # # # # # 5. Map source names to their ID-s
 # with open('files/output/sources/sources_with_ids-testimiseks.json', 'r', encoding='utf-8') as f:
@@ -73,4 +76,4 @@ sources_added_ids_filename = 'files/output/sources/ids_of_created_sources-test.j
 ######################
 # Delete created sources
 
-requests_sources.delete_created_sources(sources_added_ids_filename)
+#requests_sources.delete_created_sources(sources_added_ids_filename)
