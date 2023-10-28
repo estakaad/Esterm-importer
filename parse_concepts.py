@@ -332,7 +332,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
 
                         value = value.strip('[]')
 
-                        if expert_name:
+                        if expert_type:
                             sourceid = expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map)
                             word.lexemeSourceLinks.append(
                                 data_classes.Sourcelink(

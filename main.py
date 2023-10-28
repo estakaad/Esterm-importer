@@ -32,32 +32,32 @@ esterm_filename = 'files/input/esterm.xml'
 # Add the sources with their ID-s to file output/sources/sources_with_ids.json
 # Add ID-s of created sources to files/output/sources/ids_of_created_sources.json
 # Return file output/sources/sources_with_ids.json
-# # #
-# sources_without_ids_filename = 'files/output/sources/sources-271023.json'
-# sources_with_ids_filename = 'files/output/sources/sources_with_ids-271023.json'
-# sources_added_ids_filename = 'files/output/sources/ids_of_created_sources-test-271023.json'
+# #
+# sources_without_ids_filename = 'files/output/sources/unknown_sources.json'
+# sources_with_ids_filename = 'files/output/sources/unknown_sources_with_ids-271023.json'
+# sources_added_ids_filename = 'files/output/sources/ids_of_created_unknown_sources-test-271023.json'
 # updated_sources_file = requests_sources.assign_ids_to_all_sources(sources_without_ids_filename, sources_with_ids_filename, sources_added_ids_filename)
 
 # 4. Add expert sources. No need to check if it exists, because we know they don't.
-# Add IDs to files/output/sources/expert_sources.json
-expert_sources_without_ids_filename = 'files/output/sources/expert_sources.json'
-expert_sources_with_ids_filename = 'files/output/sources/expert_sources_with_ids.json'
-ids_of_created_expert_sources_file = 'files/output/sources/ids_of_created_expert_sources.json'
-updated_expert_sources_file = requests_sources.assign_ids_to_expert_sources(
-    expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file)
+# # Add IDs to files/output/sources/expert_sources.json
+# expert_sources_without_ids_filename = 'files/output/sources/expert_sources.json'
+# expert_sources_with_ids_filename = 'files/output/sources/expert_sources_with_ids.json'
+# ids_of_created_expert_sources_file = 'files/output/sources/ids_of_created_expert_sources.json'
+# updated_expert_sources_file = requests_sources.assign_ids_to_expert_sources(
+#     expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file)
 #
-# # # # # # # 5. Map source names to their ID-s
-# with open('files/output/sources/sources_with_ids-testimiseks.json', 'r', encoding='utf-8') as f:
-#     updated_sources = json.load(f)
+# # # # # # 5. Map source names to their ID-s
+with open('files/import/2023-10-27_SOURCES/sources_with_ids_and_unknown_sources_with_ids-271023.json', 'r', encoding='utf-8') as f:
+    updated_sources = json.load(f)
+
+name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
+
+with open('files/import/2023-10-27_SOURCES/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
+    expert_sources = json.load(f)
+expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)
 #
-# name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
-#
-# with open('files/output/sources/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
-#     expert_sources = json.load(f)
-# expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)
-# #
-# # # # # 6. Export concepts from XML. Returns files/output/concepts.json and files/output/aviation_concepts.json
-# parse_concepts.transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map)
+# # # # 6. Export concepts from XML. Returns files/output/concepts.json and files/output/aviation_concepts.json
+parse_concepts.transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map)
 
 # 7. Check if word exists. If it does, add its ID
 #requests_concepts.update_word_ids('files/output/aviation_concepts.json', 'eki', 'avi2110')

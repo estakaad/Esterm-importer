@@ -205,6 +205,7 @@ def detect_language(note):
 def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_ids_map):
     source_links = []
     concept_notes = []
+    expert_source_found = False
 
     full_text = ''.join(element.itertext())
     usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
@@ -231,6 +232,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
     name = source_link_name if source_link_name else ''
 
     if 'PÄRING' in source_value:
+        expert_source_found = True
         expert_name = source_info.replace('PÄRING', '').strip('{} ')
         expert_type = 'Päring'
 
@@ -243,6 +245,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
             #print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'PÄRING: ' + source_info.replace('PÄRING', '').strip('{} '))
 
     if 'DGT' in source_value:
+        expert_source_found = True
         expert_name = source_info.replace('DGT', '').strip().strip('{}')
         expert_type = 'DGT'
 
@@ -255,6 +258,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
             #print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'DGT: ' + source_info.replace('DGT', '').strip().strip('{}'))
 
     if 'PARLAMENT' in source_value:
+        expert_source_found = True
         expert_name = source_info.replace('PARLAMENT', '').strip(' {}')
         expert_type = 'Parlament'
 
@@ -267,6 +271,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
         #     print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'PARLAMENT: ' + source_info.replace('PARLAMENT', '').strip(' {}'))
 
     if 'CONSILIUM' in source_value:
+        expert_source_found = True
         expert_name = source_info.replace('CONSILIUM', '').strip(' {}')
         expert_type = 'Consilium'
         source_links.append(
@@ -278,6 +283,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
         #     print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'CONSILIUM: ' + source_info.replace('CONSILIUM', '').strip(' {}'))
 
     if 'EKSPERT' in source_value:
+        expert_source_found = True
         expert_name = source_info.replace('EKSPERT', '').strip(' {}')
         expert_type = 'Ekspert'
         source_links.append(
@@ -291,7 +297,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
         #         print(source_info)
 
     else:
-        if source_value:
+        if source_value and not expert_source_found:
             if '§' in source_value:
                 value = re.split(r'§', source_value, 1)[0].strip()
                 name = "§ " + re.split(r'§', source_value, 1)[1].strip()
@@ -1109,6 +1115,21 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('WPG'):
         value = 'WPG'
         name = sourcelink.replace('WPG', '')
+    elif sourcelink.startswith('TSR '):
+        value = 'TSR'
+        name = sourcelink.replace('TSR ', '')
+    elif sourcelink.startswith('TCC, '):
+        value = 'TCC'
+        name = sourcelink.replace('TCC, ', '')
+    elif sourcelink.startswith('3656 '):
+        value = '3656'
+        name = sourcelink.replace('3656, ', '')
+    elif sourcelink.startswith('MML, '):
+        value = 'MML'
+        name = sourcelink.replace('MML, ', '')
+    elif sourcelink.startswith('4017 '):
+        value = '4017'
+        name = sourcelink.replace('4017 ', '')
     elif sourcelink.startswith('X40046'):
         value = 'X40046'
         name = sourcelink.replace('X40046', '')
