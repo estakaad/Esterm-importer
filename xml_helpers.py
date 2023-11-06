@@ -1309,68 +1309,290 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
     notes_for_concept = []
     source_links = []
 
-    if not lexeme_note_raw[-3:-1].isdigit():
+    # Case #1 :: no date :: no source ::
+    # "ametnik, kellel on allkirjaõigus ja teatud kohtulahendite tegemise õigus"
+    if not lexeme_note_raw.strip('.').endswith((']', '}')):
+        lexeme_notes.append(data_classes.Lexemenote(
+            value=lexeme_note_raw,
+            lang=detect_language(lexeme_note_raw),
+            publicity=True,
+            sourceLinks=source_links
+        ))
+        #print('Case #1')
         return lexeme_notes, notes_for_concept
 
-    if '.' in lexeme_note_raw[-6:-1] or '/' in lexeme_note_raw[-6:-1]:
-        delimiter = None
-        if lexeme_note_raw[-1] == ']':
-            delimiter = '['
-        elif lexeme_note_raw[-1] == '}':
-            delimiter = '{'
+    # Case #2 :: no date :: source ::
+    # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]"
+    elif not lexeme_note_raw.strip('.')[-3:-1].isdigit():
+        #print('Case #2')
+        parts = lexeme_note_raw.split('[')
+        note_value = parts[0].strip()
 
-        if delimiter:
-            parts = lexeme_note_raw.split(delimiter)
-            note = ''.join(parts[:-1])
-            date_and_initials = delimiter + parts[-1]
-            date = regex.sub(r'\p{L}', '', date_and_initials, flags=re.UNICODE).replace('{}', '')
-            final_note = note.strip() + ' ' + date.replace(' ', '')
+        sourcelink_value = parts[1].strip('[]') if len(parts) > 1 else ''
+        sourcelink_name = None
 
-            if note.endswith(']'):
-                sourcelink_value = note.rsplit(' ', 1)[1].strip(']')
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
-                    value=sourcelink_value,
-                    name=None
-                ))
-                final_note = (note.replace(sourcelink_value, '') + date).replace(' ][ ', ' [')
+        if ',' in sourcelink_value:
+            parts = sourcelink_value.split(',')
+            sourcelink_value = parts[0]
+            sourcelink_name = parts[1].strip()
+
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+            value=sourcelink_value,
+            name=sourcelink_name if sourcelink_name else ''
+        ))
+        lexeme_notes.append(data_classes.Lexemenote(
+            value=note_value,
+            lang=detect_language(note_value),
+            publicity=True,
+            sourceLinks=source_links
+        ))
+        return lexeme_notes, notes_for_concept
+
+    # Case #3 :: (source) :: date
+    elif '.' in lexeme_note_raw[-7:-1] or '/' in lexeme_note_raw[-6:-1]:
+
+        # Case #3/1 :: SÜNONÜÜM: T1001 tõlkes; st ühenduse asutus [VEL] {ATM 06.09.1999}.
+        if '] {' in lexeme_note_raw:
+            #print('Case #3/1')
+            parts = lexeme_note_raw.split('{')
+            note_and_sourcelink = parts[0]
+            date_with_letters = parts[1]
+            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date_with_letters).strip()
+
+            note_parts = note_and_sourcelink.split('[')
+            note = note_parts[0].strip()
+            sourcelink_value = note_parts[1].split(']')[0].strip()
+
+            source_links.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+                value=sourcelink_value,
+                name=''
+            ))
 
             lexeme_notes.append(data_classes.Lexemenote(
-                value=final_note,
-                lang=detect_language(final_note),
+                value=note + ' {' + date_without_letters,
+                lang=detect_language(note),
                 publicity=True,
                 sourceLinks=source_links
             ))
 
+        # Case #3/2 :: broadcasting - the process of transmitting a radio or television signal via an antenna
+        # to multiple receivers which can simultaneously pick up the signal [IATE] [{MVS}27.08.2015]
+        elif '] [' in lexeme_note_raw:
+            #print('Case #3/2')
+
+            first_split = lexeme_note_raw.split(' [')
+            lexeme_note = first_split[0].strip()
+            rest_of_string = ' [' + ' ['.join(first_split[1:])
+
+            matches = list(re.finditer(r'\[', rest_of_string))
+            second_bracket_index = matches[1].start() if len(matches) > 1 else None
+
+            source = rest_of_string[:second_bracket_index].strip()
+            source = source.strip('[]').strip()
+            date = rest_of_string[second_bracket_index:].strip()
+            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date).strip().replace('{}', '')
+
+            source_links.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, source),
+                value=source,
+                name=''
+            ))
+
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=lexeme_note + ' ' + date_without_letters,
+                lang=detect_language(lexeme_note),
+                publicity=True,
+                sourceLinks=source_links
+            ))
+
+        # Case #3/3 :: date :: 62016CC0158 esineb tõlkega "senine ametikoht". [{KJN}16.10.2019]
+        elif lexeme_note_raw.strip('.').endswith(']'):
+            #print('Case #3/3')
+
+            lexeme_note_without_dot = lexeme_note_raw.strip('.')
+
+            parts = lexeme_note_without_dot.split('[')
+            note = parts[0]
+            date_with_letters = parts[1]
+
+            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date_with_letters).strip().replace('{}', '')
+
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note + '[' + date_without_letters,
+                lang=detect_language(note),
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        # Case #3/4 :: date :: "office" kasutatakse kõrgemate ametnike puhul {MRS 26.04.2001}
+        elif lexeme_note_raw.strip('.').endswith('}'):
+            #print('Case #3/4')
+
+            lexeme_note_without_dot = lexeme_note_raw.strip('.')
+
+            parts = lexeme_note_without_dot.split('{')
+            note = parts[0]
+            date_with_letters = parts[1]
+
+            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date_with_letters).strip()
+
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note + '{' + date_without_letters,
+                lang=detect_language(note),
+                publicity=True,
+                sourceLinks=source_links
+            ))
         else:
-            lexeme_notes.append(data_classes.Lexemenote(
-                value=lexeme_note_raw,
-                lang=detect_language(lexeme_note_raw),
-                publicity=True,
-                sourceLinks=source_links
-            ))
+            logger.info(f'Unexpected value for lexeme note: {lexeme_note_raw}')
 
     else:
-        if '[' in lexeme_note_raw:
-            note_value, sourcelink = lexeme_note_raw.rsplit('[', 1)
-            sourcelink = sourcelink.strip(']')
-            source_links.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_id_map, sourcelink),
-                value=sourcelink,
-                name=None
-            ))
-            lexeme_notes.append(data_classes.Lexemenote(
-                value=note_value,
-                lang=detect_language(note_value),
-                publicity=True,
-                sourceLinks=source_links
-            ))
-        else:
-            lexeme_notes.append(data_classes.Lexemenote(
-                value=lexeme_note_raw,
-                lang=detect_language(lexeme_note_raw),
-                publicity=True,
-                sourceLinks=source_links
-            ))
+        end_strings = ['ÕS-2013', 'VSL-2012', 'RIIGIKAITSE-2014', 'T1140', 'T1088', 'X1028', 'X40040',
+                       '31997L0081', 'EMN-2014', 'X1050', 'T1143', 'T0049', 'ÕS-2006', '32012R0965',
+                       'T2050', 'T0060', '32017D0695', 'T1009', 'T30141', 'EKSR-2019', 'T40135', 'T1436',
+                       'T2098', 'T40464', 'ÕS-2018', 'RHK-10', 'ICD-10', '32009L0138', 'ICAO-AN17', 'ICAO-AN18',
+                       'ICAO-AN10', 'ICAO 4444', 'ICAO 9859', '32012R0923', 'EKK-2007', 'COED12', 'T70911',
+                       'ÕS-2018', '32012R0231', 'V00018', 'T50156', 'ICAO-9713', 'T40790', 'X30042', 'COED12',
+                       'T40279', 'EKIÜS-2021', 'T30119', 'ICTG-2018', 'MAN-2004', 'X30044', '32004R0785',
+                       '32010L0013', 'T1533', 'X30071', '32006L0131', '32006D0257', '32014R0405', 'ODLE-2015',
+                       'EKIÜS-2020', '52015DC0599'
+                       ]
+        match_found = False
+
+        for end_str in end_strings:
+            if lexeme_note_raw.endswith(f'[{end_str}]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, end_str),
+                    value=end_str,
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(f' [{end_str}]', ''),
+                    lang=detect_language(lexeme_note_raw.replace(f' [{end_str}]', '')),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+                match_found = True
+                break
+
+        if not match_found:
+            parts = lexeme_note_raw.rsplit('[', 1)
+            if len(parts) > 1 and parts[1].rstrip(']').isdigit():
+                sourcelink_part = parts[1].rstrip(']')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, sourcelink_part),
+                    value=sourcelink_part,
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=parts[0].strip(),
+                    lang=detect_language(parts[0]),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif lexeme_note_raw.endswith('[ÕS-2013; EKSS; VSL-2012]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'ÕS-2013'),
+                    value='ÕS-2013',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'EKSS'),
+                    value='EKSS',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'VSL-2012'),
+                    value='VSL-2012',
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [ÕS-2013; EKSS; VSL-2012]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif lexeme_note_raw.endswith('[EKSS; VSL-2012]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'EKSS'),
+                    value='EKSS',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'VSL-2012'),
+                    value='VSL-2012',
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [EKSS; VSL-2012]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif lexeme_note_raw.endswith('[M-W; COED12]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'M-W'),
+                    value='M-W',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'COED12'),
+                    value='COED12',
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [M-W; COED12]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif lexeme_note_raw.endswith('[ICAO-AN2/10/44; 32012R0923]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'ICAO-AN2/10/44'),
+                    value='ICAO-AN2/10/44',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '32012R0923'),
+                    value='32012R0923',
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [ICAO-AN2/10/44; 32012R0923]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif lexeme_note_raw.endswith('[COO; 89534]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'COO'),
+                    value='COO',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '89534'),
+                    value='89534',
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [COO; 89534]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif lexeme_note_raw.endswith('[LS-2015/12 § 69]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'LS-2015/12'),
+                    value='LS-2015/12',
+                    name='§ 69'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [LS-2015/12 § 69]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            else:
+                print('Mis see veel on: ' + lexeme_note_raw)
 
     return lexeme_notes, notes_for_concept

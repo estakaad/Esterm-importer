@@ -48,12 +48,12 @@ esterm_filename = 'files/input/esterm.xml'
 #      expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file)
 # #
 # # # # # # 5. Map source names to their ID-s
-with open('files/import/2023-10-27_SOURCES/sources_with_ids_and_unknown_sources_with_ids-271023.json', 'r', encoding='utf-8') as f:
+with open('files/import/2024-11-04_SOURCES/sources_with_ids_and_unknown_sources_with_ids-04112023.json', 'r', encoding='utf-8') as f:
     updated_sources = json.load(f)
 
 name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
 
-with open('files/import/2023-10-27_SOURCES/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
+with open('files/import/2024-11-04_SOURCES/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
     expert_sources = json.load(f)
 expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)
 #
