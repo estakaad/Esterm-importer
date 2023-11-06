@@ -147,7 +147,7 @@ def create_json(conceptGrp):
             other_objects.append(obj)
 
     # Sort objects of type 'SOURCE_NAME' in ascending order by the length of the key value
-    source_name_objects.sort(key=lambda obj: len(obj["valueText"]))
+    #source_name_objects.sort(key=lambda obj: len(obj["valueText"]))
 
     json_object["sourceProperties"] = source_name_objects + other_objects
 

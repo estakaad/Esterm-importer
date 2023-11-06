@@ -12,47 +12,51 @@ logger = log_config.get_logger()
 load_dotenv()
 api_key = os.environ.get("API_KEY")
 parameters = {}
-#crud_role_dataset = os.environ.get("ESTERM")
-crud_role_dataset = os.environ.get("AVI")
+crud_role_dataset = os.environ.get("ESTERM")
+#crud_role_dataset = os.environ.get("AVI")
 
 header = {"ekilex-api-key": api_key}
 parameters = {"crudRoleDataset": crud_role_dataset}
 
 
 def get_existing_source_id(source):
+    try:
 
-    logger.debug(f'Attempting to find ID for a source {source}')
+        logger.debug(f'Attempting to find ID for a source {source}')
 
-    value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
-    # Normalise source names or matching will give unexpected results
-    value_texts = [re.sub(' +', ' ', value_text).strip() for value_text in value_texts]
+        value_texts = [prop['valueText'] for prop in source['sourceProperties'] if prop['type'] == 'SOURCE_NAME']
+        # Normalise source names or matching will give unexpected results
+        value_texts = [re.sub(' +', ' ', value_text).strip() for value_text in value_texts]
 
-    value_for_request = value_texts[0].replace('/', '*')
+        value_for_request = value_texts[0].replace('/', '*')
 
-    params = {"crudRoleDataset": crud_role_dataset}
+        params = {"crudRoleDataset": crud_role_dataset}
 
-    endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_for_request}"
+        endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_for_request}"
 
-    response = requests.get(endpoint, headers=header, params=params)
+        response = requests.get(endpoint, headers=header, params=params)
 
-    if response.status_code >= 200 and response.status_code < 300:
-        response_data = response.json()
-        if response_data:
-            for item in response_data:
-                source_names_in_response = []
-                for prop in item['sourceProperties']:
-                    if prop['type'] == 'SOURCE_NAME':
-                        source_names_in_response.append(prop['valueText'])
+        if response.status_code >= 200 and response.status_code < 300:
+            response_data = response.json()
+            if response_data:
+                for item in response_data:
+                    source_names_in_response = []
+                    for prop in item['sourceProperties']:
+                        if prop['type'] == 'SOURCE_NAME':
+                            source_names_in_response.append(prop['valueText'])
 
-                if set(source_names_in_response) == set(value_texts):
-                    logger.info(f'There was a response and it contained a source with the same names. ID: {item["id"]}')
-                    return item['id']
+                    if set(source_names_in_response) == set(value_texts):
+                        logger.info(f'There was a response and it contained a source with the same names. ID: {item["id"]}')
+                        return item['id']
 
-            logger.info('No match found in any of the objects in the response.')
-            return None
-        else:
-            logger.info(f'The response was 200, but it was empty. The source name was: {value_for_request}')
-            return None
+                logger.info('No match found in any of the objects in the response.')
+                return None
+            else:
+                logger.info(f'The response was 200, but it was empty. The source name was: {value_for_request}')
+                return None
+    except Exception as e:
+        logger.error(f'An error occurred getting the ID of source {source}: {e}')
+        return None
     return None
 
 

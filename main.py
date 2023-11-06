@@ -14,38 +14,39 @@ esterm_filename = 'files/input/esterm.xml'
 # # 1. Compile JSON with expert sources. Contains
 # # - EKSPERT, PÄRING, CONSILIUM, DELEST, DGT, PARLAMENT type sources from esterm.xml
 # # - metadata from eksperdid.xlsx
-# # # # # # #
+# # # # # # # # # #
 # input_excel = 'files/input/ekspertide_lisainfo.xlsx'
 # output_json = 'files/output/sources/eksperdid.json'
 # expert_info_from_esterm = 'files/input/eksperdid_estermist.csv'
-# expert_info_for_api_calls = 'files/output/sources/expert_sources.json'
+# expert_info_for_api_calls = 'files/import/2024-11-04_SOURCES/expert_sources.json'
 #
 # expert_sources_helpers.excel_to_json(input_excel, output_json)
 # expert_sources_helpers.create_experts_sources(output_json, expert_info_from_esterm, expert_info_for_api_calls)
 
 # 2. Export sources from XML input/esterm.xml.
-# # Returns sources files/output/sources/sources.json
-#sources_without_ids_filename = 'files/output/sources/sources.json'
-#file = parse_sources.export_sources_from_xml(esterm_filename, sources_without_ids_filename)
+# # # # Returns sources files/output/sources/sources.json
+# sources_without_ids_filename = 'files/output/sources/sources.json'
+# file = parse_sources.export_sources_from_xml(esterm_filename, sources_without_ids_filename)
 
 # 3. Get ID-s of existing sources. If source doesn't exist yet, create it and get its ID.
 # Add the sources with their ID-s to file output/sources/sources_with_ids.json
 # Add ID-s of created sources to files/output/sources/ids_of_created_sources.json
 # Return file output/sources/sources_with_ids.json
-# #
-# sources_without_ids_filename = 'files/output/sources/unknown_sources.json'
-# sources_with_ids_filename = 'files/output/sources/unknown_sources_with_ids-271023.json'
-# sources_added_ids_filename = 'files/output/sources/ids_of_created_unknown_sources-test-271023.json'
-# updated_sources_file = requests_sources.assign_ids_to_all_sources(sources_without_ids_filename, sources_with_ids_filename, sources_added_ids_filename)
+# # # #
+# sources_without_ids_filename = 'files/import/2024-11-04_SOURCES/unknown_sources.json'
+# sources_with_ids_filename = 'files/import/2024-11-04_SOURCES/unknown_sources_with_ids-04112023.json'
+# sources_added_ids_filename = 'files/import/2024-11-04_SOURCES/ids_of_created_unknown_sources-04112023.json'
+# updated_sources_file = requests_sources.assign_ids_to_all_sources(
+#     sources_without_ids_filename, sources_with_ids_filename, sources_added_ids_filename)
 
-# 4. Add expert sources. No need to check if it exists, because we know they don't.
-# # Add IDs to files/output/sources/expert_sources.json
-# expert_sources_without_ids_filename = 'files/output/sources/expert_sources.json'
-# expert_sources_with_ids_filename = 'files/output/sources/expert_sources_with_ids.json'
-# ids_of_created_expert_sources_file = 'files/output/sources/ids_of_created_expert_sources.json'
+# # 4. Add expert sources. No need to check if it exists, because we know they don't.
+# # # Add IDs to files/output/sources/expert_sources.json
+# expert_sources_without_ids_filename = 'files/import/2024-11-04_SOURCES/expert_sources.json'
+# expert_sources_with_ids_filename = 'files/import/2024-11-04_SOURCES/expert_sources_with_ids.json'
+# ids_of_created_expert_sources_file = 'files/import/2024-11-04_SOURCES/ids_of_created_expert_sources.json'
 # updated_expert_sources_file = requests_sources.assign_ids_to_expert_sources(
-#     expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file)
-#
+#      expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file)
+# #
 # # # # # # 5. Map source names to their ID-s
 with open('files/import/2023-10-27_SOURCES/sources_with_ids_and_unknown_sources_with_ids-271023.json', 'r', encoding='utf-8') as f:
     updated_sources = json.load(f)
@@ -76,4 +77,7 @@ parse_concepts.transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map)
 ######################
 # Delete created sources
 
+#sources_added_ids_filename = 'files/import/2023-10-27_SOURCES/ids_of_created_expert_sources.json'
+#sources_added_ids_filename = 'files/import/2023-10-27_SOURCES/ids_of_created_unknown_sources-test-271023.json'
+#sources_added_ids_filename = 'files/import/2023-10-27_SOURCES/uus.json'
 #requests_sources.delete_created_sources(sources_added_ids_filename)

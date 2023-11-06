@@ -41,6 +41,24 @@ def match_language(lang):
 
 # Return True, if the concept is an aviation concept.
 def is_concept_aviation_related(concept):
+
+    #print(ET.tostring(concept).decode('utf-8'))
+
+    stat_kinnitatud = None
+
+    stat = concept.find(".//descrip[@type='Staatus']")
+    if stat is not None:
+        stat_kinnitatud = ET.tostring(stat).decode('utf-8')
+
+    origins = concept.findall(".//descrip[@type='Päritolu']")
+
+    if origins:
+        for o in origins:
+            if "LTB" in ET.tostring(o).decode('utf-8'):
+                # if "LTB; ESTERM" in ET.tostring(o).decode('utf-8'):
+                #     print(ET.tostring(concept).decode('utf-8'))
+                return True
+
     sub_categories_list = ['Aeronavigatsioonilised kaardid', 'Lennukõlblikkus', 'Lennuliikluse korraldamine',
                            'Lennumeteoroloogia', 'Lennunduse (rahvusvaheline) reguleerimine', 'Lennundusjulgestus',
                            'Lennundusohutus', 'Lennundusside (telekommunikatsioon)',
@@ -52,11 +70,12 @@ def is_concept_aviation_related(concept):
                            'Õhusõidukite keskkonnakõlblikkus (müra, emissioonid)',
                            'Õhusõidukite riikkondsus ja registreerimistunnused']
 
+    alamvaldkond_matches_sub_category = False
+
     # Check whether "Valdkonnaviide" contains value "TR8" (Lenoch classificator for aero transport)
     domain_references = concept.findall(".//descrip[@type='Valdkonnaviide']")
-    if any("TR8" in ET.tostring(i, encoding="unicode", method="text") for i in domain_references):
-        logger.debug("This is aviation concept, because \"Valdkonnaviide\" contains \"TR8\"")
-        return True
+    valdkonnaviide_contains_tr8 = any(
+        "TR8" in ET.tostring(i, encoding="unicode", method="text") for i in domain_references)
 
     # Check whether "Alamvaldkond_" contains value which is present in the list of aviation sub categories
     sub_categories = concept.findall(".//descrip[@type='Alamvaldkond_']")
@@ -64,18 +83,26 @@ def is_concept_aviation_related(concept):
     for s in sub_categories:
         sub_category = ET.tostring(s, encoding="unicode", method="text").strip()
         if sub_category in sub_categories_list:
-            logger.debug("This is aviation concept, because %s is a relevant sub category.", sub_category)
-            return True
-    if sub_categories:
-        logger.debug("This is not aviation concept, none of the sub categories matched")
+            alamvaldkond_matches_sub_category = True
+            break
 
-    # Check whether "Tunnus" has value "LENNUNDUS"
-    features = concept.findall(".//descrip[@type='Tunnus']")
+    if valdkonnaviide_contains_tr8 and alamvaldkond_matches_sub_category:
+        #print("valdkonnaviide_contains_tr8 and alamvaldkond_matches_sub_category")
 
-    if any("LENNUNDUS" in ET.tostring(f, encoding="unicode", method="text").strip() for f in features):
-        logger.debug("This is aviation concept, it has LENNUNDUS for \"Tunnus\"")
+        #if stat_kinnitatud == 'komisjoni kinnitatud':
+            #print(ET.tostring(concept).decode('utf-8'))
+            #print("valdkonnaviide_contains_tr8 and alamvaldkond_matches_sub_category")
         return True
-    logger.debug("This is not an aviation concept, none of the conditions matched")
+
+    # # Check whether "Tunnus" has value "LENNUNDUS"
+    # features = concept.findall(".//descrip[@type='Tunnus']")
+    #
+    # if any("LENNUNDUS" in ET.tostring(f, encoding="unicode", method="text").strip() for f in features):
+    #     logger.debug("This is aviation concept, it has LENNUNDUS for \"Tunnus\"")
+    #     print("vanasti oleks läinud aga praegu ei lähe")
+    #     print(ET.tostring(concept))
+    #     return False
+    # logger.debug("This is not an aviation concept, none of the conditions matched")
 
     return False
 
@@ -589,7 +616,7 @@ def find_source_by_name(name_to_ids_map, name):
         if name is not None:
             caller_name = inspect.currentframe().f_back.f_code.co_name
             #print(f"Called from: {caller_name}")
-            print(name)
+            #print(name)
 
         # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
         return '53385'

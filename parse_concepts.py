@@ -22,7 +22,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
 
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
         # # # # # For testing
-        # if counter % 1000 == 0:
+        # if counter % 10000 == 0:
         #    logger.info(f'counter: {counter}')
         #    break
         #
