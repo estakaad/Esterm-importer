@@ -1418,13 +1418,11 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
                 ))
 
             lexeme_notes.append(data_classes.Lexemenote(
-                value=corrected_note_value.strip('}')+'}',
+                value=corrected_note_value.strip('.').strip('}')+'}',
                 lang=detect_language(corrected_note_value),
                 publicity=True,
                 sourceLinks=source_links
             ))
-
-
 
         # Case #3/2 :: broadcasting - the process of transmitting a radio or television signal via an antenna
         # to multiple receivers which can simultaneously pick up the signal [IATE] [{MVS}27.08.2015]
@@ -1470,6 +1468,13 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
 
             if len(term_initials) > 3:
                 print(lexeme_note_raw)
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw,
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=False,
+                    sourceLinks=source_links
+                ))
+                return lexeme_notes, notes_for_concept
 
             if term_initials:
                 source_links.append(data_classes.Sourcelink(
@@ -1518,7 +1523,16 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
             note = parts[0]
             date_with_letters = parts[1]
 
+            term_initials = date_with_letters.strip('{')[:4].strip('}')
+
             date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date_with_letters).strip().replace('{}', '')
+
+            source_links.append(data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                      expert_sources_ids_map),
+                value='Terminoloog',
+                name=term_initials
+            ))
 
             lexeme_notes.append(data_classes.Lexemenote(
                 value=note + '[' + date_without_letters,
@@ -1535,6 +1549,129 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
             date_with_letters = parts[1]
 
             date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date_with_letters).strip()
+            term_initals = date_with_letters.replace(date_without_letters.strip('{}'), '')
+
+            if "&" in term_initals:
+                #print('&: ' + term_initals)
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name=term_initals[:9]
+                ))
+            elif term_initals.startswith('ATM & MVR'):
+                #print('ATM & MVR')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='ATM & MVR'
+                ))
+            elif term_initals.startswith('MKS, HTM'):
+                #print('MKS, HTM')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='MKS, HTM'
+                ))
+            elif term_initals.startswith('TKK & KMU'):
+                #print('TKK & KMU')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='TKK & KMU'
+                ))
+            elif term_initals.startswith('KNM & KMU'):
+                #print('KNM & KMU')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='KNM & KMU'
+                ))
+            elif term_initals.startswith('LKD & PSK'):
+                #print('LKD & PSK')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='LKD & PSK'
+                ))
+            elif term_initals.startswith('IPU & KMU'):
+                #print('IPU & KMU')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='IPU & KMU'
+                ))
+            elif term_initals.startswith('HTM, RJS, KMR'):
+                #print('HTM, RJS, KMR')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='HTM, RJS, KMR'
+                ))
+            elif term_initals.startswith('AJK, MKS & HTM'):
+                #print('AJK, MKS & HTM')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='AJK, MKS & HTM'
+                ))
+            elif term_initals.startswith('MKK, MKS & HTM'):
+                #print('AJK, MKS & HTM')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='MKK, MKS & HTM'
+                ))
+            elif term_initals.startswith('EVA, EEU & HTM'):
+                #print('EVA, EEU & HTM')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name='EVA, EEU & HTM'
+                ))
+            else:
+                if len(term_initals) >= 4:
+                    if term_initals[3] != ' ':
+                        #print('lexemeNote: ' + lexeme_note_raw)
+                        #print(term_initals)
+                        #print('')
+                        lexeme_notes.append(data_classes.Lexemenote(
+                            value=lexeme_note_raw,
+                            lang=detect_language(lexeme_note_raw),
+                            publicity=False,
+                            sourceLinks=source_links
+                        ))
+                        return lexeme_notes, notes_for_concept
+                    else:
+                        print('123: ' + lexeme_note_raw)
+                        print('123: ' + term_initals[:3])
+                        source_links.append(data_classes.Sourcelink(
+                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog',
+                                                                                                  'Terminoloog',
+                                                                                                  expert_sources_ids_map),
+                            value='Terminoloog',
+                            name=term_initals[:3]
+                        ))
+                else:
+                    term_initals = term_initals[:3]
+                    #print('test: ' + term_initals)
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog',
+                                                                                              'Terminoloog',
+                                                                                              expert_sources_ids_map),
+                        value='Terminoloog',
+                        name=term_initals
+                    ))
 
             lexeme_notes.append(data_classes.Lexemenote(
                 value=note + '{' + date_without_letters,
