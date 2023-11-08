@@ -359,7 +359,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
                     lexeme_note_raw = ''.join(descripGrp.itertext()).strip()
 
                     lexeme_notes, notes_for_concept_from_lexemenote = \
-                        xml_helpers.handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw)
+                        xml_helpers.handle_lexemenotes_with_brackets(name_to_id_map, expert_names_to_ids_map, lexeme_note_raw)
 
                     for note in lexeme_notes:
                         word.lexemeNotes.append(note)

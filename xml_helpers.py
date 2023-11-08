@@ -1304,10 +1304,21 @@ def separate_sourcelink_value_from_name(sourcelink):
 ## Word "Märkus" > word.lexemenotes ##
 ##########################################
 
-def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
+def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lexeme_note_raw):
     lexeme_notes = []
     notes_for_concept = []
     source_links = []
+
+    # Whole note is in {} :: {Konsulteeritud Välisministeeriumi tõlkeosakonnaga, KMU 16.11.2001}
+    if lexeme_note_raw.startswith('{'):
+        if lexeme_note_raw.endswith('}'):
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=lexeme_note_raw.strip('{}'),
+                lang=detect_language(lexeme_note_raw),
+                publicity=False,
+                sourceLinks=source_links
+            ))
+            return lexeme_notes, notes_for_concept
 
     # Case #1 :: no date :: no source ::
     # "ametnik, kellel on allkirjaõigus ja teatud kohtulahendite tegemise õigus"
@@ -1336,11 +1347,19 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
             sourcelink_value = parts[0]
             sourcelink_name = parts[1].strip()
 
-        source_links.append(data_classes.Sourcelink(
-            sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
-            value=sourcelink_value,
-            name=sourcelink_name if sourcelink_name else ''
-        ))
+        if 'EKSPERT' in sourcelink_value:
+            name = sourcelink_value.replace('EKSPERT', '').strip().strip('{}')
+            source_links.append(data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert', expert_sources_ids_map),
+                value='Ekspert',
+                name=sourcelink_name if sourcelink_name else ''
+            ))
+        else:
+            source_links.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+                value=sourcelink_value,
+                name=sourcelink_name if sourcelink_name else ''
+            ))
         lexeme_notes.append(data_classes.Lexemenote(
             value=note_value,
             lang=detect_language(note_value),
@@ -1355,27 +1374,58 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
         # Case #3/1 :: SÜNONÜÜM: T1001 tõlkes; st ühenduse asutus [VEL] {ATM 06.09.1999}.
         if '] {' in lexeme_note_raw:
             #print('Case #3/1')
-            parts = lexeme_note_raw.split('{')
+            parts = lexeme_note_raw.rsplit('] {', 1)
             note_and_sourcelink = parts[0]
             date_with_letters = parts[1]
-            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date_with_letters).strip()
 
-            note_parts = note_and_sourcelink.split('[')
+            # Extract the date without letters.
+            date_without_letters = re.sub(r'[A-Za-zöäüõÖÄÜÕ]', '', date_with_letters).strip()
+
+            # Extract the note part and the sourcelink value.
+            note_parts = note_and_sourcelink.split('[', 1)
             note = note_parts[0].strip()
-            sourcelink_value = note_parts[1].split(']')[0].strip()
+            sourcelink_value = note_parts[1].rsplit('}', 1)[0].strip()
 
-            source_links.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
-                value=sourcelink_value,
-                name=''
-            ))
+            corrected_note_value = f'{note} {{{date_without_letters}}}'
+
+            terminologist = re.search(r'{([^{}]+)}\s*$', lexeme_note_raw)
+
+            if terminologist:
+                terminologist = terminologist.group(1)
+                parts = terminologist.split()
+                term_name = parts[0] if parts else ''
+                print(term_name)
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name=term_name
+                ))
+
+            if "EKSPERT" in sourcelink_value:
+                name = sourcelink_value.replace("EKSPERT ", '')
+                name = name.strip('{}')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert',
+                                                                                          expert_sources_ids_map),
+                    value='Ekspert',
+                    name=''
+                ))
+            else:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+                    value=sourcelink_value,
+                    name=''
+                ))
 
             lexeme_notes.append(data_classes.Lexemenote(
-                value=note + ' {' + date_without_letters,
-                lang=detect_language(note),
+                value=corrected_note_value.strip('}')+'}',
+                lang=detect_language(corrected_note_value),
                 publicity=True,
                 sourceLinks=source_links
             ))
+
+
 
         # Case #3/2 :: broadcasting - the process of transmitting a radio or television signal via an antenna
         # to multiple receivers which can simultaneously pick up the signal [IATE] [{MVS}27.08.2015]
@@ -1394,11 +1444,27 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
             date = rest_of_string[second_bracket_index:].strip()
             date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date).strip().replace('{}', '')
 
-            source_links.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_id_map, source),
-                value=source,
-                name=''
-            ))
+            if 'EKSPERT' in source:
+                name = source.replace('EKSPERT', '').strip().strip('{}')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert',
+                                                                                          expert_sources_ids_map),
+                    value='Ekspert',
+                    name=''
+                ))
+            else:
+                if "MER, " in source:
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, 'MER'),
+                        value='MER',
+                        name=source.replace('MER, ', '')
+                    ))
+                else:
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, source),
+                        value=source,
+                        name=''
+                    ))
 
             lexeme_notes.append(data_classes.Lexemenote(
                 value=lexeme_note + ' ' + date_without_letters,
@@ -1427,8 +1493,6 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
             ))
         # Case #3/4 :: date :: "office" kasutatakse kõrgemate ametnike puhul {MRS 26.04.2001}
         elif lexeme_note_raw.strip('.').endswith('}'):
-            #print('Case #3/4')
-
             lexeme_note_without_dot = lexeme_note_raw.strip('.')
 
             parts = lexeme_note_without_dot.split('{')
@@ -1455,7 +1519,9 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
                        'ÕS-2018', '32012R0231', 'V00018', 'T50156', 'ICAO-9713', 'T40790', 'X30042', 'COED12',
                        'T40279', 'EKIÜS-2021', 'T30119', 'ICTG-2018', 'MAN-2004', 'X30044', '32004R0785',
                        '32010L0013', 'T1533', 'X30071', '32006L0131', '32006D0257', '32014R0405', 'ODLE-2015',
-                       'EKIÜS-2020', '52015DC0599'
+                       'EKIÜS-2020', '52015DC0599', 'T30063', 'X1060', '32008R0440', '1553', '31975L0442', 'T50143',
+                       'T61500', '32016L0798', 'X1057', 'WPG-1637', 'T2050', 'ESA 95', 'VIM-2012', 'EKN, 2710 00 51 00',
+                       'T2050', 'T2009', '32009L0003', 'WPG-1581', '32002D0657'
                        ]
         match_found = False
 
@@ -1529,6 +1595,35 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
                     publicity=True,
                     sourceLinks=source_links
                 ))
+            elif lexeme_note_raw.endswith('[3656 lk 228]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '3656'),
+                    value='3656',
+                    name='228'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [3656 lk 228]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif lexeme_note_raw.endswith('[90786; 90788]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '90786'),
+                    value='90786',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '90788'),
+                    value='90788',
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [90786; 90788]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
             elif lexeme_note_raw.endswith('[M-W; COED12]'):
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'M-W'),
@@ -1592,7 +1687,161 @@ def handle_lexemenotes_with_brackets(name_to_id_map, lexeme_note_raw):
                     publicity=True,
                     sourceLinks=source_links
                 ))
+            elif lexeme_note_raw.endswith('[MKNK; 89823]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'MKNK'),
+                    value='MKNK',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '89823'),
+                    value='89823',
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [MKNK; 89823]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif 'GG019-177' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'GG019'),
+                    value='GG019',
+                    name='177'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [GG019-177]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif 'GG019, 241' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'GG019'),
+                    value='GG019',
+                    name='241'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [GG019, 241]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif 'MAV, 432' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'MAV'),
+                    value='MAV',
+                    name='432'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [MAV, 432]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif 'MAV, 516' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'MAV'),
+                    value='MAV',
+                    name='516'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [MAV, 516]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif 'MAV, 238' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'MAV'),
+                    value='MAV',
+                    name='238'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [MAV, 238]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif 'Keelenõuvakk, 2005' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'Keelenõuvakk, 2005'),
+                    value='Keelenõuvakk, 2005',
+                    name=''
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [Keelenõuvakk, 2005]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif '1936, 201' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '1936'),
+                    value='1936',
+                    name='201'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [1936, 201]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif '2211, 143' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '2211'),
+                    value='2211',
+                    name='143'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [2211, 143]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif '9496, lk 85' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '9496'),
+                    value='9496',
+                    name='85'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [9496, lk 85]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif '7752 15' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '7752'),
+                    value='7752',
+                    name='15'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [7752 15]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif 'LS-2020/12/15 § 2-64' in lexeme_note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'LS-2020/12/15'),
+                    value='LS-2020/12/15',
+                    name='§ 2-64'
+                ))
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace(' [LS-2020/12/15 § 2-64]', ''),
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
             else:
-                print('Mis see veel on: ' + lexeme_note_raw)
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw,
+                    lang=detect_language(lexeme_note_raw),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
 
     return lexeme_notes, notes_for_concept
