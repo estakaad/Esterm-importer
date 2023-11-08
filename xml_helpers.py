@@ -1394,7 +1394,6 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
                 terminologist = terminologist.group(1)
                 parts = terminologist.split()
                 term_name = parts[0] if parts else ''
-                print(term_name)
                 source_links.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
                                                                                           expert_sources_ids_map),
@@ -1431,18 +1430,54 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
         # to multiple receivers which can simultaneously pick up the signal [IATE] [{MVS}27.08.2015]
         elif '] [' in lexeme_note_raw:
             #print('Case #3/2')
+            if lexeme_note_raw.count(']') > 2:
+                parts = lexeme_note_raw.rsplit('] [', 1)
+                lexeme_note = parts[0].strip() + ']'
+                date = '[' + parts[1]
+                source = ''
+                last_bracket_index = lexeme_note.rfind('[')
+                if last_bracket_index != -1:
+                    closing_bracket_index = lexeme_note.find(']', last_bracket_index)
+                    if closing_bracket_index != -1:
+                        source = lexeme_note[last_bracket_index + 1:closing_bracket_index].strip()
 
-            first_split = lexeme_note_raw.split(' [')
-            lexeme_note = first_split[0].strip()
-            rest_of_string = ' [' + ' ['.join(first_split[1:])
+                #print('1:' + lexeme_note_raw)
+                #print(lexeme_note)
+                #print(date)
+                #print(source)
+                lexeme_note = lexeme_note.replace('[' + source + ']', '').strip()
+            else:
+                #print('2: ' + lexeme_note_raw)
+                first_split = lexeme_note_raw.split(' [')
+                lexeme_note = first_split[0].strip()
+                rest_of_string = ' [' + ' ['.join(first_split[1:])
 
-            matches = list(re.finditer(r'\[', rest_of_string))
-            second_bracket_index = matches[1].start() if len(matches) > 1 else None
+                matches = list(re.finditer(r'\[', rest_of_string))
+                second_bracket_index = matches[1].start() if len(matches) > 1 else None
 
-            source = rest_of_string[:second_bracket_index].strip()
-            source = source.strip('[]').strip()
-            date = rest_of_string[second_bracket_index:].strip()
-            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date).strip().replace('{}', '')
+                source = rest_of_string[:second_bracket_index].strip()
+                source = source.strip('[]').strip()
+
+                date = rest_of_string[second_bracket_index:].strip()
+                #print(lexeme_note_raw)
+                #print(date)
+
+            term_initials = re.sub(r'[^a-zA-ZöäüõÖÄÜÕ]', '', date)
+            #print('term_initials: ' + term_initials)
+
+            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ\s]', '', date).strip().replace('{}', '')
+            #print('date_without_letters: ' + date_without_letters)
+
+            if len(term_initials) > 3:
+                print(lexeme_note_raw)
+
+            if term_initials:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+                                                                                          expert_sources_ids_map),
+                    value='Terminoloog',
+                    name=term_initials
+                ))
 
             if 'EKSPERT' in source:
                 name = source.replace('EKSPERT', '').strip().strip('{}')
