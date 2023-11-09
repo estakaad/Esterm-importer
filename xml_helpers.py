@@ -55,9 +55,9 @@ def is_concept_aviation_related(concept):
     if origins:
         for o in origins:
             if "LTB" in ET.tostring(o).decode('utf-8'):
-                # if "LTB; ESTERM" in ET.tostring(o).decode('utf-8'):
-                #     print(ET.tostring(concept).decode('utf-8'))
-                return True
+                if "LTB; ESTERM" in ET.tostring(o).decode('utf-8'):
+                    return 'aviation_esterm'
+                return 'aviation'
 
     sub_categories_list = ['Aeronavigatsioonilised kaardid', 'Lennukõlblikkus', 'Lennuliikluse korraldamine',
                            'Lennumeteoroloogia', 'Lennunduse (rahvusvaheline) reguleerimine', 'Lennundusjulgestus',
@@ -92,19 +92,9 @@ def is_concept_aviation_related(concept):
         #if stat_kinnitatud == 'komisjoni kinnitatud':
             #print(ET.tostring(concept).decode('utf-8'))
             #print("valdkonnaviide_contains_tr8 and alamvaldkond_matches_sub_category")
-        return True
+        return 'aviation'
 
-    # # Check whether "Tunnus" has value "LENNUNDUS"
-    # features = concept.findall(".//descrip[@type='Tunnus']")
-    #
-    # if any("LENNUNDUS" in ET.tostring(f, encoding="unicode", method="text").strip() for f in features):
-    #     logger.debug("This is aviation concept, it has LENNUNDUS for \"Tunnus\"")
-    #     print("vanasti oleks läinud aga praegu ei lähe")
-    #     print(ET.tostring(concept))
-    #     return False
-    # logger.debug("This is not an aviation concept, none of the conditions matched")
-
-    return False
+    return 'general'
 
 
 # Decide whether the concept will be added to the general list of concepts, list of aviation concepts or
@@ -114,11 +104,15 @@ def type_of_concept(conceptGrp):
         type_of_concept = 'source'
     elif conceptGrp.xpath('languageGrp/language[@type="Valdkond"]'):
         type_of_concept = 'domain'
-    elif is_concept_aviation_related(conceptGrp):
+    elif is_concept_aviation_related(conceptGrp) == 'aviation':
         type_of_concept = 'aviation'
+    elif is_concept_aviation_related(conceptGrp) == 'aviation_esterm':
+        type_of_concept = 'aviation_esterm'
     else:
         type_of_concept = 'general'
+
     logger.debug('Type of concept: %s', type_of_concept)
+
     return type_of_concept
 
 
@@ -459,125 +453,6 @@ def edit_note_without_multiple_languages(note):
     return note, value.replace(']',''), name, expert_name, expert_type
 
 
-############################################
-## "Allikaviide" > word.lexemesourcelinks ##
-############################################
-#
-# # There can be multiple lexeme source links. Split them to separate sourcelink objects.
-# def split_lexeme_sourcelinks_to_individual_sourcelinks(root, name_to_ids_map, expert_sources_map):
-#     source_links = []
-#     concept_notes = []
-#
-#     # Pre-process the root string to replace '][' or '] [' with '];['
-#     # and also replace ',' (with optional space) with ';'
-#     root = re.sub(r'\]\s*\[|,\s*', '];[', root)
-#
-#     # Now split by semicolon, as all source links are now separated by it
-#     list_of_raw_sourcelinks = root.split(';')
-#
-#     for item in list_of_raw_sourcelinks:
-#
-#         item = item.strip()
-#         handled_special_case = False
-#
-#         special_cases = ['EKSPERT', 'CONSILIUM', 'DGT', 'PÄRING', 'PARLAMENT']
-#
-#         for case in special_cases:
-#             if case in item:
-#                 stripped_item = item.replace("[", "").replace("]", "")
-#                 special_item = stripped_item.replace("{", "").replace("}", "")
-#                 if special_item.startswith('<xref'):
-#                     xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', special_item)
-#                     if xref_match:
-#
-#                         expert_name = special_item[xref_match.end():].strip(' {}').replace(case.upper() + ' ', '')
-#                         expert_type = case.upper()
-#
-#                         # print('EKSPERTIDE_INFO_FAILI: ' + case.upper() + ': ' + special_item[xref_match.end():].strip(' {}').replace(case.upper() + ' ', ''))
-#
-#                         source_link = data_classes.Sourcelink(
-#                             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_sources_map),
-#                             value=case.capitalize(),
-#                             name='')
-#                         source_links.append(source_link)
-#                         handled_special_case = True
-#                         break
-#                     else:
-#                         logger.warning(case + ' in lexeme sourcelinks, but failed to extract the value.')
-#                 else:
-#                     if special_item.replace(case + ' ', "", 1) != case:
-#                         concept_notes.append(data_classes.Note(
-#                             value=case + ': ' + special_item.replace(case + ' ', "", 1),
-#                             lang='est',
-#                             publicity=False
-#                         ))
-#                     else:
-#                         concept_notes.append(data_classes.Note(
-#                             value=case,
-#                             lang='est',
-#                             publicity=False
-#                         ))
-#
-#                     source_link = data_classes.Sourcelink(
-#                         sourceId=find_source_by_name(name_to_ids_map, case),
-#                         value=case,
-#                         name=''
-#                     )
-#                     source_links.append(source_link)
-#                     handled_special_case = True
-#                     break
-#
-#
-#         if handled_special_case:
-#             continue
-#
-#         # [<xref Tlink="Allikas:X0010K4">X0010K4</xref> 6-4] or <xref Tlink="Allikas:HOS-2015/12/37">HOS-2015/12/37</xref>
-#         elif item.startswith('<xref') or (item.startswith('[') and item.endswith(']')):
-#             if item.startswith('[') and item.endswith(']'):
-#                 item = item[1:-1]
-#
-#             xref_match = re.search(r'<xref .*?>(.*?)<\/xref>', item)
-#             if xref_match:
-#                 value = xref_match.group(1)
-#                 name = item[xref_match.end():].strip()
-#                 source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, value.strip('[]')),
-#                                                       value=value.strip('[]'),
-#                                                       name=name.strip()
-#                                                       )
-#             else:
-#                 value = item
-#                 name = item
-#                 source_link = data_classes.Sourcelink(sourceId=find_source_by_name(name_to_ids_map, value.strip('[]')),
-#                                                       value=value.strip('[]'),
-#                                                       name=name)
-#
-#                 continue
-#         else:
-#             try:
-#                 # <xref Tlink="Allikas:TER-PLUS">TER-PLUS</xref>
-#                 item_element = ET.fromstring(item)
-#                 value = item_element.text
-#                 name = item_element.tail if item_element.tail else ""
-#             except ET.ParseError:
-#                 # If it's not XML, treat it as a valid string
-#                 # ÕL
-#                 # PS-2015/05
-#                 value = item
-#                 name = ""
-#
-#             name = name.strip()
-#
-#             source_link = data_classes.Sourcelink(
-#                 sourceId=find_source_by_name(name_to_ids_map, value),
-#                 value=value.strip('[]'),
-#                 name=name.strip()
-#             )
-#
-#         source_links.append(source_link)
-#
-#     return source_links, concept_notes
-
-
 ######################################
 ## Sources ##
 ######################################
@@ -793,7 +668,7 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
             continue
 
         final_definitions.append(data_classes.Definition(
-            value=split_definition,
+            value=split_definition.strip(),
             lang=language,
             definitionTypeCode='definitsioon',
             sourceLinks=source_links_for_definition
@@ -1306,7 +1181,6 @@ def separate_sourcelink_value_from_name(sourcelink):
 
 def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lexeme_note_raw):
     lexeme_notes = []
-    notes_for_concept = []
     source_links = []
 
     # Whole note is in {} :: {Konsulteeritud Välisministeeriumi tõlkeosakonnaga, KMU 16.11.2001}
@@ -1318,7 +1192,7 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
                 publicity=False,
                 sourceLinks=source_links
             ))
-            return lexeme_notes, notes_for_concept
+            return lexeme_notes
 
     # Case #1 :: no date :: no source ::
     # "ametnik, kellel on allkirjaõigus ja teatud kohtulahendite tegemise õigus"
@@ -1330,7 +1204,7 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
             sourceLinks=source_links
         ))
         #print('Case #1')
-        return lexeme_notes, notes_for_concept
+        return lexeme_notes
 
     # Case #2 :: no date :: source ::
     # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]"
@@ -1366,7 +1240,7 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
             publicity=True,
             sourceLinks=source_links
         ))
-        return lexeme_notes, notes_for_concept
+        return lexeme_notes
 
     # Case #3 :: (source) :: date
     elif '.' in lexeme_note_raw[-7:-1] or '/' in lexeme_note_raw[-6:-1]:
@@ -1469,12 +1343,12 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
             if len(term_initials) > 3:
                 print(lexeme_note_raw)
                 lexeme_notes.append(data_classes.Lexemenote(
-                    value=lexeme_note_raw,
+                    value='KONTROLLIDA: ' + lexeme_note_raw,
                     lang=detect_language(lexeme_note_raw),
                     publicity=False,
                     sourceLinks=source_links
                 ))
-                return lexeme_notes, notes_for_concept
+                return lexeme_notes
 
             if term_initials:
                 source_links.append(data_classes.Sourcelink(
@@ -1646,15 +1520,15 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
                         #print(term_initals)
                         #print('')
                         lexeme_notes.append(data_classes.Lexemenote(
-                            value=lexeme_note_raw,
+                            value='KONTROLLIDA: ' + lexeme_note_raw,
                             lang=detect_language(lexeme_note_raw),
                             publicity=False,
                             sourceLinks=source_links
                         ))
-                        return lexeme_notes, notes_for_concept
+                        return lexeme_notes
                     else:
-                        print('123: ' + lexeme_note_raw)
-                        print('123: ' + term_initals[:3])
+                        #print('123: ' + lexeme_note_raw)
+                        #print('123: ' + term_initals[:3])
                         source_links.append(data_classes.Sourcelink(
                             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog',
                                                                                                   'Terminoloog',
@@ -2016,4 +1890,4 @@ def handle_lexemenotes_with_brackets(name_to_id_map, expert_sources_ids_map, lex
                     sourceLinks=source_links
                 ))
 
-    return lexeme_notes, notes_for_concept
+    return lexeme_notes

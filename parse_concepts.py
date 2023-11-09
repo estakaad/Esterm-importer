@@ -45,15 +45,6 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
         elif type_of_concept == 'domain':
             logger.debug('Concept is actually a domain. Skipping it.')
             continue
-        elif type_of_concept == 'aviation':
-            list_to_append = aviation_concepts
-            logger.debug('Concept will be added to the list of aviation concepts.')
-        elif type_of_concept == 'general':
-            list_to_append = concepts
-            logger.debug('Concept will be added to the general list of concepts.')
-        else:
-            list_to_append = concepts
-            logger.debug('Concept will be added to the general list of concepts.')
 
         # Get concept ID
         concept_id = conceptGrp.find('concept').text
@@ -99,60 +90,47 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
-                note_value = None
+                note_value = ''.join(descrip_element.itertext()).strip()
 
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
+                    #print(note_value)
+
                 else:
-                    note, value, name, expert_name, expert_type = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
+                    #note, value, name, expert_name, expert_type = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
+                    notes = xml_helpers.handle_lexemenotes_with_brackets(name_to_id_map, expert_names_to_ids_map, note_value)
+                    #print('')
+                    #print('concept note: ' + ''.join(descrip_element.itertext()).strip())
+                    for note in notes:
+                        #print(note.value)
+                        #print(note.sourceLinks)
 
-                if note_value:
-                    concept.notes.append(data_classes.Note(
-                        value=note_value,
-                        lang='est',
-                        publicity=True
-                    ))
-                else:
-                    if value:
-                        value = value.strip('[]')
-                        source_links = []
+                        if note.sourceLinks:
+                            if note.sourceLinks[0].value == 'Terminoloog':
+                                if not re.search(r'[^A-ZÖÄÜÕ &]', note.sourceLinks[0].name):
+                                    print('Juhtum 1')
+                                    print(note_value)
+                                    print(note.value)
+                                    print(note.sourceLinks)
+                                    concept.notes.append(data_classes.Note(
+                                        value=note.value,
+                                        lang=note.lang,
+                                        publicity=note.publicity,
+                                        sourceLinks=note.sourceLinks
+                                    ))
+                                else:
+                                    print('Juhtum 2')
+                                    print(note_value)
+                                    print(note.value)
+                                    print(note.sourceLinks)
+                                    concept.notes.append(data_classes.Note(
+                                        value='KONTROLLIDA: ' + note_value,
+                                        lang=note.lang,
+                                        publicity=False,
+                                        sourceLinks=None
+                                    ))
 
-                        source_links.append(
-                            data_classes.Sourcelink(
-                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, value),
-                                value=value,
-                                name=name
-                            )
-                        )
-                        concept.notes.append(data_classes.Note(
-                            value=note,
-                            lang='est',
-                            publicity=True,
-                            sourceLinks=source_links
-                        ))
-                    elif expert_name:
-                        source_links.append(
-                            data_classes.Sourcelink(
-                                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
-                                value=expert_type,
-                                name=''
-                            )
-                        )
-                        concept.notes.append(data_classes.Note(
-                            value=note,
-                            lang='est',
-                            publicity=True,
-                            sourceLinks=source_links
-                        ))
-                    else:
-                        concept.notes.append(data_classes.Note(
-                            value=note,
-                            lang='est',
-                            publicity=True
-                        ))
-
-
-                logger.debug('Added concept note: %s', descrip_element_value)
+                #logger.debug('Added concept note: %s', descrip_element_value)
 
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
@@ -196,7 +174,47 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
         for note in concept_notes:
             concept.notes.append(note)
 
-        list_to_append.append(concept)
+        concept.notes = [note for note in concept.notes if isinstance(note, data_classes.Note) and note.value.strip()]
+
+        # Concept should be ready by now!
+
+        for definition in concept.definitions:
+            if definition.value.startswith('{'):
+                definition.value = re.sub(r'^{[^}]*}', '', definition.value)
+
+        for note in concept.notes:
+            if note.value.startswith('{'):
+                print(note.value)
+                note.value = re.sub(r'^{[^}]*}', '', note.value)
+                print(note.value)
+
+        if type_of_concept == 'aviation':
+
+            aviation_concepts.append(concept)
+            logger.debug('Concept will be added to the list of aviation concepts.')
+
+        elif type_of_concept == 'aviation_esterm':
+            concept.notes.append(data_classes.Note(
+                    value='Päritolu: LTB; ESTERM',
+                    lang='est',
+                    publicity=False,
+                    sourceLinks=None
+                )
+            )
+            aviation_concepts.append(concept)
+
+            for word in concept.words:
+                word.lexemePublicity = False
+            concepts.append(concept)
+
+            logger.debug('Concept will be added to the list of aviation concepts and list of general concepts.')
+        elif type_of_concept == 'general':
+            concepts.append(concept)
+            logger.debug('Concept will be added to the general list of concepts.')
+        else:
+            concepts.append(concept)
+            logger.debug('Concept will be added to the general list of concepts.')
+
         logger.info('Finished parsing concept.')
 
     return concepts, aviation_concepts
@@ -358,14 +376,14 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
                 if descrip_type == 'Märkus':
                     lexeme_note_raw = ''.join(descripGrp.itertext()).strip()
 
-                    lexeme_notes, notes_for_concept_from_lexemenote = \
+                    lexeme_notes = \
                         xml_helpers.handle_lexemenotes_with_brackets(name_to_id_map, expert_names_to_ids_map, lexeme_note_raw)
 
                     for note in lexeme_notes:
+                        # if note.sourceLinks:
+                        #     if note.sourceLinks[0].value == 'Terminoloog':
+                        #         print(note.sourceLinks[0].name)
                         word.lexemeNotes.append(note)
-
-                    for note in notes_for_concept_from_lexemenote:
-                        notes_for_concept.append(note)
 
             words.append(word)
 
