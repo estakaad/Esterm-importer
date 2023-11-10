@@ -1186,6 +1186,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
     concept_notes = []
     source_links = []
 
+
     # Case #0 :: Whole note is in {} :: {Konsulteeritud Välisministeeriumi tõlkeosakonnaga, KMU 16.11.2001} - ok
     if note_raw.startswith('{'):
         print('Case #0: ' + note_raw)
@@ -1231,7 +1232,6 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
             print('error 2')
 
         return lexeme_notes, concept_notes
-
 
     # Case #2 :: no date :: source ::
     # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]"
@@ -1381,7 +1381,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
             if len(term_initials) > 3:
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
-                        value='KONTROLLIDA: ' + note_raw,
+                        value='KONTROLLIDA 1: ' + note_raw,
                         lang=detect_language(note_raw),
                         publicity=False,
                         sourceLinks=source_links
@@ -1389,7 +1389,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
                     return lexeme_notes, concept_notes
                 elif type == 'concept':
                     concept_notes.append(data_classes.Note(
-                        value='KONTROLLIDA: ' + note_raw,
+                        value='KONTROLLIDA 2: ' + note_raw,
                         lang=detect_language(note_raw),
                         publicity=False,
                         sourceLinks=source_links

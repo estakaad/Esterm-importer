@@ -96,46 +96,75 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                     print('Multiple languages in concept note')
                     print(note_value)
-                    concept.notes.append(
-                        data_classes.Note(
-                            value=note_value,
-                            lang='est',
-                            publicity=True,
-                            sourceLinks=None
+                    if note_value.endswith('}'):
+                        print('Multilang {}: ')
+
+                        last_opening_brace = note_value.rfind('{')
+                        if last_opening_brace != -1:
+                            end_brace_pos = note_value.find('}', last_opening_brace)
+                            if end_brace_pos != -1:
+                                initials = note_value[last_opening_brace + 1:end_brace_pos][:3]
+                                print("Initials:", initials)
+
+                        source = data_classes.Sourcelink(
+                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(
+                                'Terminoloog', 'Terminoloog', expert_names_to_ids_map
+                            ),
+                            value='Terminoloog',
+                            name=initials
                         )
-                    )
-
-
+                        concept.notes.append(
+                            data_classes.Note(
+                                value=note_value.replace('{' + initials + ' ', '{'),
+                                lang='est',
+                                publicity=True,
+                                sourceLinks=[source]
+                            )
+                        )
+                    else:
+                        concept.notes.append(
+                            data_classes.Note(
+                                value=note_value,
+                                lang='est',
+                                publicity=True,
+                                sourceLinks=None
+                            )
+                        )
                 else:
-                    #note, value, name, expert_name, expert_type = xml_helpers.edit_note_without_multiple_languages(raw_note_value)
-                    lexeme_notes_with_sourcelinks = None
+                    if any(char in note_value[:-50] for char in '[]{}'):
 
-                    lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = xml_helpers.handle_notes_with_brackets('concept', name_to_id_map, expert_names_to_ids_map, note_value)
+                        print("Check this out:", note_value)
+                        concept.notes.append(data_classes.Note(
+                            value='KONTROLLIDA: ' + note_value,
+                            lang='est',
+                            publicity=False,
+                            sourceLinks=None
+                        ))
+                    else:
+                        print("This string passes the test:", note_value)
+                        lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
+                            xml_helpers.handle_notes_with_brackets('concept', name_to_id_map, expert_names_to_ids_map, note_value)
 
-                    for note in concept_notes_with_sourcelinks:
-                        # Check if there are sourceLinks
-                        if note.sourceLinks:
-                            # Check the first sourceLink
-                            first_source_link = note.sourceLinks[0]
+                        for note in concept_notes_with_sourcelinks:
+                            note_modified = False
 
-                            # Check if the sourceLink is 'Terminoloog' and its name contains disallowed characters
-                            if first_source_link.value == 'Terminoloog' and re.search(r'[^A-ZÖÄÜÕ &]',
-                                                                                      first_source_link.name):
-                                # Append the note with modifications
-                                concept.notes.append(data_classes.Note(
-                                    value='KONTROLLIDA: ' + note.value,
-                                    lang=note.lang,
-                                    publicity=False,  # Making it not public
-                                    sourceLinks=None
-                                ))
-                            else:
-                                # Append the note as it is
+                            if note.sourceLinks:
+                                first_source_link = note.sourceLinks[0]
+                                if first_source_link.value == 'Terminoloog' and re.search(r'[^A-ZÖÄÜÕ &]',
+                                                                                          first_source_link.name):
+
+                                    concept.notes.append(data_classes.Note(
+                                        value='KONTROLLIDA: ' + note.value,
+                                        lang=note.lang,
+                                        publicity=False,
+                                        sourceLinks=None
+                                    ))
+                                    note_modified = True
+
+                            if not note_modified:
                                 concept.notes.append(note)
-                        else:
-                            # If there are no sourceLinks, append the note as it is
-                            concept.notes.append(note)
 
-                #logger.debug('Added concept note: %s', descrip_element_value)
+                logger.debug('Added concept note: %s', descrip_element_value)
 
             # Get concept tööleht and add its value to concept forum list.
             elif descrip_element.get('type') == 'Tööleht':
