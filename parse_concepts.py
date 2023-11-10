@@ -94,17 +94,12 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
 
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
-                    print('Multiple languages in concept note')
-                    print(note_value)
                     if note_value.endswith('}'):
-                        print('Multilang {}: ')
-
                         last_opening_brace = note_value.rfind('{')
                         if last_opening_brace != -1:
                             end_brace_pos = note_value.find('}', last_opening_brace)
                             if end_brace_pos != -1:
                                 initials = note_value[last_opening_brace + 1:end_brace_pos][:3]
-                                print("Initials:", initials)
 
                         source = data_classes.Sourcelink(
                             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(
