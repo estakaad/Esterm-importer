@@ -92,8 +92,10 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
                 note_value = ''.join(descrip_element.itertext()).strip()
 
+                # Does note contain multiple languages?
                 if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
+                    # Does note end with terminologist initials and date in curly braces?
                     if note_value.endswith('}'):
                         last_opening_brace = note_value.rfind('{')
                         if last_opening_brace != -1:
@@ -125,38 +127,35 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
                                 sourceLinks=None
                             )
                         )
+                # In case note does not contain multiple languages...
                 else:
-                    if any(char in note_value[:-50] for char in '[]{}'):
-
-                        print("Check this out:", note_value)
+                    # Look for notes which are difficult to parse. They have [] and/or {} in other places
+                    # than in the end of the string
+                    # Unless they begin and end with {}. Then Make the whole note not public.
+                    if note_value.startswith('{') and note_value.endswith('}'):
                         concept.notes.append(data_classes.Note(
-                            value='KONTROLLIDA: ' + note_value,
+                            value=note_value.strip('{}'),
                             lang='est',
                             publicity=False,
                             sourceLinks=None
                         ))
+
                     else:
-                        print("This string passes the test:", note_value)
-                        lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
-                            xml_helpers.handle_notes_with_brackets('concept', name_to_id_map, expert_names_to_ids_map, note_value)
+                        # Perform the check for brackets/braces in the middle of the string
+                        if any(char in note_value[:-50] for char in '[]{}'):
+                            concept.notes.append(data_classes.Note(
+                                value='KONTROLLIDA: ' + note_value,
+                                lang='est',
+                                publicity=False,
+                                sourceLinks=None
+                            ))
+                        else:
+                            # Now we've got to the proper notes which we should be able to parse
+                            lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
+                                xml_helpers.handle_notes_with_brackets('concept', name_to_id_map,
+                                                                       expert_names_to_ids_map, note_value)
 
-                        for note in concept_notes_with_sourcelinks:
-                            note_modified = False
-
-                            if note.sourceLinks:
-                                first_source_link = note.sourceLinks[0]
-                                if first_source_link.value == 'Terminoloog' and re.search(r'[^A-ZÖÄÜÕ &]',
-                                                                                          first_source_link.name):
-
-                                    concept.notes.append(data_classes.Note(
-                                        value='KONTROLLIDA: ' + note.value,
-                                        lang=note.lang,
-                                        publicity=False,
-                                        sourceLinks=None
-                                    ))
-                                    note_modified = True
-
-                            if not note_modified:
+                            for note in concept_notes_with_sourcelinks:
                                 concept.notes.append(note)
 
                 logger.debug('Added concept note: %s', descrip_element_value)
@@ -293,7 +292,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
                 lang='est',
                 lexemePublicity=is_public)
 
-            # Get word (term) language and assign as attribute langf
+            # Get word (term) language and assign as attribute lang
             lang_term = languageGrp.xpath('language')[0].get('lang')
             word.lang = xml_helpers.match_language(lang_term)
             word.value = termGrp.xpath('term')[0].text
@@ -407,14 +406,28 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
                 if descrip_type == 'Märkus':
                     lexeme_note_raw = ''.join(descripGrp.itertext()).strip()
 
-                    lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
-                        xml_helpers.handle_notes_with_brackets('word', name_to_id_map, expert_names_to_ids_map, lexeme_note_raw)
+                    if lexeme_note_raw.startswith('{') and lexeme_note_raw.endswith('}'):
+                        lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
+                            xml_helpers.handle_notes_with_brackets('word', name_to_id_map, expert_names_to_ids_map,
+                                                                   lexeme_note_raw)
 
-                    for note in lexeme_notes_with_sourcelinks:
-                        # if note.sourceLinks:
-                        #     if note.sourceLinks[0].value == 'Terminoloog':
-                        #         print(note.sourceLinks[0].name)
-                        word.lexemeNotes.append(note)
+                        for note in lexeme_notes_with_sourcelinks:
+                            word.lexemeNotes.append(note)
+
+                    else:
+                        if any(char in lexeme_note_raw[:-50] for char in '[]{}'):
+                            word.lexemeNotes.append(data_classes.Lexemenote(
+                                value='KONTROLLIDA: ' + lexeme_note_raw,
+                                lang='est',
+                                publicity=False,
+                                sourceLinks=None
+                            ))
+                        else:
+                            lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
+                                xml_helpers.handle_notes_with_brackets('word', name_to_id_map, expert_names_to_ids_map, lexeme_note_raw)
+
+                            for note in lexeme_notes_with_sourcelinks:
+                                word.lexemeNotes.append(note)
 
             words.append(word)
 

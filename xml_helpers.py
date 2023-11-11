@@ -262,9 +262,6 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                     value='Päring',
                                     name=''))
 
-        #if source_info:
-            #print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'PÄRING: ' + source_info.replace('PÄRING', '').strip('{} '))
-
     if 'DGT' in source_value:
         expert_source_found = True
         expert_name = source_info.replace('DGT', '').strip().strip('{}')
@@ -274,9 +271,6 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
             data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
                                     value='DGT',
                                     name=''))
-
-        #if source_info:
-            #print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'DGT: ' + source_info.replace('DGT', '').strip().strip('{}'))
 
     if 'PARLAMENT' in source_value:
         expert_source_found = True
@@ -288,9 +282,6 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                     value='Parlament',
                                     name=''))
 
-        # if source_info:
-        #     print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'PARLAMENT: ' + source_info.replace('PARLAMENT', '').strip(' {}'))
-
     if 'CONSILIUM' in source_value:
         expert_source_found = True
         expert_name = source_info.replace('CONSILIUM', '').strip(' {}')
@@ -300,9 +291,6 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                     value='Consilium',
                                     name=''))
 
-        # if source_info:
-        #     print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'CONSILIUM: ' + source_info.replace('CONSILIUM', '').strip(' {}'))
-
     if 'EKSPERT' in source_value:
         expert_source_found = True
         expert_name = source_info.replace('EKSPERT', '').strip(' {}')
@@ -311,11 +299,6 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
             data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
                                     value='Ekspert',
                                     name=''))
-
-        # if source_info:
-        #     print('EKSPERTIDE_INFO_FAILI extract_usage_and_its_sourcelink: ' + 'EKSPERT: ' + source_info.replace('EKSPERT', '').strip(' {}'))
-        #     if source_info == 'MA-EKSPERT':
-        #         print(source_info)
 
     else:
         if source_value and not expert_source_found:
@@ -386,71 +369,6 @@ def edit_note_with_multiple_languages(note):
         note = re.sub(pattern2, replace2, note)
 
     return note
-
-
-def edit_note_without_multiple_languages(note):
-
-    value = ''
-    name=''
-    expert_name = None
-    expert_type = None
-
-    # Extract date
-    date_pattern = r'[\{\[]\{*\w+\}*\s*\d+[\.\\]\d+[\.\\]\d+[\}\]]$'
-    date_match = re.search(date_pattern, note)
-
-    note_without_date = note
-
-    if date_match:
-        original_date = date_match.group()
-        date = ''.join([char for char in original_date if not char.isalpha() and char != ' '])
-        date = date.replace('{}', '')
-    else:
-        original_date = None
-        date = None
-
-    # Remove date from note
-    if original_date:
-        note_without_date = note_without_date.replace(original_date, '').strip()
-
-    # Extract source
-    source_pattern = r'\[.*\]$'
-    source_match = re.search(source_pattern, note_without_date)
-
-    if source_match:
-        source = source_match.group()
-        if 'xref' in source:
-            xref_pattern = r'<xref Tlink=".*?">(.*?)</xref>'
-            xref_match = re.search(xref_pattern, source)
-
-            # Variable to store the text inside <xref>...</xref>
-            inside_xref = None
-
-            if xref_match:
-                inside_xref = xref_match.group(1)
-
-            # Extracting the remaining text after </xref>
-            remaining_text = source.split('</xref>')[-1].strip()
-
-            if inside_xref == 'EKSPERT':
-
-                expert_name = remaining_text.strip('[]{} ')
-                expert_type = 'Ekspert'
-                # print('EKSPERTIDE_INFO_FAILI: ' + 'EKSPERT: ' + remaining_text.strip('[]{} '))
-
-            else:
-                value = inside_xref
-                name = remaining_text.replace(']','')
-
-            last_instance_index = note_without_date.rfind(source)
-
-            if last_instance_index != -1:
-                note_without_date = note_without_date[:last_instance_index] + note_without_date[
-                                                                              last_instance_index + len(source):]
-
-    note = note_without_date + ((' ' + date) if date else '')
-
-    return note, value.replace(']',''), name, expert_name, expert_type
 
 
 ######################################
@@ -1186,7 +1104,6 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
     concept_notes = []
     source_links = []
 
-
     # Case #0 :: Whole note is in {} :: {Konsulteeritud Välisministeeriumi tõlkeosakonnaga, KMU 16.11.2001} - ok
     if note_raw.startswith('{'):
         print('Case #0: ' + note_raw)
@@ -1194,7 +1111,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
             if type == 'word':
                 lexeme_notes.append(data_classes.Lexemenote(
                     value=note_raw.strip('{}'),
-                    lang=detect_language(note_raw),
+                    lang='est',
                     publicity=False,
                     sourceLinks=source_links
                 ))
@@ -1209,7 +1126,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
                 print('error 1')
 
     # Case #1 :: no date :: no source ::
-    # "ametnik, kellel on allkirjaõigus ja teatud kohtulahendite tegemise õigus"
+    # "ametnik, kellel on allkirjaõigus ja teatud kohtulahendite tegemise õigus" - ok
     elif not any(char in note_raw for char in "{}[]"):
         print('Case #1: ' + note_raw)
         if type == 'word':
@@ -1234,9 +1151,30 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
         return lexeme_notes, concept_notes
 
     # Case #2 :: no date :: source ::
-    # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]"
+    # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]" - ok
     elif not note_raw.strip('.')[-3:-1].isdigit():
         print('Case #2: ' + note_raw)
+        # In case there are more than one [ in note, leave it be
+        if note_raw.count('[') > 1:
+            if type == 'word':
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value='KONTROLLIDA: ' + note_raw,
+                    lang=detect_language(note_raw),
+                    publicity=False,
+                    sourceLinks=source_links
+                ))
+            elif type == 'concept':
+                concept_notes.append(data_classes.Note(
+                    value='KONTROLLIDA: ' + note_raw,
+                    lang=detect_language(note_raw),
+                    publicity=False,
+                    sourceLinks=source_links
+                ))
+            else:
+                print('error 3')
+
+            return lexeme_notes, concept_notes
+
         parts = note_raw.split('[')
         note_value = parts[0].strip()
 
@@ -1378,26 +1316,26 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
 
             date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ\s]', '', date).strip().replace('{}', '')
 
-            if len(term_initials) > 3:
-                if type == 'word':
-                    lexeme_notes.append(data_classes.Lexemenote(
-                        value='KONTROLLIDA 1: ' + note_raw,
-                        lang=detect_language(note_raw),
-                        publicity=False,
-                        sourceLinks=source_links
-                    ))
-                    return lexeme_notes, concept_notes
-                elif type == 'concept':
-                    concept_notes.append(data_classes.Note(
-                        value='KONTROLLIDA 2: ' + note_raw,
-                        lang=detect_language(note_raw),
-                        publicity=False,
-                        sourceLinks=source_links
-                    ))
-                    return lexeme_notes, concept_notes
-
-                else:
-                    print('error 5')
+            # if len(term_initials) > 3:
+            #     if type == 'word':
+            #         lexeme_notes.append(data_classes.Lexemenote(
+            #             value='KONTROLLIDA 1: ' + note_raw,
+            #             lang=detect_language(note_raw),
+            #             publicity=False,
+            #             sourceLinks=source_links
+            #         ))
+            #         return lexeme_notes, concept_notes
+            #     elif type == 'concept':
+            #         concept_notes.append(data_classes.Note(
+            #             value='KONTROLLIDA 2: ' + note_raw,
+            #             lang=detect_language(note_raw),
+            #             publicity=False,
+            #             sourceLinks=source_links
+            #         ))
+            #         return lexeme_notes, concept_notes
+            #
+            #     else:
+            #         print('error 5')
 
             if term_initials:
                 source_links.append(data_classes.Sourcelink(
@@ -1578,15 +1516,19 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
                 if len(term_initals) >= 4:
                     if term_initals[3] != ' ':
                         if type == 'word':
+                            print(note_raw)
+                            print(term_initals)
                             lexeme_notes.append(data_classes.Lexemenote(
-                                value='KONTROLLIDA: ' + note_raw,
+                                value='KONTROLLIDA 1: ' + note_raw,
                                 lang=detect_language(note_raw),
                                 publicity=False,
                                 sourceLinks=source_links
                             ))
                         elif type == 'concept':
+                            print(note_raw)
+                            print(term_initals)
                             concept_notes.append(data_classes.Note(
-                                value='KONTROLLIDA: ' + note_raw,
+                                value='KONTROLLIDA 2: ' + note_raw,
                                 lang=detect_language(note_raw),
                                 publicity=False,
                                 sourceLinks=source_links
