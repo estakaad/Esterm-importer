@@ -1199,6 +1199,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
                 value=sourcelink_value,
                 name=sourcelink_name if sourcelink_name else ''
             ))
+
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
                 value=note_value,
@@ -1247,7 +1248,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
                                                                                           expert_sources_ids_map),
                     value='Terminoloog',
-                    name=term_name
+                    name=term_name.strip()
                 ))
 
             if "EKSPERT" in sourcelink_value:
@@ -1315,27 +1316,6 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
             term_initials = re.sub(r'[^a-zA-ZöäüõÖÄÜÕ]', '', date)
 
             date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ\s]', '', date).strip().replace('{}', '')
-
-            # if len(term_initials) > 3:
-            #     if type == 'word':
-            #         lexeme_notes.append(data_classes.Lexemenote(
-            #             value='KONTROLLIDA 1: ' + note_raw,
-            #             lang=detect_language(note_raw),
-            #             publicity=False,
-            #             sourceLinks=source_links
-            #         ))
-            #         return lexeme_notes, concept_notes
-            #     elif type == 'concept':
-            #         concept_notes.append(data_classes.Note(
-            #             value='KONTROLLIDA 2: ' + note_raw,
-            #             lang=detect_language(note_raw),
-            #             publicity=False,
-            #             sourceLinks=source_links
-            #         ))
-            #         return lexeme_notes, concept_notes
-            #
-            #     else:
-            #         print('error 5')
 
             if term_initials:
                 source_links.append(data_classes.Sourcelink(
@@ -1432,10 +1412,11 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
             note = parts[0]
             date_with_letters = parts[1]
 
-            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date_with_letters).strip()
+            date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ\s\&]', '', date_with_letters).strip()
             term_initals = date_with_letters.replace(date_without_letters.strip('{}'), '')
 
             if "&" in term_initals:
+                print(term_initals)
                 source_links.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
                                                                                           expert_sources_ids_map),
