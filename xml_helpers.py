@@ -638,6 +638,7 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
                             name=name.replace('BRIONLINE, ', '')
                         ))
                     elif name.startswith('ESR, '):
+                        print('esr: ' + name)
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'ESR'),
                             value='ESR',
@@ -649,16 +650,28 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
                             value='PDE',
                             name=name.replace('PDE, ', '')
                         ))
-                    elif name.startswith('A Dictionary of Business and Management'):
+                    elif value == 'A' and name == 'Dictionary':
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'A Dictionary of Business and Management'),
                             value='A Dictionary of Business and Management',
                             name=''
                         ))
-                    elif name.startswith('New Oxford American Dictionary'):
+                    elif value == 'New' and name == 'Oxford':
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'New Oxford American Dictionary'),
                             value='New Oxford American Dictionary',
+                            name=''
+                        ))
+                    elif value == 'The' and name == 'Canadian':
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'The Canadian Oxford Dictionary'),
+                            value='The Canadian Oxford Dictionary',
+                            name=''
+                        ))
+                    elif value == 'American' and name == 'Heritage®':
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'American Heritage® Dictionary of the English Language'),
+                            value='American Heritage® Dictionary of the English Language',
                             name=''
                         ))
                     elif name.startswith('VÕS, '):
@@ -1337,7 +1350,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
 
 
     # Case #2 :: no date :: source ::
-    # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]" - ok
+    # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]" -
     elif not note_raw.strip('.')[-3:-1].isdigit():
         print('Case #2: ' + note_raw)
         # In case there are more than one [ in note, leave it be
@@ -1372,7 +1385,27 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
             sourcelink_value = parts[0]
             sourcelink_name = parts[1].strip()
 
-        if 'EKSPERT' in sourcelink_value:
+        if ';' in sourcelink_value:
+            print('mitu allikat: ' + note_raw)
+            sources = sourcelink_value.split(';')
+            print(sources)
+            for source in sources:
+                if 'EKSPERT' in source.strip():
+                    name = source.replace('EKSPERT ', '').strip()
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert',
+                                                                                              expert_sources_ids_map),
+                        value='Ekspert',
+                        name=''
+                    ))
+                else:
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, source.strip()),
+                        value=source.strip(),
+                        name=''
+                    ))
+
+        elif 'EKSPERT' in sourcelink_value:
             print('note+ekspert: ' + note_raw)
             name = sourcelink_value.replace('EKSPERT', '').strip().strip('{}')
             source_links.append(data_classes.Sourcelink(
