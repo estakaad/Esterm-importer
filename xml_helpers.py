@@ -568,6 +568,7 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
 
                     value, name, notes_from_source, expert_name, expert_type = separate_sourcelink_value_from_name(link.strip())
                     notes.append(notes_from_source)
+
                     if expert_type:
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name,
@@ -575,6 +576,132 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
                                                                                                   expert_names_to_ids_map),
                             value=expert_type,
                             name=''
+                        ))
+                    elif name.startswith('TKP, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'TKP'),
+                            value='TKP',
+                            name=name.replace('TKP, ', '')
+                        ))
+                    elif name.startswith('WBS, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'WBS'),
+                            value='WBS',
+                            name=name.replace('WBS, ', '')
+                        ))
+                    elif name.startswith('ARV, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'ARV'),
+                            value='ARV',
+                            name=name.replace('ARV, ', '')
+                        ))
+                    elif name.startswith('T0057 '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'T0057 '),
+                            value='T0057 ',
+                            name=name.replace('T0057 ', '')
+                        ))
+                    elif name.startswith('VSL, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'VSL'),
+                            value='VSL',
+                            name=name.replace('VSL, ', '')
+                        ))
+                    elif name.startswith('CDB, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'CDB'),
+                            value='CDB',
+                            name=name.replace('CDB, ', '')
+                        ))
+                    elif name.startswith('TTD, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'TTD'),
+                            value='TTD',
+                            name=name.replace('TTD, ', '')
+                        ))
+                    elif name.startswith('SIL, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'SIL'),
+                            value='SIL',
+                            name=name.replace('SIL, ', '')
+                        ))
+                    elif name.startswith('TER, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'TER'),
+                            value='TER',
+                            name=name.replace('TER, ', '')
+                        ))
+                    elif name.startswith('BRIONLINE, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'BRIONLINE'),
+                            value='BRIONLINE',
+                            name=name.replace('BRIONLINE, ', '')
+                        ))
+                    elif name.startswith('ESR, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'ESR'),
+                            value='ESR',
+                            name=name.replace('ESR, ', '')
+                        ))
+                    elif name.startswith('PDE, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'PDE'),
+                            value='PDE',
+                            name=name.replace('PDE, ', '')
+                        ))
+                    elif name.startswith('A Dictionary of Business and Management'):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'A Dictionary of Business and Management'),
+                            value='A Dictionary of Business and Management',
+                            name=''
+                        ))
+                    elif name.startswith('New Oxford American Dictionary'):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'New Oxford American Dictionary'),
+                            value='New Oxford American Dictionary',
+                            name=''
+                        ))
+                    elif name.startswith('VÕS, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'VÕS'),
+                            value='VÕS',
+                            name=name.replace('VÕS, ', '')
+                        ))
+                    elif name.startswith('AKS, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'AKS'),
+                            value='AKS',
+                            name=name.replace('AKS, ', '')
+                        ))
+                    elif name.startswith('ODC, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'ODC'),
+                            value='ODC',
+                            name=name.replace('ODC, ', '')
+                        ))
+                    elif name.startswith('ÕS, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'ÕS'),
+                            value='ÕS',
+                            name=name.replace('ÕS, ', '')
+                        ))
+                    elif name.startswith('BRI, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'BRI'),
+                            value='BRI',
+                            name=name.replace('BRI, ', '')
+                        ))
+                    elif name.startswith('OMD, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'OMD'),
+                            value='OMD',
+                            name=name.replace('OMD, ', '')
+                        ))
+                    elif name.startswith('MED, '):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, 'MED'),
+                            value='MED',
+                            name=name.replace('MED, ', '')
                         ))
                     else:
                         source_links_for_definition.append(data_classes.Sourcelink(
@@ -706,6 +833,18 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('EVS: EN '):
         value = sourcelink
         name = ''
+    elif sourcelink.startswith('EKN, '):
+        value = 'EKN'
+        name = sourcelink.replace('EKN, ', '')
+    elif sourcelink.startswith('TSR, '):
+        value = 'TSR'
+        name = sourcelink.replace('TSR, ', '')
+    elif sourcelink.startswith('TEK, '):
+        value = 'TEK'
+        name = sourcelink.replace('TEK, ', '')
+    elif sourcelink.startswith('32002R2320 '):
+        value = '32002R2320'
+        name = sourcelink.replace('32002R2320 ', '')
     elif sourcelink == 'PEL T 2-2013':
         value = sourcelink
         name = ''
@@ -1150,6 +1289,53 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
 
         return lexeme_notes, concept_notes
 
+    elif "[ICAO" in note_raw and note_raw.endswith("]"):
+        start_index = note_raw.rfind("[")
+        # Check if "ICAO" is in the substring starting from the last '['
+        if start_index != -1 and "ICAO" in note_raw[start_index:]:
+            # Extract the value inside the brackets
+            sourcelink_value = note_raw[start_index + 1:-1]
+            source_links.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+                value=sourcelink_value,
+                name=''
+            ))
+
+            if type == 'word':
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=note_raw.replace('[' + sourcelink_value + ']', ''),
+                    lang=detect_language(note_raw.replace('[' + sourcelink_value + ']', '')),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif type == 'concept':
+                concept_notes.append(data_classes.Note(
+                    value=note_raw.replace('[' + sourcelink_value + ']', ''),
+                    lang=detect_language(note_raw.replace('[' + sourcelink_value + ']', '')),
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            else:
+                print('error icao')
+        else:
+            if type == 'word':
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value='KONTROLLIDA: ' + note_raw,
+                    lang=detect_language(note_raw),
+                    publicity=False,
+                    sourceLinks=source_links
+                ))
+            elif type == 'concept':
+                concept_notes.append(data_classes.Note(
+                    value='KONTROLLIDA: ' + note_raw,
+                    lang=detect_language(note_raw),
+                    publicity=False,
+                    sourceLinks=source_links
+                ))
+            else:
+                print('error x')
+
+
     # Case #2 :: no date :: source ::
     # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]" - ok
     elif not note_raw.strip('.')[-3:-1].isdigit():
@@ -1187,6 +1373,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
             sourcelink_name = parts[1].strip()
 
         if 'EKSPERT' in sourcelink_value:
+            print('note+ekspert: ' + note_raw)
             name = sourcelink_value.replace('EKSPERT', '').strip().strip('{}')
             source_links.append(data_classes.Sourcelink(
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert', expert_sources_ids_map),
@@ -1221,7 +1408,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
     elif '.' in note_raw[-7:-1] or '/' in note_raw[-6:-1]:
         print('Case #3: ' + note_raw)
 
-        # Case #3/1 :: SÜNONÜÜM: T1001 tõlkes; st ühenduse asutus [VEL] {ATM 06.09.1999}.
+        # Case #3/1 :: SÜNONÜÜM: T1001 tõlkes; st ühenduse asutus [VEL] {ATM 06.09.1999}. - ok
         if '] {' in note_raw:
             print('Case #3/1: ' + note_raw)
             parts = note_raw.rsplit('] {', 1)
@@ -1285,7 +1472,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
                 print('error 4')
 
         # Case #3/2 :: broadcasting - the process of transmitting a radio or television signal via an antenna
-        # to multiple receivers which can simultaneously pick up the signal [IATE] [{MVS}27.08.2015]
+        # to multiple receivers which can simultaneously pick up the signal [IATE] [{MVS}27.08.2015] - ok
         elif '] [' in note_raw:
             print('Case #3/2: ' + note_raw)
             if note_raw.count(']') > 2:
@@ -1381,7 +1568,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, not
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
                                                                                       expert_sources_ids_map),
                 value='Terminoloog',
-                name=term_initials
+                name=term_initials.strip()
             ))
 
             if type == 'word':
