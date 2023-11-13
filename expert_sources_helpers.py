@@ -91,3 +91,17 @@ def get_expert_source_id_by_name_and_type(name, type, type_desc_to_ids):
         if source_type == type and (source_description == name or source_description.startswith(f"{name} – ")):
             return source_id
     return '60181'
+
+
+def create_terminologist_name_value_to_id_mapping(terminologist_sources):
+    name_value_to_ids = {}
+    for source in terminologist_sources:
+        source_id = source['id']
+        source_name = source['name']
+        source_value = source['valuePrese']
+
+        key = (source_name, source_value)
+
+        name_value_to_ids[key] = source_id
+
+    return name_value_to_ids

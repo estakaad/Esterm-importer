@@ -13,7 +13,7 @@ logger = log_config.get_logger()
 
 
 # Parse the whole Esterm XML and return aviation concepts, all other concepts and the sources of the concepts
-def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
+def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map):
     concepts = []
     aviation_concepts = []
 
@@ -102,13 +102,22 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
                             end_brace_pos = note_value.find('}', last_opening_brace)
                             if end_brace_pos != -1:
                                 initials = note_value[last_opening_brace + 1:end_brace_pos][:3]
+                        #
+                        # source = data_classes.Sourcelink(
+                        #     sourceId=expert_sources_helpers.create_terminologist_name_value_to_id_mapping(
+                        #         'Terminoloog', 'Terminoloog', term_sources_to_ids_map
+                        #     ),
+                        #     value='Terminoloog',
+                        #     name=initials
+                        # )
+
+                        key = (initials, "Eesti Õiguskeele Keskuse terminoloog")
+                        source_id = term_sources_to_ids_map.get(key)
 
                         source = data_classes.Sourcelink(
-                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(
-                                'Terminoloog', 'Terminoloog', expert_names_to_ids_map
-                            ),
-                            value='Terminoloog',
-                            name=initials
+                            sourceId=source_id,
+                            value=initials,
+                            name=''
                         )
                         concept.notes.append(
                             data_classes.Note(
@@ -153,7 +162,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
                             # Now we've got to the proper notes which we should be able to parse
                             lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
                                 xml_helpers.handle_notes_with_brackets('concept', name_to_id_map,
-                                                                       expert_names_to_ids_map, note_value)
+                                                                       expert_names_to_ids_map, term_sources_to_ids_map, note_value)
 
                             for note in concept_notes_with_sourcelinks:
                                 concept.notes.append(note)
@@ -191,7 +200,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
             logger.info('Added concept forum: %s', str(concept.forums))
 
         # Concept level data is parsed, now to parsing word (term) level data
-        words, definitions, concept_notes = parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map)
+        words, definitions, concept_notes = parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
         for word in words:
             concept.words.append(word)
@@ -251,7 +260,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map):
 
 
 # Parse word elements in one concept in XML
-def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
+def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map):
 
     words = []
     definitions = []
@@ -409,7 +418,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
                     if lexeme_note_raw.startswith('{') and lexeme_note_raw.endswith('}'):
                         lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
                             xml_helpers.handle_notes_with_brackets('word', name_to_id_map, expert_names_to_ids_map,
-                                                                   lexeme_note_raw)
+                                                                   term_sources_to_ids_map, lexeme_note_raw)
 
                         for note in lexeme_notes_with_sourcelinks:
                             word.lexemeNotes.append(note)
@@ -424,7 +433,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map):
                             ))
                         else:
                             lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
-                                xml_helpers.handle_notes_with_brackets('word', name_to_id_map, expert_names_to_ids_map, lexeme_note_raw)
+                                xml_helpers.handle_notes_with_brackets('word', name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map, lexeme_note_raw)
 
                             for note in lexeme_notes_with_sourcelinks:
                                 word.lexemeNotes.append(note)
@@ -472,7 +481,7 @@ def print_concepts_to_json(concepts, aviation_concepts):
             logger.info('Finished writing concepts: %s.', filename)
 
 
-def transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map):
+def transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map):
 # Opening the file, parsing, writing JSON files
     with open('files/input/esterm.xml', 'rb') as file:
         xml_content = file.read()
@@ -480,7 +489,7 @@ def transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map):
     parser = etree.XMLParser(encoding='UTF-16')
     root = etree.fromstring(xml_content, parser=parser)
 
-    concepts, aviation_concepts = parse_mtf(root, name_to_id_map, expert_names_to_ids_map)
+    concepts, aviation_concepts = parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
     print_concepts_to_json(concepts, aviation_concepts)
 
