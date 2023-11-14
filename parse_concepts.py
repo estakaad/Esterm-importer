@@ -221,14 +221,13 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
 
         for note in concept.notes:
             if note.value.startswith('{'):
-                print(note.value)
                 if note.publicity == True:
                     note.value = re.sub(r'^{[^}]*}', '', note.value)
 
         if type_of_concept == 'aviation':
 
-            aviation_concepts.append(concept)
-            logger.debug('Concept will be added to the list of aviation concepts.')
+            concepts.append(concept)
+            logger.debug('Concept will be added to the general list of concepts.')
 
         elif type_of_concept == 'aviation_esterm':
 
@@ -239,14 +238,9 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                     sourceLinks=None
                 )
             )
-            aviation_concepts.append(concept)
-
-            for word in concept.words:
-                word.lexemePublicity = False
-
             concepts.append(concept)
 
-            logger.debug('Concept will be added to the list of aviation concepts and list of general concepts.')
+            logger.debug('Concept will be added to the general list of concepts.')
         elif type_of_concept == 'general':
             concepts.append(concept)
             logger.debug('Concept will be added to the general list of concepts.')
@@ -256,7 +250,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
 
         logger.info('Finished parsing concept.')
 
-    return concepts, aviation_concepts
+    return concepts
 
 
 # Parse word elements in one concept in XML
@@ -459,15 +453,14 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
 
 # Write aviation concepts, all other concepts and domains to separate JSON files
-def print_concepts_to_json(concepts, aviation_concepts):
+def print_concepts_to_json(concepts):
     logger.debug('Number of concepts: %s', str(len(concepts)))
-    logger.debug('Number of aviation concepts: %s', str(len(aviation_concepts)))
+    #logger.debug('Number of aviation concepts: %s', str(len(aviation_concepts)))
 
     output_folder = 'files/output'
     os.makedirs(output_folder, exist_ok=True)
 
-    for concept_list, filename in [(concepts, 'concepts.json'),
-                                   (aviation_concepts, 'aviation_concepts.json')]:
+    for concept_list, filename in [(concepts, 'concepts.json')]:
 
         concepts_json = json.dumps(
             [concept.__dict__ for concept in concept_list],
@@ -489,8 +482,8 @@ def transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map, term_sourc
     parser = etree.XMLParser(encoding='UTF-16')
     root = etree.fromstring(xml_content, parser=parser)
 
-    concepts, aviation_concepts = parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
+    concepts = parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
-    print_concepts_to_json(concepts, aviation_concepts)
+    print_concepts_to_json(concepts)
 
     logger.info('Finished transforming Esterm XML file to JSON files.')
