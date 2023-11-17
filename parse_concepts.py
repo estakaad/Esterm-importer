@@ -15,7 +15,6 @@ logger = log_config.get_logger()
 # Parse the whole Esterm XML and return aviation concepts, all other concepts and the sources of the concepts
 def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map):
     concepts = []
-    aviation_concepts = []
 
     # For testing #
     counter = 1
@@ -86,6 +85,16 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                     domain = domain.strip()
                     if domain:
                         concept.domains.append(data_classes.Domain(code=domain, origin='lenoch'))
+
+            if descrip_element.get('type') == 'Päritolu':
+                origin = ''.join(descrip_element.itertext()).strip()
+                concept.notes.append(
+                    data_classes.Note(
+                        value='Päritolu: ' + origin,
+                        lang='est',
+                        publicity=False
+                    )
+                )
 
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
@@ -200,16 +209,13 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
             logger.info('Added concept forum: %s', str(concept.forums))
 
         # Concept level data is parsed, now to parsing word (term) level data
-        words, definitions, concept_notes = parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
+        words, definitions = parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
         for word in words:
             concept.words.append(word)
 
         for definition in definitions:
             concept.definitions.append(definition)
-
-        for note in concept_notes:
-            concept.notes.append(note)
 
         concept.notes = [note for note in concept.notes if isinstance(note, data_classes.Note) and note.value.strip()]
 
@@ -224,29 +230,9 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                 if note.publicity == True:
                     note.value = re.sub(r'^{[^}]*}', '', note.value)
 
-        if type_of_concept == 'aviation':
+        concepts.append(concept)
 
-            concepts.append(concept)
-            logger.debug('Concept will be added to the general list of concepts.')
-
-        elif type_of_concept == 'aviation_esterm':
-
-            concept.notes.append(data_classes.Note(
-                    value='Päritolu: LTB; ESTERM',
-                    lang='est',
-                    publicity=False,
-                    sourceLinks=None
-                )
-            )
-            concepts.append(concept)
-
-            logger.debug('Concept will be added to the general list of concepts.')
-        elif type_of_concept == 'general':
-            concepts.append(concept)
-            logger.debug('Concept will be added to the general list of concepts.')
-        else:
-            concepts.append(concept)
-            logger.debug('Concept will be added to the general list of concepts.')
+        logger.debug('Concept will be added to the general list of concepts.')
 
         logger.info('Finished parsing concept.')
 
@@ -258,7 +244,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
     words = []
     definitions = []
-    notes_for_concept = []
     is_public = xml_helpers.are_terms_public(conceptGrp)
     logger.debug('Is concept public? %s', is_public)
 
@@ -272,7 +257,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
             lang_grp = xml_helpers.match_language(lang_grp)
             logger.debug(('Definition language after matching: %s', lang_grp))
 
-            definition_objects, concept_notes_from_sources = xml_helpers.handle_definition(''.join(descripGrp.itertext()), name_to_id_map, lang_grp, expert_names_to_ids_map)
+            definition_objects = xml_helpers.handle_definition(''.join(descripGrp.itertext()), name_to_id_map, lang_grp, expert_names_to_ids_map)
 
             for definition_object in definition_objects:
                 if definition_object.sourceLinks and definition_object.sourceLinks[0].value.startswith('http'):
@@ -281,9 +266,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                 definitions.append(definition_object)
                 if definition_object.sourceLinks and definition_object.sourceLinks[0].sourceId == 'null':
                     print(definition_object)
-
-            for con_note in concept_notes_from_sources:
-                notes_for_concept.append(con_note)
 
 
         termGrps = languageGrp.xpath('termGrp')
@@ -320,21 +302,15 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                 if descrip_type == 'Definitsioon':
                     definition_element_value = ''.join(descripGrp.itertext()).strip()
 
-                    definition_objects, con_notes = xml_helpers.handle_definition(definition_element_value, name_to_id_map, word.lang, expert_names_to_ids_map)
+                    definition_objects = xml_helpers.handle_definition(definition_element_value, name_to_id_map, word.lang, expert_names_to_ids_map)
 
                     for defi_object in definition_objects:
                         definitions.append(defi_object)
 
-                    for con_note in con_notes:
-                        notes_for_concept.append(con_note)
-
                 if descrip_type == 'Kontekst':
 
-                    updated_value, source_links, concept_notes = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map, expert_names_to_ids_map)
+                    updated_value, source_links = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map, expert_names_to_ids_map)
 
-                    if concept_notes:
-                        for note in concept_notes:
-                            notes_for_concept.append(note)
                     if source_links:
                         if source_links[0].value.startswith('http'):
                             value = updated_value + ' [' + source_links[0].value + ']'
@@ -379,7 +355,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
                     for link in links:
                         link = link.strip().strip('[]')
-                        value, name, c_notes, expert_name, expert_type = xml_helpers.separate_sourcelink_value_from_name(link)
+                        value, name, expert_name, expert_type = xml_helpers.separate_sourcelink_value_from_name(link)
 
                         value = value.strip('[]')
 
@@ -402,9 +378,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                     name=name
                                 )
                             )
-                        for c_note in c_notes:
-                            notes_for_concept.append(c_note)
-
 
                 if descrip_type == 'Märkus':
                     lexeme_note_raw = ''.join(descripGrp.itertext()).strip()
@@ -449,7 +422,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
         if word.lexemeNotes:
             logger.info('Added word notes: %s', str(word.lexemeNotes))
 
-    return words, definitions, notes_for_concept
+    return words, definitions
 
 
 # Write aviation concepts, all other concepts and domains to separate JSON files
