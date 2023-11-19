@@ -701,6 +701,18 @@ def separate_sourcelink_value_from_name(sourcelink):
         if len(sourcelink) > 5:
             value = sourcelink[:5]
             name = sourcelink.replace(sourcelink[:5], '')
+    elif 'GG0005,' in sourcelink:
+        value = 'GG0005'
+        name = sourcelink.replace('GG0005, ', '')
+    elif 'T0057 ' in sourcelink:
+        value = 'T0057'
+        name = sourcelink.replace('T0057 ', '')
+    elif 'T0059 ' in sourcelink:
+        value = 'T0059'
+        name = sourcelink.replace('T0059 ', '')
+    elif 'T0065 ' in sourcelink:
+        value = 'T0065'
+        name = sourcelink.replace('T0065 ', '')
     elif bool(re.match(r'^X.{6},', sourcelink)):
         if len(sourcelink) > 7:
             value = sourcelink[:7]
@@ -767,9 +779,15 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('EKN, '):
         value = 'EKN'
         name = sourcelink.replace('EKN, ', '')
+    elif sourcelink.startswith('BRITANNICA-AC, '):
+        value = 'BRITANNICA-AC'
+        name = sourcelink.replace('BRITANNICA-AC, ', '')
     elif sourcelink.startswith('TSR, '):
         value = 'TSR'
         name = sourcelink.replace('TSR, ', '')
+    elif sourcelink.startswith('ÕS, '):
+        value = 'ÕS'
+        name = sourcelink.replace('ÕS, ', '')
     elif sourcelink.startswith('TEK, '):
         value = 'TEK'
         name = sourcelink.replace('TEK, ', '')
@@ -780,6 +798,9 @@ def separate_sourcelink_value_from_name(sourcelink):
         value = sourcelink
         name = ''
     elif sourcelink == 'EDD 2016/028/R':
+        value = sourcelink
+        name = ''
+    elif sourcelink == 'EL nõukogu':
         value = sourcelink
         name = ''
     elif sourcelink == 'ASM käsiraamat':
@@ -1219,11 +1240,28 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         if start_index != -1 and "ICAO" in note_raw[start_index:]:
             # Extract the value inside the brackets
             sourcelink_value = note_raw[start_index + 1:-1]
-            source_links.append(data_classes.Sourcelink(
-                sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
-                value=sourcelink_value,
-                name=''
-            ))
+            if ',' in sourcelink_value:
+                parts = sourcelink_value.split(", ")
+                for part in parts:
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, part),
+                        value=part,
+                        name=''
+                    ))
+            elif ';' in sourcelink_value:
+                parts = sourcelink_value.split("; ")
+                for part in parts:
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, part),
+                        value=part,
+                        name=''
+                    ))
+            else:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+                    value=sourcelink_value,
+                    name=''
+                ))
 
             if type == 'word':
                 lexeme_notes.append(data_classes.Lexemenote(
@@ -1258,7 +1296,81 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 ))
             else:
                 print('error x')
+    elif note_raw.endswith("{EVA}"):
+        key = ('EVA', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='EVA',
+            name=''
+        ))
 
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {EVA}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {EVA}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error y')
+    elif note_raw.endswith("{AMS}"):
+        key = ('AMS', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='AMS',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {AMS}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {AMS}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error y')
+    elif note_raw.endswith("{VZI}"):
+        key = ('VZI', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='VZI',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {VZI}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {VZI}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error z')
     # Case #2 :: no date :: source ::
     # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]" - ok
     elif not note_raw.strip('.')[-3:-1].isdigit():
@@ -1324,7 +1436,6 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             sourcelink_name = None
 
             if ',' in sourcelink_value:
-                print('kas läheb kaduma? ')
                 parts = sourcelink_value.split(',')
                 sourcelink_value = parts[0]
                 sourcelink_name = parts[1].strip()
@@ -1376,7 +1487,6 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                         ))
                     print(source_links)
             elif '§' in sourcelink_value:
-                print('kontrolli! ')
                 source_elements = sourcelink_value.split('§')
                 source_elements = [part.strip() for part in source_elements]
                 source_links.append(data_classes.Sourcelink(
@@ -1384,7 +1494,30 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     value=source_elements[0],
                     name='§ ' + source_elements[1]
                 ))
-
+            elif 'ConvRT ' in sourcelink_value:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'ConvRT'),
+                    value='ConvRT',
+                    name=sourcelink_value.replace('ConvRT ', '')
+                ))
+            elif '91946 ' in sourcelink_value:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '91946'),
+                    value='91946',
+                    name=sourcelink_value.replace('91946 ', '')
+                ))
+            elif 'MDBW ' in sourcelink_value:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'MDBW'),
+                    value='MDBW',
+                    name=sourcelink_value.replace('MDBW ', '')
+                ))
+            elif 'TechoDic ' in sourcelink_value:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'TechoDic'),
+                    value='TechoDic',
+                    name=sourcelink_value.replace('TechoDic ', '')
+                ))
             elif 'EKSPERT' in sourcelink_value:
                 name = sourcelink_value.replace('EKSPERT', '').strip().strip('{}')
                 source_links.append(data_classes.Sourcelink(
@@ -1812,7 +1945,8 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                        '32010L0013', 'T1533', 'X30071', '32006L0131', '32006D0257', '32014R0405', 'ODLE-2015',
                        'EKIÜS-2020', '52015DC0599', 'T30063', 'X1060', '32008R0440', '1553', '31975L0442', 'T50143',
                        'T61500', '32016L0798', 'X1057', 'WPG-1637', 'T2050', 'ESA 95', 'VIM-2012', 'EKN, 2710 00 51 00',
-                       'T2050', 'T2009', '32009L0003', 'WPG-1581', '32002D0657'
+                       'T2050', 'T2009', '32009L0003', 'WPG-1581', '32002D0657', 'X30025', 'X1056', 'X30031', 'X30028',
+                       'T1088', 'X30063', 'X2045', 'X2020'
                        ]
         match_found = False
 
