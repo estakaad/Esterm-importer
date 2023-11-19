@@ -145,7 +145,6 @@ def get_description_value(descrip_element):
 # Returns the usage ("Kontekst") value without the source link + sourcelinks
 def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_ids_map):
     source_links = []
-    concept_notes = []
     expert_source_found = False
 
     full_text = ''.join(element.itertext())
@@ -153,6 +152,9 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
     usage_value = usage_value.strip()
     source_info = source_info.strip()
     source_info = source_info.rstrip(']')
+
+    if ';' in source_info:
+        print('kontekst: ' + full_text)
 
     xref_element = element.find('.//xref')
     source_value = xref_element.text.strip() if xref_element is not None else ''
@@ -173,14 +175,24 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
     name = source_link_name if source_link_name else ''
 
     if 'PÄRING' in source_value:
-        expert_source_found = True
-        expert_name = source_info.replace('PÄRING', '').strip('{} ')
-        expert_type = 'Päring'
+        if source_value == 'PÄRING':
+            expert_source_found = True
 
-        source_links.append(
-            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
-                                    value='Päring',
-                                    name=''))
+            source_links.append(
+                data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring',
+                                                                                          expert_names_to_ids_map),
+                    value='Päring',
+                    name=''))
+        else:
+            expert_source_found = True
+            expert_name = source_info.replace('PÄRING', '').strip('{} ')
+            expert_type = 'Päring'
+
+            source_links.append(
+                data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
+                                        value='Päring',
+                                        name=''))
 
     if 'DGT' in source_value:
         expert_source_found = True
@@ -680,6 +692,11 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif bool(re.match(r'^X\d{5}-', sourcelink)):
         value = sourcelink[:6]
         name = sourcelink[6:]
+    elif sourcelink == 'PÄRING':
+        value = 'Päring'
+        name = ''
+        expert_name = 'Päring'
+        expert_type = 'Päring'
     elif bool(re.match(r'^X\d{5},', sourcelink)):
         value = sourcelink[:6]
         name = sourcelink.replace(value + ', ', '')
