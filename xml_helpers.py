@@ -1618,7 +1618,20 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     name=''
                 ))
 
-            if "EKSPERT" in sourcelink_value:
+            if '§' in sourcelink_value:
+                parts = sourcelink_value.split('§')
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, parts[0].strip()),
+                    value=parts[0].strip(),
+                    name='§ ' + parts[1].strip()
+                ))
+            elif 'T1382, ' in sourcelink_value:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'T1382'),
+                    value='T1382',
+                    name=sourcelink_value.replace('TI382, ', '')
+                ))
+            elif "EKSPERT" in sourcelink_value:
                 name = sourcelink_value.replace("EKSPERT ", '')
                 name = name.strip('{}')
                 source_links.append(data_classes.Sourcelink(
@@ -1633,6 +1646,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     value=sourcelink_value,
                     name=''
                 ))
+
             if type == 'word':
 
                 lexeme_notes.append(data_classes.Lexemenote(
@@ -1685,6 +1699,8 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ\s]', '', date).strip().replace('{}', '')
 
             if term_initials:
+                if '&' in term_initials:
+                    print('1&: ' + term_initials)
 
                 key = (term_initials, "Eesti Õiguskeele Keskuse terminoloog")
                 source_id = term_sources_to_ids_map.get(key)
@@ -1754,7 +1770,8 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             date_with_letters = parts[1]
 
             term_initials = date_with_letters.strip('{')[:4].strip('}')
-
+            if '&' in term_initials:
+                print('2&: ' + term_initials)
             date_without_letters = re.sub(r'[z-zA-ZöäüõÖÄÜÕ]', '', date_with_letters).strip().replace('{}', '')
 
             key = (term_initials.strip(), "Eesti Õiguskeele Keskuse terminoloog")
@@ -1797,102 +1814,55 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             term_initals = date_with_letters.replace(date_without_letters.strip('{}'), '')
 
             if "&" in term_initals:
+                print('3&: ' + term_initals)
+                term_initals = term_initals.strip('}').strip()
 
-                key = (term_initals[:9], "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value=term_initals[:9],
-                    name=''
-                ))
-            elif term_initals.startswith('ATM & MVR'):
+                parts = term_initals.split(' & ')
+                print(parts[0])
+                print(parts[1])
+                for part in parts:
+                    key = (part, "Eesti Õiguskeele Keskuse terminoloog")
+                    source_id = term_sources_to_ids_map.get(key)
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=part,
+                        name=''
+                    ))
 
-                key = ('ATM & MVR', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='ATM & MVR',
-                    name=''
-                ))
-            elif term_initals.startswith('MKS, HTM'):
-
-                key = ('MKS, HTM', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='MKS, HTM',
-                    name=''
-                ))
-            elif term_initals.startswith('TKK & KMU'):
-
-                key = ('TKK & KMU', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='TKK & KMU',
-                    name=''
-                ))
-            elif term_initals.startswith('KNM & KMU'):
-
-                key = ('KNM & KMU', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='KNM & KMU',
-                    name=''
-                ))
-            elif term_initals.startswith('LKD & PSK'):
-
-                key = ('LKD & PSK', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='LKD & PSK',
-                    name=''
-                ))
-            elif term_initals.startswith('IPU & KMU'):
-
-                key = ('IPU & KMU', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='IPU & KMU',
-                    name=''
-                ))
-            elif term_initals.startswith('HTM, RJS, KMR'):
-
-                key = ('HTM, RJS, KMR', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='HTM, RJS, KMR',
-                    name=''
-                ))
-            elif term_initals.startswith('AJK, MKS & HTM'):
-
-                key = ('AJK, MKS & HTM', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='AJK, MKS & HTM',
-                    name=''
-                ))
-            elif term_initals.startswith('MKK, MKS & HTM'):
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
-                                                                                          expert_sources_ids_map),
-                    value='Terminoloog',
-                    name='MKK, MKS & HTM'
-                ))
-            elif term_initals.startswith('EVA, EEU & HTM'):
-
-                key = ('EVA, EEU & HTM', "Eesti Õiguskeele Keskuse terminoloog")
-                source_id = term_sources_to_ids_map.get(key)
-                source_links.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='EVA, EEU & HTM',
-                    name=''
-                ))
+            # elif term_initals.startswith('HTM, RJS, KMR'):
+            #
+            #     key = ('HTM, RJS, KMR', "Eesti Õiguskeele Keskuse terminoloog")
+            #     source_id = term_sources_to_ids_map.get(key)
+            #     source_links.append(data_classes.Sourcelink(
+            #         sourceId=source_id,
+            #         value='HTM, RJS, KMR',
+            #         name=''
+            #     ))
+            # elif term_initals.startswith('AJK, MKS & HTM'):
+            #
+            #     key = ('AJK, MKS & HTM', "Eesti Õiguskeele Keskuse terminoloog")
+            #     source_id = term_sources_to_ids_map.get(key)
+            #     source_links.append(data_classes.Sourcelink(
+            #         sourceId=source_id,
+            #         value='AJK, MKS & HTM',
+            #         name=''
+            #     ))
+            # elif term_initals.startswith('MKK, MKS & HTM'):
+            #     source_links.append(data_classes.Sourcelink(
+            #         sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
+            #                                                                               expert_sources_ids_map),
+            #         value='Terminoloog',
+            #         name='MKK, MKS & HTM'
+            # #     ))
+            # elif term_initals.startswith('EVA, EEU & HTM'):
+            #
+            #     key = ('EVA, EEU & HTM', "Eesti Õiguskeele Keskuse terminoloog")
+            #     source_id = term_sources_to_ids_map.get(key)
+            #     source_links.append(data_classes.Sourcelink(
+            #         sourceId=source_id,
+            #         value='EVA, EEU & HTM',
+            #         name=''
+            #     ))
             else:
                 if len(term_initals) >= 4:
                     if term_initals[3] != ' ':
@@ -2078,6 +2048,55 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     ))
                 else:
                     print('error 11')
+            # elif note_raw.endswith('[COD; EUR]'):
+            #     source_links.append(data_classes.Sourcelink(
+            #         sourceId=find_source_by_name(name_to_id_map, 'COD'),
+            #         value='COD',
+            #         name=''
+            #     ))
+            #     source_links.append(data_classes.Sourcelink(
+            #         sourceId=find_source_by_name(name_to_id_map, 'EUR'),
+            #         value='EUR',
+            #         name=''
+            #     ))
+            #     if type == 'word':
+            #         lexeme_notes.append(data_classes.Lexemenote(
+            #             value=note_raw.replace(' [COD; EUR]', ''),
+            #             lang='est',
+            #             publicity=True,
+            #             sourceLinks=source_links
+            #         ))
+            #     elif type == 'concept':
+            #         concept_notes.append(data_classes.Note(
+            #             value=note_raw.replace(' [COD; EUR]', ''),
+            #             lang='est',
+            #             publicity=True,
+            #             sourceLinks=source_links
+            #         ))
+            #     else:
+            #         print('error 11')
+            elif note_raw.endswith('[PH0580 1.2]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'PH0580'),
+                    value='PH0580',
+                    name='1.2'
+                ))
+                if type == 'word':
+                    lexeme_notes.append(data_classes.Lexemenote(
+                        value=note_raw.replace(' [PH0580 1.2]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                elif type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [PH0580 1.2]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 11x')
             elif note_raw.endswith('[3656 lk 228]'):
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '3656'),
@@ -2154,6 +2173,33 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     ))
                 else:
                     print('error 14')
+            elif note_raw.endswith('[CHA; X027]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'CHA'),
+                    value='CHA',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'X2027'),
+                    value='X0227',
+                    name=''
+                ))
+                if type == 'word':
+                    lexeme_notes.append(data_classes.Lexemenote(
+                        value=note_raw.replace(' [CHA; X2027]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                elif type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [CHA; X2027]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 14x')
             elif note_raw.endswith('[ICAO-AN2/10/44; 32012R0923]'):
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'ICAO-AN2/10/44'),
