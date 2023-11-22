@@ -53,7 +53,7 @@ with open('files/import/2024-11-04_SOURCES/sources_with_ids_and_unknown_sources_
 
 name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
 
-with open('files/import/2024-11-04_SOURCES/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
+with open('files/output/sources/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
     expert_sources = json.load(f)
 
 expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)

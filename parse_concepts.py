@@ -111,14 +111,6 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                             end_brace_pos = note_value.find('}', last_opening_brace)
                             if end_brace_pos != -1:
                                 initials = note_value[last_opening_brace + 1:end_brace_pos][:3]
-                        #
-                        # source = data_classes.Sourcelink(
-                        #     sourceId=expert_sources_helpers.create_terminologist_name_value_to_id_mapping(
-                        #         'Terminoloog', 'Terminoloog', term_sources_to_ids_map
-                        #     ),
-                        #     value='Terminoloog',
-                        #     name=initials
-                        # )
 
                         key = (initials, "Eesti Õiguskeele Keskuse terminoloog")
                         source_id = term_sources_to_ids_map.get(key)

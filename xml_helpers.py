@@ -145,16 +145,12 @@ def get_description_value(descrip_element):
 # Returns the usage ("Kontekst") value without the source link + sourcelinks
 def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_ids_map):
     source_links = []
-    expert_source_found = False
 
     full_text = ''.join(element.itertext())
     usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
     usage_value = usage_value.strip()
     source_info = source_info.strip()
     source_info = source_info.rstrip(']')
-
-    if ';' in source_info:
-        print('kontekst: ' + full_text)
 
     xref_element = element.find('.//xref')
     source_value = xref_element.text.strip() if xref_element is not None else ''
@@ -174,100 +170,238 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
 
     name = source_link_name if source_link_name else ''
 
-    if 'PÄRING' in source_value:
-        if source_value == 'PÄRING':
-            expert_source_found = True
-
-            source_links.append(
-                data_classes.Sourcelink(
-                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring',
-                                                                                          expert_names_to_ids_map),
-                    value='Päring',
-                    name=''))
-        else:
-            expert_source_found = True
-            expert_name = source_info.replace('PÄRING', '').strip('{} ')
-            expert_type = 'Päring'
-
-            source_links.append(
-                data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
-                                        value='Päring',
-                                        name=''))
-
-    if 'DGT' in source_value:
-        expert_source_found = True
-        expert_name = source_info.replace('DGT', '').strip().strip('{}')
-        expert_type = 'DGT'
-
-        source_links.append(
-            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
-                                    value='DGT',
-                                    name=''))
-
-    if 'PARLAMENT' in source_value:
-        expert_source_found = True
-        expert_name = source_info.replace('PARLAMENT', '').strip(' {}')
-        expert_type = 'Parlament'
-
-        source_links.append(
-            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
-                                    value='Parlament',
-                                    name=''))
-
-    if 'CONSILIUM' in source_value:
-        expert_source_found = True
-        expert_name = source_info.replace('CONSILIUM', '').strip(' {}')
-        expert_type = 'Consilium'
-        source_links.append(
-            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
-                                    value='Consilium',
-                                    name=''))
-
-    if 'EKSPERT' in source_value:
-        expert_source_found = True
-        expert_name = source_info.replace('EKSPERT', '').strip(' {}')
-        expert_type = 'Ekspert'
-        source_links.append(
-            data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
-                                    value='Ekspert',
-                                    name=''))
-
-    else:
-        if source_value and not expert_source_found:
-            if '§' in source_value:
-                value = re.split(r'§', source_value, 1)[0].strip()
-                name = "§ " + re.split(r'§', source_value, 1)[1].strip()
+    if ';' in source_value:
+        print('kontrolli konteksti 1: ' + full_text)
+        parts = source_value.split('; ')
+        print(source_value)
+        for part in parts:
+            print(part)
+            if '§' in part:
+                value = re.split(r'§', part, 1)[0].strip()
+                name = "§ " + re.split(r'§', part, 1)[1].strip()
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
                                             name=name.strip(']')))
-            elif ',' in source_value:
-                value = re.split(r',', source_value, 1)[0].strip()
-                name = re.split(r',', source_value, 1)[1].strip()
+            elif 'PÄRING' in part:
+                if part == 'PÄRING':
+                    source_links.append(
+                        data_classes.Sourcelink(
+                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring',
+                                                                                                  expert_names_to_ids_map),
+                            value='Päring',
+                            name=''))
+                else:
+                    expert_name = part.replace('PÄRING ', '')
+                    expert_type = 'Päring'
+                    source_links.append(
+                        data_classes.Sourcelink(
+                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name,
+                                                                                                  expert_type,
+                                                                                                  expert_names_to_ids_map),
+                            value='Päring',
+                            name=''))
+
+            elif 'DGT' in part:
+                expert_name = part.replace('DGT', '').strip().strip('{}')
+                expert_type = 'DGT'
+
+                source_links.append(
+                    data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                              expert_names_to_ids_map),
+                        value='DGT',
+                        name=''))
+
+            elif 'PARLAMENT' in part:
+                expert_name = part.replace('PARLAMENT', '').strip(' {}')
+                expert_type = 'Parlament'
+
+                source_links.append(
+                    data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                              expert_names_to_ids_map),
+                        value='Parlament',
+                        name=''))
+
+            elif 'CONSILIUM' in part:
+                expert_name = part.replace('CONSILIUM', '').strip(' {}')
+                expert_type = 'Consilium'
+                source_links.append(
+                    data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                              expert_names_to_ids_map),
+                        value='Consilium',
+                        name=''))
+
+            elif 'EKSPERT' in part:
+
+                expert_name = source_info.replace('EKSPERT', '').strip(' {}')
+                expert_type = 'Ekspert'
+                source_links.append(
+                    data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                              expert_names_to_ids_map),
+                        value='Ekspert',
+                        name=''))
+            elif ',' in part:
+                value = re.split(r',', part, 1)[0].strip()
+                name = re.split(r',', part, 1)[1].strip()
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
                                             name=name.strip(']')))
-            elif source_value.startswith('BRITANNICA '):
+            elif part.startswith('EASA NPA 2008-22D. '):
+                value = 'EASA NPA 2008-22D'
+                source_links.append(
+                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                            value=value,
+                                            name=part.replace('EASA NPA 2008-22D. ', '')))
+            elif part.startswith('WP, '):
+                source_links.append(
+                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'WP'),
+                                            value='WP',
+                                            name=part.replace('WP, ', '')))
+            elif part.startswith('BRITANNICA '):
                 value = 'BRITANNICA'
-                name = source_value.replace('BRITANNICA ', '')
+                name = part.replace('BRITANNICA ', '')
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
                                             name=name.strip(']')))
-            elif source_value.startswith('T40766 '):
+            elif part.endswith('Finantsinspektsioon'):
+                source_links.append(
+                    data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Finantsinspektsioon', 'Ekspert', expert_names_to_ids_map),
+                                            value='Ekspert',
+                                            name=''
+                                            ))
+            elif part.startswith('T40766 '):
                 value = 'T40766'
-                name = source_value.replace('T40766 ', '')
+                name = part.replace('T40766 ', '')
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
                                             name=name.strip(']')))
             else:
                 source_links.append(
-                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_value),
-                                            value=source_value,
+                    data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, part),
+                                            value=part,
                                             name=name.strip(']')))
+    elif source_value:
+        print('kontrolli konteksti 2: ' + full_text)
+        if '§' in source_value:
+            value = re.split(r'§', source_value, 1)[0].strip()
+            name = "§ " + re.split(r'§', source_value, 1)[1].strip()
+            source_links.append(
+                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                        value=value,
+                                        name=name.strip(']')))
+        elif 'PÄRING' in source_value:
+            if source_value == 'PÄRING':
+                source_links.append(
+                    data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring',
+                                                                                              expert_names_to_ids_map),
+                        value='Päring',
+                        name=''))
+            else:
+                expert_name = source_value.replace('PÄRING ', '')
+                expert_type = 'Päring'
+                source_links.append(
+                    data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name,
+                                                                                              expert_type,
+                                                                                              expert_names_to_ids_map),
+                        value='Päring',
+                        name=''))
 
+        elif 'DGT' in source_value:
+            expert_name = source_value.replace('DGT', '').strip().strip('{}')
+            expert_type = 'DGT'
+
+            source_links.append(
+                data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                          expert_names_to_ids_map),
+                    value='DGT',
+                    name=''))
+
+        elif 'PARLAMENT' in source_value:
+            expert_name = source_value.replace('PARLAMENT', '').strip(' {}')
+            expert_type = 'Parlament'
+
+            source_links.append(
+                data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                          expert_names_to_ids_map),
+                    value='Parlament',
+                    name=''))
+
+        elif 'CONSILIUM' in source_value:
+            expert_name = source_value.replace('CONSILIUM', '').strip(' {}')
+            expert_type = 'Consilium'
+            source_links.append(
+                data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                          expert_names_to_ids_map),
+                    value='Consilium',
+                    name=''))
+
+        elif 'EKSPERT' in source_value:
+
+            expert_name = source_info.replace('EKSPERT', '').strip(' {}')
+            expert_type = 'Ekspert'
+            source_links.append(
+                data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                          expert_names_to_ids_map),
+                    value='Ekspert',
+                    name=''))
+        elif ',' in source_value:
+            value = re.split(r',', source_value, 1)[0].strip()
+            name = re.split(r',', source_value, 1)[1].strip()
+            source_links.append(
+                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                        value=value,
+                                        name=name.strip(']')))
+        elif source_value.startswith('EASA NPA 2008-22D. '):
+            value = 'EASA NPA 2008-22D'
+            source_links.append(
+                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                        value=value,
+                                        name=source_value.replace('EASA NPA 2008-22D. ', '')))
+        elif source_value.startswith('WP, '):
+            source_links.append(
+                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'WP'),
+                                        value='WP',
+                                        name=source_value.replace('WP, ', '')))
+        elif source_value.startswith('BRITANNICA '):
+            value = 'BRITANNICA'
+            name = source_value.replace('BRITANNICA ', '')
+            source_links.append(
+                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                        value=value,
+                                        name=name.strip(']')))
+        elif source_value.endswith('Finantsinspektsioon'):
+            source_links.append(
+                data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Finantsinspektsioon', 'Ekspert', expert_names_to_ids_map),
+                                        value='Ekspert',
+                                        name=''
+                                        ))
+        elif source_value.startswith('T40766 '):
+            value = 'T40766'
+            name = source_value.replace('T40766 ', '')
+            source_links.append(
+                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
+                                        value=value,
+                                        name=name.strip(']')))
+        else:
+            source_links.append(
+                data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_value),
+                                        value=source_value,
+                                        name=name.strip(']')))
+    else:
+        print('kontekstil pole viidet: ' + full_text)
     return usage_value, source_links
 
 
@@ -700,6 +834,11 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif bool(re.match(r'^X\d{5},', sourcelink)):
         value = sourcelink[:6]
         name = sourcelink.replace(value + ', ', '')
+    elif sourcelink == 'CONSILIUM':
+        value = 'Consilium'
+        name = ''
+        expert_name = 'Consilium'
+        expert_type = 'Consilium'
     elif bool(re.match(r'^\d{5}\s,', sourcelink)):
         if len(sourcelink) > 5:
             value = sourcelink[:5]
@@ -1313,6 +1452,258 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 ))
             else:
                 print('error x')
+
+    elif "[AIP-" in note_raw and note_raw.endswith("]"):
+        start_index = note_raw.rfind("[")
+        if start_index != -1 and "AIP-" in note_raw[start_index:]:
+            sourcelink_value = note_raw[start_index + 1:-1]
+
+            source_links.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
+                value=sourcelink_value,
+                name=''
+            ))
+
+            if type == 'word':
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value=note_raw.replace('[' + sourcelink_value + ']', ''),
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            elif type == 'concept':
+                concept_notes.append(data_classes.Note(
+                    value=note_raw.replace('[' + sourcelink_value + ']', ''),
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=source_links
+                ))
+            else:
+                print('error aip')
+        else:
+            if type == 'word':
+                lexeme_notes.append(data_classes.Lexemenote(
+                    value='KONTROLLIDA: ' + note_raw,
+                    lang='est',
+                    publicity=False,
+                    sourceLinks=source_links
+                ))
+            elif type == 'concept':
+                concept_notes.append(data_classes.Note(
+                    value='KONTROLLIDA: ' + note_raw,
+                    lang='est',
+                    publicity=False,
+                    sourceLinks=source_links
+                ))
+            else:
+                print('error x')
+    elif note_raw.endswith("[AC 100-001/03]"):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, 'AC 100-001/03'),
+            value='AC 100-001/03',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace('[AC 100-001/03]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error yssad')
+    elif note_raw.endswith("[MET-juhend; AIP-GEN2.2-2017/06]"):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, 'MET-juhend'),
+            value='MET-juhend',
+            name=''
+        ))
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, 'AIP-GEN2.2-2017/06'),
+            value='AIP-GEN2.2-2017/06',
+            name=''
+        ))
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' [MET-juhend; AIP-GEN2.2-2017/06]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' [MET-juhend; AIP-GEN2.2-2017/06]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error ysad')
+    elif note_raw.endswith("{ARU & MLR}"):
+        key = ('ARU', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='ARU',
+            name=''
+        ))
+        key = ('MLR', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='MLR',
+            name=''
+        ))
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {ARU & MLR}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error say')
+    elif note_raw.endswith("{KMR & RRS}"):
+        key = ('KMR', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='KMR',
+            name=''
+        ))
+        key = ('RRS', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='RRS',
+            name=''
+        ))
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {KMR & RRS}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error sddy')
+    elif note_raw.endswith("{TKK & AJK}"):
+        key = ('TKK', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='TKK',
+            name=''
+        ))
+        key = ('AJK', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='AJK',
+            name=''
+        ))
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {TKK & AJK}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error sday')
+    elif note_raw.endswith("{RRS & KMR}"):
+        key = ('RRS', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='RRS',
+            name=''
+        ))
+        key = ('KMR', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='KMR',
+            name=''
+        ))
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {RRS & KMR}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error sddsday')
+    elif note_raw.endswith("{TKK & MLR}"):
+        key = ('TKK', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='TKK',
+            name=''
+        ))
+        key = ('MLR', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='MLR',
+            name=''
+        ))
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {TKK & MLR}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error sddsday')
+    elif note_raw.endswith("{29.10.1998}"):
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw,
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error sday')
+    elif note_raw.endswith('{Tiina Annus}'):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Tiina Annus', 'Ekspert',
+                                                                                  expert_sources_ids_map),
+            value='Ekspert',
+            name=''
+        ))
+        lexeme_notes.append(data_classes.Lexemenote(
+            value=note_raw.replace(' {Tiina Annus}', ''),
+            lang='est',
+            publicity=True,
+            sourceLinks=source_links
+        ))
+    elif note_raw.endswith('{ÕTK juristid}'):
+        key = ('ÕTK juristid', "Eesti Õiguskeele Keskuse juristid")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='ÕTK juristid',
+            name=''
+        ))
+        lexeme_notes.append(data_classes.Lexemenote(
+            value=note_raw.replace(' {ÕTK juristid}', ''),
+            lang='est',
+            publicity=True,
+            sourceLinks=source_links
+        ))
+    elif note_raw.endswith('{01.09.98}'):
+        lexeme_notes.append(data_classes.Lexemenote(
+            value=note_raw,
+            lang='est',
+            publicity=True,
+            sourceLinks=source_links
+        ))
     elif note_raw.endswith("{EVA}"):
         key = ('EVA', "Eesti Õiguskeele Keskuse terminoloog")
         source_id = term_sources_to_ids_map.get(key)
@@ -1388,6 +1779,180 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             ))
         else:
             print('error z')
+    elif note_raw.endswith("{ATM & MR}"):
+        key = ('ATM', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='ATM',
+            name=''
+        ))
+        key = ('MR', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='MR',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {ATM & MR}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {ATM & MR}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error zx')
+    elif note_raw.endswith("{KNN & KTS}"):
+        key = ('KNN', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='KNN',
+            name=''
+        ))
+        key = ('KTS', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='KTS',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {KNN & KTS}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {KNN & KTS}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error zxy')
+    elif note_raw.endswith("{MLR & LPK}"):
+        key = ('MLR', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='MLR',
+            name=''
+        ))
+        key = ('LPK', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='LPK',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {MLR & LPK}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {MLR & LPK}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error zdxy')
+    elif note_raw.endswith("{MLR & LPK}"):
+        key = ('MLR', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='MLR',
+            name=''
+        ))
+        key = ('LPK', "Eesti Õiguskeele Keskuse terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='LPK',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' {MLR & LPK}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {MLR & LPK}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error zdxy')
+    elif note_raw.endswith('[PÄRING]'):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring', expert_sources_ids_map),
+            value='Päring',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' [PÄRING]]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' [PÄRING]]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error zdddxy')
+    elif note_raw.endswith('[EKSPERT]'):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Ekspert', 'Ekspert', expert_sources_ids_map),
+            value='Ekspert',
+            name=''
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace(' [EKSPERT]]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' [EKSPERT]]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error zddddxy')
     # Case #2 :: no date :: source ::
     # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]" - ok
     elif not note_raw.strip('.')[-3:-1].isdigit():
@@ -1536,7 +2101,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     name=sourcelink_value.replace('TechoDic ', '')
                 ))
             elif 'EKSPERT' in sourcelink_value:
-                name = sourcelink_value.replace('EKSPERT', '').strip().strip('{}')
+                name = sourcelink_value.replace('EKSPERT ', '').strip().strip('{}')
                 source_links.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert', expert_sources_ids_map),
                     value='Ekspert',
@@ -1625,12 +2190,26 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     value=parts[0].strip(),
                     name='§ ' + parts[1].strip()
                 ))
+            elif 'ENE, ' in sourcelink_value:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'ENE'),
+                    value='ENE',
+                    name=sourcelink_value.replace('ENE, ', '')
+                ))
             elif 'T1382, ' in sourcelink_value:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'T1382'),
                     value='T1382',
                     name=sourcelink_value.replace('TI382, ', '')
                 ))
+            elif ';' in sourcelink_value:
+                parts = sourcelink_value.split('; ')
+                for part in parts:
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, part.strip()),
+                        value=part.strip(),
+                        name=''
+                    ))
             elif "EKSPERT" in sourcelink_value:
                 name = sourcelink_value.replace("EKSPERT ", '')
                 name = name.strip('{}')
@@ -1828,41 +2407,6 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                         value=part,
                         name=''
                     ))
-
-            # elif term_initals.startswith('HTM, RJS, KMR'):
-            #
-            #     key = ('HTM, RJS, KMR', "Eesti Õiguskeele Keskuse terminoloog")
-            #     source_id = term_sources_to_ids_map.get(key)
-            #     source_links.append(data_classes.Sourcelink(
-            #         sourceId=source_id,
-            #         value='HTM, RJS, KMR',
-            #         name=''
-            #     ))
-            # elif term_initals.startswith('AJK, MKS & HTM'):
-            #
-            #     key = ('AJK, MKS & HTM', "Eesti Õiguskeele Keskuse terminoloog")
-            #     source_id = term_sources_to_ids_map.get(key)
-            #     source_links.append(data_classes.Sourcelink(
-            #         sourceId=source_id,
-            #         value='AJK, MKS & HTM',
-            #         name=''
-            #     ))
-            # elif term_initals.startswith('MKK, MKS & HTM'):
-            #     source_links.append(data_classes.Sourcelink(
-            #         sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Terminoloog', 'Terminoloog',
-            #                                                                               expert_sources_ids_map),
-            #         value='Terminoloog',
-            #         name='MKK, MKS & HTM'
-            # #     ))
-            # elif term_initals.startswith('EVA, EEU & HTM'):
-            #
-            #     key = ('EVA, EEU & HTM', "Eesti Õiguskeele Keskuse terminoloog")
-            #     source_id = term_sources_to_ids_map.get(key)
-            #     source_links.append(data_classes.Sourcelink(
-            #         sourceId=source_id,
-            #         value='EVA, EEU & HTM',
-            #         name=''
-            #     ))
             else:
                 if len(term_initals) >= 4:
                     if term_initals[3] != ' ':
