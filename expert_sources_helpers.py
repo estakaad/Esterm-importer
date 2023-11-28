@@ -56,7 +56,7 @@ def create_experts_sources(output_json, expert_info_from_esterm, expert_info_for
     api_list = []
 
     for entry in csv_data:
-        api_dict = {"type": "PERSON", "isPublic": False}
+        api_dict = {"type": "PERSON", "public": False}
         name = entry["name"]
         api_dict["name"] = entry["type"]
         api_dict["description"] = name

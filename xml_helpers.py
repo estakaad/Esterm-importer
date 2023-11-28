@@ -1549,6 +1549,37 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             ))
         else:
             print('error ysad')
+    elif note_raw.endswith('[EKSPERT Andres Lipand] {TKK & ELS 13.10.2000}'):
+        key = ('TKK', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        key = ('ELS', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        source_links.append(
+            data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Andres Lipand', 'Ekspert', expert_sources_ids_map),
+                value='Ekspert',
+                name=''
+            )
+        )
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace('[EKSPERT Andres Lipand] {TKK & ELS ', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error say')
     elif note_raw.endswith("{ARU & MLR}"):
         key = ('ARU', "Terminoloog")
         source_id = term_sources_to_ids_map.get(key)
@@ -3286,6 +3317,13 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                     value='Ekspert',
                     name=''
                 ))
+            elif source.startswith('PÄRING '):
+                name = source.replace('PÄRING ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Päring', expert_names_to_ids_map),
+                    value='Päring',
+                    name=''
+                ))
             elif source.startswith('{'):
                 parts = source.split('}')
                 term_name = parts[0].strip('{}').strip()
@@ -3306,6 +3344,30 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                     value=value,
                     name=name
                 ))
+            elif 'WIKIPEDIA ' in source:
+                value = 'WIKIPEDIA'
+                name = source.replace('WIKIPEDIA ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif 'Vikipeedia ' in source:
+                value = 'Vikipeedia'
+                name = source.replace('Vikipeedia ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif 'ICAO-ENVR-2019 ' in source:
+                value = 'ICAO-ENVR-2019'
+                name = source.replace('ICAO-ENVR-2019 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
             elif 'BRITANNICA ' in source:
                 value = 'BRITANNICA'
                 name = source.replace('BRITANNICA ', '')
@@ -3317,6 +3379,30 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
             elif source.startswith('EVS-EN 45020:2008'):
                 value = 'EVS-EN 45020:2008'
                 name = source.replace('EVS-EN 45020:2008', '').strip()
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif source.startswith('88200 '):
+                value = '88200'
+                name = source.replace('88200 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif source.startswith('8796 '):
+                value = '8796'
+                name = source.replace('8796 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif source.startswith('NWE '):
+                value = 'NWE'
+                name = source.replace('NWE ', '')
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
