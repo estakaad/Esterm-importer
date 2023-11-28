@@ -28,7 +28,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
         # counter += 1
         # End
 
-        concept = data_classes.Concept(datasetCode='estermtest',
+        concept = data_classes.Concept(datasetCode='est2211',
                                        manualEventOn=None,
                                        manualEventBy=None,
                                        firstCreateEventOn=None,
@@ -96,6 +96,24 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                     )
                 )
 
+            if descrip_element.get('type') == 'Alamvaldkond_':
+                origin = ''.join(descrip_element.itertext()).strip()
+                concept.notes.append(
+                    data_classes.Note(
+                        value='Alamvaldkond: ' + origin,
+                        lang='est',
+                        publicity=True
+                    )
+                )
+            if descrip_element.get('type') == 'Staatus':
+                origin = ''.join(descrip_element.itertext()).strip()
+                concept.notes.append(
+                    data_classes.Note(
+                        value='Staatus: ' + origin,
+                        lang='est',
+                        publicity=True
+                    )
+                )
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
@@ -112,12 +130,12 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                             if end_brace_pos != -1:
                                 initials = note_value[last_opening_brace + 1:end_brace_pos][:3]
 
-                        key = (initials, "Eesti Õiguskeele Keskuse terminoloog")
+                        key = (initials, "Terminoloog")
                         source_id = term_sources_to_ids_map.get(key)
 
                         source = data_classes.Sourcelink(
                             sourceId=source_id,
-                            value=initials,
+                            value='Terminoloog',
                             name=''
                         )
                         concept.notes.append(
@@ -201,13 +219,16 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
             logger.info('Added concept forum: %s', str(concept.forums))
 
         # Concept level data is parsed, now to parsing word (term) level data
-        words, definitions = parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
+        words, definitions, concept_notes_from_lang = parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
         for word in words:
             concept.words.append(word)
 
         for definition in definitions:
             concept.definitions.append(definition)
+
+        for concept_note_from_lang in concept_notes_from_lang:
+            concept.notes.append(concept_note_from_lang)
 
         concept.notes = [note for note in concept.notes if isinstance(note, data_classes.Note) and note.value.strip()]
 
@@ -236,6 +257,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
     words = []
     definitions = []
+    notes = []
     is_public = xml_helpers.are_terms_public(conceptGrp)
     logger.debug('Is concept public? %s', is_public)
 
@@ -259,6 +281,13 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                 if definition_object.sourceLinks and definition_object.sourceLinks[0].sourceId == 'null':
                     print(definition_object)
 
+        for descripGrp in languageGrp.xpath('descripGrp[descrip/@type="Märkus"]'):
+
+            note_raw = ''.join(descripGrp.itertext()).strip()
+
+            note = xml_helpers.parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
+
+            notes.append(note)
 
         termGrps = languageGrp.xpath('termGrp')
 
@@ -414,7 +443,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
         if word.lexemeNotes:
             logger.info('Added word notes: %s', str(word.lexemeNotes))
 
-    return words, definitions
+    return words, definitions, notes
 
 
 # Write aviation concepts, all other concepts and domains to separate JSON files

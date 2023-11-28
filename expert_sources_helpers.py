@@ -97,8 +97,8 @@ def create_terminologist_name_value_to_id_mapping(terminologist_sources):
     name_value_to_ids = {}
     for source in terminologist_sources:
         source_id = source['id']
-        source_name = source['name']
-        source_value = source['valuePrese']
+        source_name = source['valuePrese']
+        source_value = source['name']
 
         key = (source_name, source_value)
 
