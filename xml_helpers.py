@@ -173,6 +173,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
     if ';' in source_value:
         parts = source_value.split('; ')
         for part in parts:
+            print(';sv: ' + source_value)
             if '§' in part:
                 value = re.split(r'§', part, 1)[0].strip()
                 name = "§ " + re.split(r'§', part, 1)[1].strip()
@@ -285,6 +286,8 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                             value=part,
                                             name=name.strip(']')))
     elif source_value:
+        print('sv: ' + source_value)
+
         if '§' in source_value:
             value = re.split(r'§', source_value, 1)[0].strip()
             name = "§ " + re.split(r'§', source_value, 1)[1].strip()
@@ -293,26 +296,30 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                         value=value,
                                         name=name.strip(']')))
         elif 'PÄRING' in source_value:
-            if source_value == 'PÄRING':
-                source_links.append(
-                    data_classes.Sourcelink(
-                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring',
-                                                                                              expert_names_to_ids_map),
-                        value='Päring',
-                        name=''))
-            else:
-                expert_name = source_value.replace('PÄRING ', '')
-                expert_type = 'Päring'
-                source_links.append(
-                    data_classes.Sourcelink(
-                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name,
-                                                                                              expert_type,
-                                                                                              expert_names_to_ids_map),
-                        value='Päring',
-                        name=''))
+            parts = full_text.strip().split('PÄRING', 1)
+            if parts:
+                if len(parts[1]) > 1:
+                    print('PÄRING: ' + parts[1].strip().strip(']'))
+                    expert_name = parts[1].strip().strip(']')
+                    expert_type = 'Päring'
+                    source_links.append(
+                        data_classes.Sourcelink(
+                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name,
+                                                                                                  expert_type,
+                                                                                                  expert_names_to_ids_map),
+                            value='Päring',
+                            name=''))
+                else:
+                    source_links.append(
+                        data_classes.Sourcelink(
+                            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring',
+                                                                                                  expert_names_to_ids_map),
+                            value='Päring',
+                            name=''))
+
 
         elif 'DGT' in source_value:
-            expert_name = source_value.replace('DGT', '').strip().strip('{}')
+            expert_name = source_value.replace('DGT ', '').strip().strip('{}')
             expert_type = 'DGT'
 
             source_links.append(
@@ -323,7 +330,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                     name=''))
 
         elif 'PARLAMENT' in source_value:
-            expert_name = source_value.replace('PARLAMENT', '').strip(' {}')
+            expert_name = source_value.replace('PARLAMENT ', '').strip(' {}')
             expert_type = 'Parlament'
 
             source_links.append(
@@ -334,18 +341,20 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                     name=''))
 
         elif 'CONSILIUM' in source_value:
-            expert_name = source_value.replace('CONSILIUM', '').strip(' {}')
-            expert_type = 'Consilium'
-            source_links.append(
-                data_classes.Sourcelink(
-                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
-                                                                                          expert_names_to_ids_map),
-                    value='Consilium',
-                    name=''))
+            parts = full_text.split('CONSILIUM', 1)
+            if parts:
+                expert_name = parts[1].strip().strip(']')
+                expert_type = 'Consilium'
+                source_links.append(
+                    data_classes.Sourcelink(
+                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
+                                                                                              expert_names_to_ids_map),
+                        value='Consilium',
+                        name=''))
 
         elif 'EKSPERT' in source_value:
 
-            expert_name = source_info.replace('EKSPERT', '').strip(' {}')
+            expert_name = source_info.replace('EKSPERT ', '').strip(' {}')
             expert_type = 'Ekspert'
             source_links.append(
                 data_classes.Sourcelink(
@@ -829,6 +838,12 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif bool(re.match(r'^X\d{5}-', sourcelink)):
         value = sourcelink[:6]
         name = sourcelink[6:]
+    elif sourcelink == 'Greenval Motor Insurance':
+        value = 'Greenval Motor Insurance'
+        name = ''
+    elif sourcelink == 'Glossary-Accident Insurance':
+        value = 'Glossary-Accident Insurance'
+        name = ''
     elif sourcelink == 'PÄRING':
         value = 'Päring'
         name = ''
@@ -3392,9 +3407,49 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                     value=value,
                     name=name
                 ))
+            elif source.startswith('88798 '):
+                value = '88798'
+                name = source.replace('88798 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif source.startswith('78200 '):
+                value = '78200'
+                name = source.replace('78200 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif source.startswith('88894 '):
+                value = '88894'
+                name = source.replace('88894 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif source.startswith('KALAPEEDIA '):
+                value = 'KALAPEEDIA'
+                name = source.replace('KALAPEEDIA ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
             elif source.startswith('8796 '):
                 value = '8796'
                 name = source.replace('8796 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif source.startswith('88213 '):
+                value = '88213'
+                name = source.replace('88213 ', '')
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,

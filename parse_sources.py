@@ -63,7 +63,7 @@ def create_json(conceptGrp):
     logger.info('Creating source JSON object from XML.')
     json_object = {
         'type': '',
-        'isPublic': True,
+        'public': True,
         'sourceProperties': []
     }
     id = conceptGrp.find('concept').text
