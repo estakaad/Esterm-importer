@@ -329,34 +329,27 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                         definitions.append(defi_object)
 
                 if descrip_type == 'Kontekst':
+                    kontekst_element_value = ''.join(descripGrp.itertext()).strip()
 
-                    updated_value, source_links = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map, expert_names_to_ids_map)
+                    usage_object = xml_helpers.parse_context_like_note(kontekst_element_value, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
-                    if source_links:
-                        if source_links[0].value.startswith('http'):
-                            value = updated_value + ' [' + source_links[0].value + ']'
-                            word.usages.append(
-                                data_classes.Usage(
-                                    value=value,
-                                    lang=xml_helpers.match_language(lang_term),
-                                    publicity=word.lexemePublicity)
-                            )
-                            del source_links[0]
+                    #updated_value, source_links = xml_helpers.extract_usage_and_its_sourcelink(descripGrp, name_to_id_map, expert_names_to_ids_map)
+
+                    if usage_object:
+                        if usage_object.sourceLinks:
+                            if usage_object.sourceLinks[0].value.startswith('http'):
+                                value = usage_object.value + ' [' + usage_object.sourceLinks[0].value + ']'
+                                word.usages.append(
+                                    data_classes.Usage(
+                                        value=value,
+                                        lang=xml_helpers.match_language(lang_term),
+                                        publicity=word.lexemePublicity)
+                                )
+                                del usage_object.sourceLinks[0]
+                            else:
+                                word.usages.append(usage_object)
                         else:
-                            word.usages.append(
-                                data_classes.Usage(
-                                    value=updated_value,
-                                    lang=xml_helpers.match_language(lang_term),
-                                    publicity=word.lexemePublicity,
-                                    sourceLinks=source_links)
-                            )
-                    else:
-                        word.usages.append(
-                            data_classes.Usage(
-                                value=updated_value,
-                                lang=xml_helpers.match_language(lang_term),
-                                publicity=word.lexemePublicity)
-                        )
+                            word.usages.append(usage_object)
 
                 if descrip_type == 'Allikaviide':
 

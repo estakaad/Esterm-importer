@@ -147,33 +147,19 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
     source_links = []
 
     full_text = ''.join(element.itertext())
+    print(full_text.strip())
     usage_value, source_info = full_text.split('[', 1) if '[' in full_text else (full_text, '')
     usage_value = usage_value.strip()
     source_info = source_info.strip()
     source_info = source_info.rstrip(']')
+    print('si: ' + source_info)
 
-    xref_element = element.find('.//xref')
-    source_value = xref_element.text.strip() if xref_element is not None else ''
-    if source_value == 'PakS-2021/05/02':
-        source_value = 'PakS-2021/05/2'
-    source_link_name = None
-
-    # 'Abiteenistujatele laienevad töölepingu seadus ja muud tööseadused niivõrd,
-    # kuivõrd käesoleva seaduse või avalikku teenistust reguleerivate eriseadustega
-    # ei sätestata teisiti. [<xref Tlink="Allikas:X0002">X0002</xref> §13-2]'
-    if xref_element is not None and xref_element.tail:
-        source_link_name = xref_element.tail.strip()
-
-    # 'Parents who are raising children have the right to assistance from the state. [77184]'
-    elif source_info:
-        source_value = source_info
-
-    name = source_link_name if source_link_name else ''
+    source_value = source_info
+    name = ''
 
     if ';' in source_value:
         parts = source_value.split('; ')
         for part in parts:
-            print(';sv: ' + source_value)
             if '§' in part:
                 value = re.split(r'§', part, 1)[0].strip()
                 name = "§ " + re.split(r'§', part, 1)[1].strip()
@@ -242,6 +228,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                                                                               expert_names_to_ids_map),
                         value='Ekspert',
                         name=''))
+
             elif ',' in part:
                 value = re.split(r',', part, 1)[0].strip()
                 name = re.split(r',', part, 1)[1].strip()
@@ -249,6 +236,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
                                             name=name.strip(']')))
+
             elif part.startswith('EASA NPA 2008-22D. '):
                 value = 'EASA NPA 2008-22D'
                 source_links.append(
@@ -286,7 +274,6 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                             value=part,
                                             name=name.strip(']')))
     elif source_value:
-        print('sv: ' + source_value)
 
         if '§' in source_value:
             value = re.split(r'§', source_value, 1)[0].strip()
@@ -929,9 +916,9 @@ def separate_sourcelink_value_from_name(sourcelink):
         else:
             value = 'FCL DRAFT REG'
             name = sourcelink.replace('FCL DRAFT REG ', '')
-    elif sourcelink.startswith('PakS-2021/05/02'):
+    elif sourcelink.startswith('PakS-2021/05/2 '):
         value = 'PakS-2021/05/2'
-        name = sourcelink.replace('PakS-2021/05/02 ', '')
+        name = sourcelink.replace('PakS-2021/05/2 ', '')
     elif sourcelink.startswith('K80050 '):
         value = 'K80050'
         name = sourcelink.replace('K80050 ', '')
@@ -953,6 +940,18 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('EKN, '):
         value = 'EKN'
         name = sourcelink.replace('EKN, ', '')
+    elif sourcelink == 'MKM 8.03.2011 nr ':
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('ICOd '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('Hacker '):
+        value = sourcelink
+        name = ''
+    elif sourcelink.startswith('EVS-EN 16486:2014. Jäätmematerjalide'):
+        value = sourcelink
+        name = ''
     elif sourcelink.startswith('BRITANNICA-AC, '):
         value = 'BRITANNICA-AC'
         name = sourcelink.replace('BRITANNICA-AC, ', '')
@@ -1930,14 +1929,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             ))
         else:
             print('error zdxy')
-    elif note_raw.endswith("{MLR & LPK}"):
-        key = ('MLR', "Terminoloog")
-        source_id = term_sources_to_ids_map.get(key)
-        source_links.append(data_classes.Sourcelink(
-            sourceId=source_id,
-            value='Terminoloog',
-            name=''
-        ))
+    elif note_raw.endswith("[LPK & MLR]"):
         key = ('LPK', "Terminoloog")
         source_id = term_sources_to_ids_map.get(key)
         source_links.append(data_classes.Sourcelink(
@@ -1945,17 +1937,43 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             value='Terminoloog',
             name=''
         ))
+        key = ('MLR', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
 
-        if type == 'word':
-            lexeme_notes.append(data_classes.Lexemenote(
-                value=note_raw.replace(' {MLR & LPK}', ''),
+        if type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {LPK & MLR}', ''),
                 lang='est',
                 publicity=True,
                 sourceLinks=source_links
             ))
-        elif type == 'concept':
-            concept_notes.append(data_classes.Note(
-                value=note_raw.replace(' {MLR & LPK}', ''),
+        else:
+            print('error zdxy')
+    elif note_raw.endswith('[{ÜMT}06.02.2001] [{MVS}27.11.2018]'):
+        key = ('ÜMT', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        key = ('MVS', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        if type == 'word':
+            note = note_raw.replace('{ÜMT}', '')
+            note = note.replace('{MVS}', '')
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note,
                 lang='est',
                 publicity=True,
                 sourceLinks=source_links
@@ -2041,6 +2059,54 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             ))
         else:
             print('error yssead')
+    elif note_raw.endswith('[SKY Monopulse Secondary Surveillance Radar (MSSR)]'):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, 'SKY'),
+            value='SKY',
+            name='Monopulse Secondary Surveillance Radar (MSSR)'
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace('[SKY Monopulse Secondary Surveillance Radar (MSSR)]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error yssead')
+    elif note_raw.endswith('[ZABMW tõlge]'):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, 'ZABMW'),
+            value='ZABMW',
+            name='tõlge'
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace('[ZABMW tõlge]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error yssedsfad')
+    elif note_raw.endswith('[ZABMW перевод]'):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, 'ZABMW'),
+            value='ZABMW',
+            name='перевод'
+        ))
+
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace('[ZABMW перевод]', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error yssedsfad')
     elif note_raw.endswith('[X2060 2.1]'):
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'X2060'),
@@ -2169,6 +2235,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             ))
         else:
             print('error yssead')
+
     # Case #2 :: no date :: source ::
     # "Nii Eesti kui ka ELi uutes kindlustusvaldkonna õigusaktides kasutatakse terminit kindlustusandja. [KTTG]" - ok
     elif not note_raw.strip('.')[-3:-1].isdigit():
@@ -2360,6 +2427,32 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 ))
             else:
                 print('error 3')
+
+    elif note_raw.startswith('RS-2011/12-s ebatäpselt sõnastatud. Mõeldud on linna-, '):
+        source_links.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, 'RS-2011/12'),
+            value='RS-2011/12',
+            name=''
+        ))
+        source_links.append(data_classes.Sourcelink(
+            sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Kristi Kuldma', 'Ekspert', expert_sources_ids_map),
+            value='Ekspert',
+            name=''
+        ))
+        key = ('KKA', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        lexeme_notes.append(data_classes.Lexemenote(
+            value='RS-2011/12-s ebatäpselt sõnastatud. Mõeldud on linna-, linnalähiliinide või piirkondlikke '
+                  '(raudtee reisijateveo) teenuseid. [21.12.2012]',
+            lang='est',
+            publicity=True,
+            sourceLinks=source_links
+        ))
 
     # Case #3 :: (source) :: date
     elif '.' in note_raw[-7:-1] or '/' in note_raw[-6:-1]:
@@ -3302,7 +3395,6 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
 
 
 def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map):
-    print('lang märkus: ' + note_raw)
     sourcelinks_to_find_ids_to = []
     sourcelinks = []
 
@@ -3316,13 +3408,146 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
             if ';' in source_value:
                 parts = source_value.split(';')
                 for part in parts:
-                    print(part)
                     sourcelinks_to_find_ids_to.append(part.strip())
             # One sourcelink
             else:
                 sourcelinks_to_find_ids_to.append(source_value)
         else:
-            print('rohkem kui 1: ' + note_raw)
+            if note_raw.endswith('[IATE] [{SES}07.03.2016]'):
+                sourcelinks_to_find_ids_to.append('IATE')
+                key = ('SES', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'tegemist katusterminiga kõikide veoliikide jaoks [07.03.2016]'
+            elif note_raw.endswith('[Vikipeedia] [{MVS}15.02.2017]'):
+                sourcelinks_to_find_ids_to.append('Vikipeedia')
+                key = ('MVS', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'Selle asutasid 3. mail 1960 alternatiiviks Euroopa Majandusühendusele riigid, ' \
+                           'kes viimasesse ei kuulunud. Tänaseks on sellesse organisatsiooni jäänud üksnes neli ' \
+                           'liiget – Island, Liechtenstein, Norra ja Šveits. EFTA-ga ühinemise vastu tunnevad ' \
+                           'huvi Fääri saared. [15.02.2017]'
+            elif note_raw.endswith('[RelvS-2015/03] [{MPO}21.09.2018]'):
+                sourcelinks_to_find_ids_to.append('RelvS-2015/03')
+                key = ('MPO', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'Varasemas relvaseaduses RelvS-2015/03 oli sõjaväerelv defineeritud kui relv, mis on ' \
+                       'põhiliselt ette nähtud Kaitseväele ja Kaitseliidule lahingutegevuseks ning Kaitseväele, ' \
+                       'Kaitseliidule ja Kaitseministeeriumi valitsemisalas olevatele asutustele teenistusülesannete ' \
+                       'täitmiseks. Omaduste poolest loetakse sõjaväerelvaks ja selle laskemoonaks üksnes käesoleva ' \
+                       'seadusega kehtestatud tingimustele vastav eriohtlikkusega tulirelv ja laskemoon. [21.09.2018]'
+            elif note_raw.endswith('(Ca[OCl]2∙CaCl2∙Ca[OH]2∙2H2O). [BRITANNICA-AC]'):
+                sourcelinks_to_find_ids_to.append('BRITANNICA-AC')
+                note = 'Much chlorine is used to sterilize water and wastes, and the substance is employed either ' \
+                       'directly or indirectly as a bleaching agent for paper or textiles and ' \
+                       'as “bleaching powder” (Ca[OCl]2∙CaCl2∙Ca[OH]2∙2H2O).'
+            elif note_raw.endswith('[EKSPERT Heido Ots] [{MVS, SES}16.11.2018]'):
+                sourcelinks_to_find_ids_to.append('EKSPERT Heido Ots')
+                key = ('MVS', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                key = ('SES', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'Poolhaagis on asjatu piirang, "axle system" võib esineda ka täishaagisel ja autol. [16.11.2018]'
+            elif note_raw.endswith('[TER-PLUS] [{MVS}05.05.2017]'):
+                sourcelinks_to_find_ids_to.append('TER-PLUS')
+                key = ('MVS', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'On a terminology record, it is a type of textual support that helps establish the textual ' \
+                       'match between languages by stating the delimiting characteristics of a concept. [05.05.2017]'
+            elif note_raw.endswith('[EVS-ISO 1087-1:2002] [{MVS}02.03.2017]'):
+                sourcelinks_to_find_ids_to.append('EVS-ISO 1087-1:2002')
+                key = ('MVS', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'Eesti keeles ei eristata akronüüme hääldusviisi järgi. [02.03.2017]'
+            elif note_raw.endswith('[IATE] [{KKA}4.05.2017]'):
+                sourcelinks_to_find_ids_to.append('IATE')
+                key = ('KKA', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = ' This is not a rolling Presidency team and should not be confused with the troika. See "troika - kolmik". [4.05.2017]'
+            elif note_raw.endswith('[IATE; Vikipeedia] [{MVS}12.06.2017]'):
+                sourcelinks_to_find_ids_to.append('IATE')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'Vikipeedia'),
+                    value='Vikipeedia',
+                    name=''
+                ))
+                key = ('MVS', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'See asendati Aafrika Liiduga. [12.06.2017]'
+            elif note_raw.endswith('[EKSPERT Kristi Orav] [{MVS}18.01.2021]'):
+                sourcelinks_to_find_ids_to.append('EKSPERT Kristi Orav')
+                key = ('MVS', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'Amet keskendub liikuvuse parendamisele, et inimesed ja kaubad saaksid võimalikult sujuvalt ' \
+                       'liikuda ühe või mitme transpordiliigi ja teenuse abil ühest kohast teise. Transpordiametis ' \
+                       'keskendutakse mugavate teenuste ja sihtkohtade kättesaadavuse tagamisele; targemale maa-, ' \
+                       'õhuruumi ja veeteede kasutusele ning tervislikumale ja keskkonnasõbralikumale liiklemisele. ' \
+                       'Samuti planeeritakse Transpordiametis nutikaid liikuvuse lahendusi ja viiakse ellu ' \
+                       'transpordiliikide üleseid poliitikaid ja projekte. [18.01.2021]'
+            elif note_raw.endswith('[RHK-10 põhjal] [{MVS}7.01.2022]'):
+                sourcelinks_to_find_ids_to.append('RHK-10')
+                key = ('MVS', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'RHK-10 (ICD-10) näitab, mis tüüpi infarktiga on tegemist, nt põrnainfarkt, kilpnäärmeinfarkt, ' \
+                       'neerupealise infarkt, äge seljaajuinfarkt, äge müokardiinfarkt, peaajuinfarkt, maksainfarkt, ' \
+                       'lihase isheemiline infarkt, neeruinfarkt, platsentainfarkt. Lihtsalt "infarkt" ' \
+                       'diagnoosina ei esine. [7.01.2022]'
+            else:
+                print('mingi muu ')
 
         for source in sourcelinks_to_find_ids_to:
             if source.startswith('EKSPERT'):
@@ -3349,6 +3574,18 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                     sourceId=source_id,
                     value='Terminoloog',
                     name=''
+                ))
+            elif source.startswith('88710 '):
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '88710'),
+                    value='88710',
+                    name=source.replace('88710 ', '')
+                ))
+            elif source.startswith('EME '):
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'EME'),
+                    value='EME',
+                    name=source.replace('EME ', '')
                 ))
             elif '§' in source:
                 parts = source.split('§')
@@ -3386,6 +3623,62 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
             elif 'BRITANNICA ' in source:
                 value = 'BRITANNICA'
                 name = source.replace('BRITANNICA ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif 'PBAZC ' in source:
+                value = 'PBAZC'
+                name = source.replace('PBAZC ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif '88182 ' in source:
+                value = '88182'
+                name = source.replace('88182 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif '88020 ' in source:
+                value = '88020'
+                name = source.replace('88020 ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif ' 88020' in source:
+                value = '88020'
+                name = source.replace(' 88020', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif 'LOG-S ' in source:
+                value = 'LOG-S'
+                name = source.replace('LOG-S ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif 'LTK ' in source:
+                value = 'LTK'
+                name = source.replace('LTK ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+            elif 'ZABMW ' in source:
+                value = 'ZABMW'
+                name = source.replace('ZABMW ', '')
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
@@ -3495,3 +3788,1110 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
             publicity=True,
             sourceLinks=sourcelinks
         )
+
+
+def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map):
+    sourcelinks_to_find_ids_to = []
+    sourcelinks = []
+
+    usage = usage_raw
+    publicity = True
+
+    # There is a sourcelink
+    if '[' in usage_raw:
+        if usage_raw.count('[') < 2:
+            parts = usage_raw.split('[')
+            usage = parts[0]
+            source_value = parts[1].replace(']', '')
+
+            # Multiple sourelink values in sourcelink
+            if ';' in source_value:
+                parts = source_value.split(';')
+                for part in parts:
+                    sourcelinks_to_find_ids_to.append(part.strip())
+            # One sourcelink
+            else:
+                sourcelinks_to_find_ids_to.append(source_value)
+        else:
+            if usage_raw.startswith('[') and usage_raw.count('[') == 2:
+                first = usage_raw.find('[')
+                second = usage_raw.find('[', first + 1)
+                parts = usage_raw[:second], usage_raw[second:]
+
+                usage = parts[0]
+                value_raw = parts[1].replace('[', '').replace(']', '')
+                name = ''
+
+                if '§' in value_raw:
+                    value = value_raw.split('§')[0].strip()
+                    name = value_raw.replace(value, '').strip()
+                else:
+                    value = value_raw
+
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
+
+                return data_classes.Usage(
+                    value=usage,
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=sourcelinks
+                )
+            else:
+                # Three [] in the end
+                pattern_three = r'\s\[(.*?)\]\s\[(.*?)\]\s\[(.*?)\]$'
+                pattern_two = r'\s\[(.*?)\]\s\[(.*?)\]$'
+
+                match_three = re.search(pattern_three, usage_raw)
+
+                if re.search(pattern_two, usage_raw):
+                    match_two = re.search(pattern_two, usage_raw)
+                    for m in match_two.groups():
+                        sourcelinks_to_find_ids_to.append(m.strip())
+
+                    # Now modify usage outside the loop
+                    for m in match_two.groups():
+                        usage_raw = usage_raw.replace('[' + m + ']', '')
+
+                    usage = usage_raw.strip()
+
+                else:
+                    print('?: ' + usage_raw)
+                    usage = 'KONTROLLIDA: ' + usage_raw
+                    publicity=False
+
+    for source in sourcelinks_to_find_ids_to:
+        if source.startswith('EKSPERT '):
+            name = source.replace('EKSPERT ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert', expert_names_to_ids_map),
+                value='Ekspert',
+                name=''
+            ))
+        elif source.startswith('PÄRING '):
+            name = source.replace('PÄRING ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Päring', expert_names_to_ids_map),
+                value='Päring',
+                name=''
+            ))
+        elif source.startswith('{'):
+            parts = source.split('}')
+            term_name = parts[0].strip('{}').strip()
+            usage = usage + '[' + parts[1] + ']'
+            key = (term_name, "Terminoloog")
+            source_id = term_sources_to_ids_map.get(key)
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=source_id,
+                value='Terminoloog',
+                name=''
+            ))
+        elif source.startswith('X0007'):
+            value = 'X0007'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0010'):
+            value = 'X0010'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0001'):
+            value = 'X0001'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0002'):
+            value = 'X0002'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30026'):
+            value = 'X30026'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X1041'):
+            value = 'X1041'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X1060'):
+            value = 'X1060'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2013'):
+            value = 'X2013'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2058'):
+            value = 'X2058'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2035'):
+            value = 'X2035'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2053'):
+            value = 'X2053'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2049'):
+            value = 'X2049'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2049'):
+            value = 'X2049'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2056'):
+            value = 'X2056'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30004'):
+            value = 'X30004'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2051'):
+            value = 'X2051'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30023'):
+            value = 'X30023'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30005'):
+            value = 'X30005'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30073'):
+            value = 'X30073'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T60600'):
+            value = 'T60600'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T70294'):
+            value = 'T70294'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T60600'):
+            value = 'T60600'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T60600'):
+            value = 'T60600'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2064'):
+            value = 'X2064'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2063'):
+            value = 'X2063'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2060'):
+            value = 'X2060'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30073'):
+            value = 'X30073'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30050'):
+            value = 'X30050'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30030'):
+            value = 'X30030'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30006'):
+            value = 'X30006'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30073'):
+            value = 'X30073'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2004'):
+            value = 'X2004'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0001'):
+            value = 'X0001'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0010'):
+            value = 'X0010'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X1003'):
+            value = 'X1003'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0007'):
+            value = 'X0007'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X1015'):
+            value = 'X1015'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2013'):
+            value = 'X2013'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2035'):
+            value = 'X2035'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2026'):
+            value = 'X2026'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2061'):
+            value = 'X2061'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2014'):
+            value = 'X2014'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2006'):
+            value = 'X2006'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2065'):
+            value = 'X2065'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0001'):
+            value = 'X0001'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0010'):
+            value = 'X0010'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0007'):
+            value = 'X0007'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2035'):
+            value = 'X2035'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30003'):
+            value = 'X30003'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30038'):
+            value = 'X30038'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2065'):
+            value = 'X2065'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T1130'):
+            value = 'T1130'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30073'):
+            value = 'X30073'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2004'):
+            value = 'X2004'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X40070'):
+            value = 'X40070'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('77574'):
+            value = '77574'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('PART '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('MKM 8.06.2005 nr 66 '):
+            value = 'MKM 8.06.2005 nr 66'
+            name = source.replace('MKM 8.06.2005 nr 66 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('EVS-ISO '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('FCL '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('ZABMW'):
+            value = 'ZABMW'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('LOG-S '):
+            value = 'LOG-S'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('77574 '):
+            value = '77574'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X1044'):
+            value = 'X1044'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2004'):
+            value = 'X2004'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2038'):
+            value = 'X2038'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X1064'):
+            value = 'X1064'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T61134'):
+            value = 'T61134'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('10524'):
+            value = '10524'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('Aquatic '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('EE-online '):
+            value = 'EE-online'
+            name = source.replace('EE-online ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('ISO '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'MKM 22.10.2009 nr 103':
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'MKM 08.06.2005 nr 66 Lisa 5':
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'MKM 8.03.2011 nr 20 lisa 7':
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'LLT AS-WWW':
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('77574 '):
+            value = '77574'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('LENNU '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('JAR-FCL '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('AC '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('ICAO '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('Eesti seitsmes kliimaaruanne'):
+            value = 'Eesti seitsmes kliimaaruanne'
+            name = source.replace('Eesti seitsmes kliimaaruanne ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('Eesti vajab püsivat ärikeskkonna revolutsiooni'):
+            value = 'Eesti vajab püsivat ärikeskkonna revolutsiooni'
+            name = source.replace('Eesti vajab püsivat ärikeskkonna revolutsiooni ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('Choosing a Business Model That Will Grow Your Company'):
+            value = 'Choosing a Business Model That Will Grow Your Company'
+            name = source.replace('Choosing a Business Model That Will Grow Your Company ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('SKY '):
+            value = 'SKY'
+            name = source.replace('SKY ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('JAR-OPS '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'MKM 8.03.2011 nr 20':
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T2109'):
+            value = 'T2109'
+            name = source.replace('T2109 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2059'):
+            value = 'X2059'
+            name = source.replace('X2059 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30040'):
+            value = 'X30040'
+            name = source.replace('X30040 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X1064'):
+            value = 'X1064'
+            name = source.replace('X1064 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X40030'):
+            value = 'X40030'
+            name = source.replace('X40030 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('66790'):
+            value = '66790'
+            name = source.replace('66790 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T1134'):
+            value = 'T1134'
+            name = source.replace('T1134 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30007'):
+            value = 'X30007'
+            name = source.replace('X30007 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30027'):
+            value = 'X30027'
+            name = source.replace('X30027 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30025'):
+            value = 'X30025'
+            name = source.replace('X30025 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30024'):
+            value = 'X30024'
+            name = source.replace('X30024 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30044'):
+            value = 'X30044'
+            name = source.replace('X30044 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30057'):
+            value = 'X30057'
+            name = source.replace('X30057 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T30088'):
+            value = 'T30088'
+            name = source.replace('T30088 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T61134'):
+            value = 'T61134'
+            name = source.replace('T61134 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0011'):
+            value = 'X0011'
+            name = source.replace('X0011', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30060'):
+            value = 'X30060'
+            name = source.replace('X30060', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30064'):
+            value = 'X30064'
+            name = source.replace('X30064', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30075'):
+            value = 'X30075'
+            name = source.replace('X30075', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X40021'):
+            value = 'X40021'
+            name = source.replace('X40021 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30002'):
+            value = 'X30002'
+            name = source.replace('X30002 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30031'):
+            value = 'X30031'
+            name = source.replace('X30031 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30042'):
+            value = 'X30042'
+            name = source.replace('X30042 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30070'):
+            value = 'X30070'
+            name = source.replace('X30070 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2007'):
+            value = 'X2007'
+            name = source.replace('X2007', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'MKM 21.04.2009 nr 45':
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'Kuritegevus Eestis 2010':
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X30046'):
+            value = 'X30046'
+            name = source.replace('X30046', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('GG005,'):
+            value = 'GG005'
+            name = source.replace('GG005, ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('1459 '):
+            value = '1459'
+            name = source.replace('1459 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('EVS-EN '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('SAR '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('Glossary-Accident '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif '§' in source:
+            parts = source.split('§')
+            value = parts[0].strip()
+            name = '§ ' + parts[1].strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif ',' in source:
+            parts = source.split(',')
+            value = parts[0].strip()
+            name = parts[1].strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif ' ' in source:
+            parts = source.split(' ')
+            value = parts[0].strip()
+            name = parts[1].strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif '[https' in source:
+            print('https kontekstis')
+        else:
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+
+    # There is not a sourcelink
+
+    return data_classes.Usage(
+        value=usage,
+        lang='est',
+        publicity=publicity,
+        sourceLinks=sourcelinks
+    )
