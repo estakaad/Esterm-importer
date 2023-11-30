@@ -102,23 +102,31 @@ def update_notes(words):
         "VLDI: ": "väldi"
     }
 
-    notes_to_move = {code: [] for code in prefix_to_state_code.values()}
+    notes_to_move = {}
 
     for word in words:
         for lexemeNote in word.lexemeNotes[:]:
             for prefix, state_code in prefix_to_state_code.items():
                 if lexemeNote.value.startswith(prefix):
                     cleaned_note = lexemeNote.value.replace(prefix, "", 1)
-                    lexemeNote.value = cleaned_note  # Update the note value in place
-                    notes_to_move[state_code].append(lexemeNote)
+                    lexemeNote.value = cleaned_note
+
+                    key = (state_code, word.lang)
+                    if key not in notes_to_move:
+                        notes_to_move[key] = []
+
+                    notes_to_move[key].append(lexemeNote)
                     word.lexemeNotes.remove(lexemeNote)
                     logger.debug('Removed note from word: %s', word.value)
+
     for word in words:
-        if word.lexemeValueStateCode in notes_to_move:
-            word.lexemeNotes.extend(notes_to_move[word.lexemeValueStateCode])
+        key = (word.lexemeValueStateCode, word.lang)
+        if key in notes_to_move:
+            word.lexemeNotes.extend(notes_to_move[key])
             logger.debug('Added note to word: %s', word.value)
 
     return words
+
 
 
 def are_terms_public(conceptGrp):
