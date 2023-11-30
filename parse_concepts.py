@@ -436,6 +436,8 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
         if word.lexemeNotes:
             logger.info('Added word notes: %s', str(word.lexemeNotes))
 
+    xml_helpers.remove_lexeme_value_state_code(words)
+
     return words, definitions, notes
 
 

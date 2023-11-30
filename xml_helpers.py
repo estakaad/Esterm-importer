@@ -69,8 +69,8 @@ def parse_value_state_codes(descrip_text, count):
     # tuleb Ekilexis väärtusoleku väärtuseks salvestada 'eelistatud'
     if descrip_text == 'eelistermin' and count > 1:
         code = 'eelistatud'
-    # Kui keelenditüüp on 'sünonüüm' ja termin on kohanimi, tuleb Ekilexis väärtusolekuks
-    # salvestada 'mööndav'. Kui keelenditüüp on 'sünonüüm' ja termin ei ole kohanimi, siis Ekilexis ?
+    # Kui keelenditüüp on 'sünonüüm', tuleb Ekilexis väärtusolekuks
+    # salvestada 'mööndav'.
     elif descrip_text == 'sünonüüm':
         code = 'mööndav'
     # Kui keelenditüüp on 'variant', siis Ekilexis väärtusolekut ega keelenditüüpi ei salvestata.
@@ -2357,7 +2357,6 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                             value=source.strip(),
                             name=''
                         ))
-                    print(source_links)
             elif '§' in sourcelink_value:
                 source_elements = sourcelink_value.split('§')
                 source_elements = [part.strip() for part in source_elements]
@@ -4903,3 +4902,19 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
         publicity=publicity,
         sourceLinks=sourcelinks
     )
+
+def remove_lexeme_value_state_code(words):
+    lang_count = {}
+    for word in words:
+        if word.lang in lang_count:
+            lang_count[word.lang] += 1
+        else:
+            lang_count[word.lang] = 1
+
+    for word in words:
+        if word.lexemeValueStateCode == "eelistatud" and lang_count[word.lang] == 2:
+            other_word = next((w for w in words if w.lang == word.lang and w != word), None)
+            if other_word and 'l' in other_word.wordTypeCodes:
+                word.lexemeValueStateCode = None
+
+    return words
