@@ -48,7 +48,7 @@ ids_of_created_expert_sources_file = 'files/import/esterm-29-11-23/sources/exper
 #updated_expert_sources_file = requests_sources.assign_ids_to_expert_sources(
 #     expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file)
 #
-# # # # # # 5. Map source names to their ID-s
+# # # # # # # 5. Map source names to their ID-s
 with open('files/import/esterm-29-11-23/sources/sources_and_unknown_sources_with_ids.json', 'r', encoding='utf-8') as f:
     updated_sources = json.load(f)
 
@@ -68,15 +68,14 @@ term_sources_to_ids_map = expert_sources_helpers.create_terminologist_name_value
 parse_concepts.transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
 # 7. Check if word exists. If it does, add its ID
-# #requests_concepts.update_word_ids('files/output/aviation_concepts.json', 'eki', 'avi2110')
-# requests_concepts.update_word_ids('files/import/esterm-22-11-23/concepts2.json', 'eki', 'est2211')
-#
+#requests_concepts.update_word_ids('files/import/esterm-01-12-23/concepts1.json', 'eki', 'est-29-11')
+
 #
 # # 8. Import all concepts from file files/output/concepts.json or files/output/aviation_concepts.json.
 # # List of ID-s of concepts is saved to files/output/
 # # NB! Update folder where saved and not saved concepts are saved
 # #requests_concepts.import_concepts('files/import/avi2110/avi2110_concepts_with_word_ids.json', 'avi')
-# requests_concepts.import_concepts('files/import/esterm-22-11-23/concepts_with_word_ids2.json', 'est')
+#requests_concepts.import_concepts('files/import/esterm-01-12-23/concepts_with_word_ids1.json', 'est')
 
 
 ######################

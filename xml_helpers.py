@@ -1665,6 +1665,54 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             ))
         else:
             print('error say')
+    elif note_raw.endswith("[{ÜMT & ATM} 03.11.1999]"):
+        key = ('ÜMT', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        key = ('ATM', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace('{ÜMT & ATM} ', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error say')
+    elif note_raw.endswith("[{LPK & KMU} 12.11.1999]"):
+        key = ('LPK', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        key = ('KMU', "Terminoloog")
+        source_id = term_sources_to_ids_map.get(key)
+        source_links.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value='Terminoloog',
+            name=''
+        ))
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace('{LPK & KMU} ', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error say')
     elif note_raw.endswith("{KMR & RRS}"):
         key = ('KMR', "Terminoloog")
         source_id = term_sources_to_ids_map.get(key)
@@ -5324,3 +5372,59 @@ def split_context_to_parts(usage):
         return usages
     else:
         return [usage]
+
+
+def does_note_contain_ampersand_in_sourcelink(note_raw):
+    pattern = r'\s\[.*\&.*\]'
+
+    regex = re.compile(pattern)
+
+    if regex.search(note_raw):
+        print("ampersand: " + note_raw)
+        return True
+    else:
+        return False
+
+def handle_ampersand_notes(type_of_note, note_raw, term_sources_to_ids_map):
+    lexeme_notes = []
+    concept_notes = []
+    temp_sourcelinks = []
+    sourcelinks = []
+    date = ''
+
+    parts = note_raw.split('[', 1)
+
+    if len(parts) > 1:
+        temp_sourcelinks = re.split(r'(?=\d)', parts[1], maxsplit=1)
+        note_value = parts[0]
+
+        if temp_sourcelinks:
+            term_initials = temp_sourcelinks[0].replace('{', '').replace('}', '').split('&')
+            for initials in term_initials:
+                key = (initials.strip(), "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+            date = temp_sourcelinks[1].strip(']')
+    else:
+        note_value = parts[0]
+
+    if type_of_note == 'word':
+        lexeme_notes.append(data_classes.Lexemenote(
+            value=note_value + '[' + date + ']',
+            lang='est',
+            publicity=True,
+            sourceLinks=sourcelinks
+        ))
+    else:
+        concept_notes.append(data_classes.Note(
+            value=note_value + '[' + date + ']',
+            lang='est',
+            publicity=True,
+            sourceLinks=sourcelinks
+        ))
+
+    return lexeme_notes, concept_notes

@@ -416,6 +416,11 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                         for note in lexeme_notes_with_sourcelinks:
                             word.lexemeNotes.append(note)
 
+                    elif xml_helpers.does_note_contain_ampersand_in_sourcelink(lexeme_note_raw):
+                        print('lexemenote oli see')
+                        lexeme_notes, concept_notes = xml_helpers.handle_ampersand_notes('word', lexeme_note_raw, term_sources_to_ids_map)
+                        for note in lexeme_notes:
+                            word.lexemeNotes.append(note)
                     else:
                         if any(char in lexeme_note_raw[:-50] for char in '[]{}'):
                             word.lexemeNotes.append(data_classes.Lexemenote(
