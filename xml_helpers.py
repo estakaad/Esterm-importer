@@ -707,6 +707,12 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
                             value='BRIONLINE',
                             name=name.replace('BRIONLINE, ', '')
                         ))
+                    elif name.startswith('Jane'):
+                        source_links_for_definition.append(data_classes.Sourcelink(
+                            sourceId=find_source_by_name(name_to_id_map, name),
+                            value=name,
+                            name=''
+                        ))
                     elif name.startswith('ESR, '):
                         print('esr: ' + name)
                         source_links_for_definition.append(data_classes.Sourcelink(
@@ -839,6 +845,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink == 'Glossary-Accident Insurance':
         value = 'Glossary-Accident Insurance'
         name = ''
+    elif sourcelink.startswith('American Heritage '):
+        value = sourcelink
+        name = ''
     elif sourcelink == 'PÄRING':
         value = 'Päring'
         name = ''
@@ -870,9 +879,12 @@ def separate_sourcelink_value_from_name(sourcelink):
         if len(sourcelink) > 5:
             value = sourcelink[:5]
             name = sourcelink.replace(sourcelink[:5], '')
-    elif 'GG0005,' in sourcelink:
-        value = 'GG0005'
+    elif 'GG005,' in sourcelink:
+        value = 'GG005'
         name = sourcelink.replace('GG0005, ', '')
+    elif sourcelink.startswith('Harju Elu '):
+        value = sourcelink
+        name = ''
     elif 'T0057 ' in sourcelink:
         value = 'T0057'
         name = sourcelink.replace('T0057 ', '')
@@ -930,6 +942,9 @@ def separate_sourcelink_value_from_name(sourcelink):
     elif sourcelink.startswith('K80050 '):
         value = 'K80050'
         name = sourcelink.replace('K80050 ', '')
+    elif sourcelink.startswith('Ridali '):
+        value = sourcelink
+        name = ''
     elif '§' in sourcelink:
         value = re.split(r'§', sourcelink, 1)[0].strip()
         name = "§ " + re.split(r'§', sourcelink, 1)[1].strip()
@@ -1596,6 +1611,31 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
                 value=note_raw.replace('[EKSPERT Andres Lipand] {TKK & ELS ', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
+        else:
+            print('error say')
+    elif note_raw.endswith('[EKSPERT Jaan Sootak; EKSPERT Jaan Ginter]'):
+
+        source_links.append(
+            data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Jaan Sootak', 'Ekspert', expert_sources_ids_map),
+                value='Ekspert',
+                name=''
+            )
+        )
+        source_links.append(
+            data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Jaan Ginter', 'Ekspert', expert_sources_ids_map),
+                value='Ekspert',
+                name=''
+            )
+        )
+        if type == 'word':
+            lexeme_notes.append(data_classes.Lexemenote(
+                value=note_raw.replace('[EKSPERT Jaan Sootak; EKSPERT Jaan Ginter]', ''),
                 lang='est',
                 publicity=True,
                 sourceLinks=source_links
@@ -2615,6 +2655,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                         value='MER',
                         name=source.replace('MER, ', '')
                     ))
+                elif "KNV " in source:
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, 'KNV'),
+                        value='KNV',
+                        name=source.replace('KNV ', '')
+                    ))
                 elif ";" in source:
                     sources = source.split(';')
                     sources = [part.strip() for part in sources]
@@ -3554,7 +3600,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                        'lihase isheemiline infarkt, neeruinfarkt, platsentainfarkt. Lihtsalt "infarkt" ' \
                        'diagnoosina ei esine. [7.01.2022]'
             else:
-                print('mingi muu ')
+                print('mingi muu ' + note_raw)
 
         for source in sourcelinks_to_find_ids_to:
             if source.startswith('EKSPERT'):
@@ -3739,6 +3785,14 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                     value=value,
                     name=name
                 ))
+            elif source.startswith('EE-online '):
+                value = 'EE-online'
+                name = source.replace('EE-online ', '')
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, value),
+                    value=value,
+                    name=name
+                ))
             elif source.startswith('8796 '):
                 value = '8796'
                 name = source.replace('8796 ', '')
@@ -3804,8 +3858,24 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
     usage = usage_raw
     publicity = True
 
+    if usage.startswith('Prokuröride üldkogu: 1) valib kaks ringkonnaprokuratuuri prokuröri '):
+        usage = 'KONTROLLIDA: ' + usage_raw
+        publicity = False
+    elif usage.startswith('Rahandusministeeriumi valitsemisalas on järgmised ametid ja inspektsioonid: 1) ['):
+        usage = 'KONTROLLIDA: ' + usage_raw
+        publicity = False
+    elif usage.startswith('Siseministeeriumi valitsemisalas on järgmised ametid ja inspektsioonid: 1) Kaitsepolitseiamet; 2) ['):
+        usage = 'KONTROLLIDA: ' + usage_raw
+        publicity = False
+    elif usage.startswith('Prokuröride üldkogu: 1) valib kaks ringkonnaprokuratuuri prokuröri ja ühe Riigiprokuratuuri prokuröri prokuröride konkursikomisjoni liikmeks; ['):
+        usage = 'KONTROLLIDA: ' + usage_raw
+        publicity = False
+    elif usage == 'ÕS-2006 ei soovita sõna "siseriiklik" kasutada [ÕS-2006] [KKA 7.06.2012]':
+        usage = 'ÕS-2006 ei soovita sõna "siseriiklik" kasutada [7.06.2012]'
+        sourcelinks_to_find_ids_to.append('ÕS-2006')
+        sourcelinks_to_find_ids_to.append('{KKA}')
     # There is a sourcelink
-    if '[' in usage_raw:
+    elif '[' in usage_raw:
         if usage_raw.count('[') < 2:
             parts = usage_raw.split('[')
             usage = parts[0]
@@ -3851,8 +3921,6 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
                 # Three [] in the end
                 pattern_three = r'\s\[(.*?)\]\s\[(.*?)\]\s\[(.*?)\]$'
                 pattern_two = r'\s\[(.*?)\]\s\[(.*?)\]$'
-
-                match_three = re.search(pattern_three, usage_raw)
 
                 if re.search(pattern_two, usage_raw):
                     match_two = re.search(pattern_two, usage_raw)
@@ -4176,9 +4244,41 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
                 value=value,
                 name=name
             ))
+        elif source.startswith('T70284'):
+            value = 'T70284'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('K80050'):
+            value = 'K80050'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X1045'):
+            value = 'X1045'
+            name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
         elif source.startswith('X0007'):
             value = 'X0007'
             name = source.replace(value, '').strip()
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'B 737 OM':
+            value = source
+            name = ''
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
@@ -4824,6 +4924,118 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
                 value=value,
                 name=name
             ))
+        elif source.startswith('T1132'):
+            value = 'T1132'
+            name = source.replace('T1132', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X0003'):
+            value = 'X0003'
+            name = source.replace('X0003', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('AMS Glossary'):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('SKY '):
+            value = 'SKY'
+            name = source.replace('SKY ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source == 'MKM 8.06.2005 nr 66':
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('EVS-EN 45020:2008 '):
+            value = 'EVS-EN 45020:2008'
+            name = source.replace('EVS-EN 45020:2008 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X40018'):
+            value = 'X40018'
+            name = source.replace('X40018', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2012'):
+            value = 'X2012'
+            name = source.replace('X2012', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T1400'):
+            value = 'T1400'
+            name = source.replace('T1400', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('T30158'):
+            value = 'T30158'
+            name = source.replace('T30158', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('X2055'):
+            value = 'X2055'
+            name = source.replace('X2055', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('MKM 8.03.2011 nr 20 '):
+            value = 'MKM 8.03.2011 nr 20'
+            name = source.replace('MKM 8.03.2011 nr 20 ', '')
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('Harju Elu '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
+        elif source.startswith('Kuritegevus Eestis '):
+            value = source
+            name = ''
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=find_source_by_name(name_to_id_map, value),
+                value=value,
+                name=name
+            ))
         elif source.startswith('1459 '):
             value = '1459'
             name = source.replace('1459 ', '')
@@ -4897,7 +5109,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
     # There is not a sourcelink
 
     return data_classes.Usage(
-        value=usage,
+        value=usage.strip(),
         lang='est',
         publicity=publicity,
         sourceLinks=sourcelinks
@@ -4918,3 +5130,16 @@ def remove_lexeme_value_state_code(words):
                 word.lexemeValueStateCode = None
 
     return words
+
+
+def split_context_to_parts(usage):
+    usages = usage.split("2. ", 1)
+
+    if len(usages) == 2:
+        usages[0] = usages[0].strip()
+        usages[1] = "2. " + usages[1]
+
+    if usages[0].endswith(']'):
+        return usages
+    else:
+        return usage
