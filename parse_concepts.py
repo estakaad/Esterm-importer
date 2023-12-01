@@ -331,26 +331,27 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                 if descrip_type == 'Kontekst':
                     kontekst_element_value = ''.join(descripGrp.itertext()).strip()
 
-                    if kontekst_element_value.startswith('1.'):
-                        for usage in xml_helpers.split_context_to_parts(kontekst_element_value):
+                    usages = xml_helpers.split_context_to_parts(kontekst_element_value)
 
-                            usage_object = xml_helpers.parse_context_like_note(usage, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
+                    for usage in usages:
 
-                            if usage_object:
-                                if usage_object.sourceLinks:
-                                    if usage_object.sourceLinks[0].value.startswith('http'):
-                                        value = usage_object.value + ' [' + usage_object.sourceLinks[0].value + ']'
-                                        word.usages.append(
-                                            data_classes.Usage(
-                                                value=value,
-                                                lang=xml_helpers.match_language(lang_term),
-                                                publicity=word.lexemePublicity)
-                                        )
-                                        del usage_object.sourceLinks[0]
-                                    else:
-                                        word.usages.append(usage_object)
+                        usage_object = xml_helpers.parse_context_like_note(usage, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
+
+                        if usage_object:
+                            if usage_object.sourceLinks:
+                                if usage_object.sourceLinks[0].value.startswith('http'):
+                                    value = usage_object.value + ' [' + usage_object.sourceLinks[0].value + ']'
+                                    word.usages.append(
+                                        data_classes.Usage(
+                                            value=value,
+                                            lang=xml_helpers.match_language(lang_term),
+                                            publicity=word.lexemePublicity)
+                                    )
+                                    del usage_object.sourceLinks[0]
                                 else:
                                     word.usages.append(usage_object)
+                            else:
+                                word.usages.append(usage_object)
 
                 if descrip_type == 'Allikaviide':
 
@@ -374,7 +375,17 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
                         value = value.strip('[]')
 
-                        if expert_type:
+                        if value == '{TMA}':
+                            key = ('TMA', "Terminoloog")
+                            source_id = term_sources_to_ids_map.get(key)
+                            word.lexemeSourceLinks.append(
+                                data_classes.Sourcelink(
+                                    sourceId=source_id,
+                                    value='Terminoloog',
+                                    name=''
+                                )
+                            )
+                        elif expert_type:
                             sourceid = expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map)
                             word.lexemeSourceLinks.append(
                                 data_classes.Sourcelink(

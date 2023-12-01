@@ -75,7 +75,7 @@ def parse_value_state_codes(descrip_text, count):
         code = 'mööndav'
     # Kui keelenditüüp on 'variant', siis Ekilexis väärtusolekut ega keelenditüüpi ei salvestata.
     elif descrip_text == 'variant':
-        code = 'variant'
+        code = None
     # Kui keelenditüüp on 'endine', tuleb Ekilexis väärtusoleku väärtuseks salvestada 'endine'
     elif descrip_text == 'endine':
         code = 'endine'
@@ -714,7 +714,6 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
                             name=''
                         ))
                     elif name.startswith('ESR, '):
-                        print('esr: ' + name)
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'ESR'),
                             value='ESR',
@@ -1688,6 +1687,13 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 publicity=True,
                 sourceLinks=source_links
             ))
+        elif type == 'concept':
+            concept_notes.append(data_classes.Note(
+                value=note_raw.replace(' {KMR & RRS}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=source_links
+            ))
         else:
             print('error sddy')
     elif note_raw.endswith("{TKK & AJK}"):
@@ -1977,6 +1983,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             ))
         else:
             print('error zdxy')
+
     elif note_raw.endswith("[LPK & MLR]"):
         key = ('LPK', "Terminoloog")
         source_id = term_sources_to_ids_map.get(key)
@@ -2661,6 +2668,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                         value='KNV',
                         name=source.replace('KNV ', '')
                     ))
+                elif "T61134 " in source:
+                    source_links.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, 'T61134'),
+                        value='T61134',
+                        name=source.replace('T61134 ', '')
+                    ))
                 elif ";" in source:
                     sources = source.split(';')
                     sources = [part.strip() for part in sources]
@@ -2827,7 +2840,10 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                        'EKIÜS-2020', '52015DC0599', 'T30063', 'X1060', '32008R0440', '1553', '31975L0442', 'T50143',
                        'T61500', '32016L0798', 'X1057', 'WPG-1637', 'T2050', 'ESA 95', 'VIM-2012', 'EKN, 2710 00 51 00',
                        'T2050', 'T2009', '32009L0003', 'WPG-1581', '32002D0657', 'X30025', 'X1056', 'X30031', 'X30028',
-                       'T1088', 'X30063', 'X2045', 'X2020'
+                       'T1088', 'X30063', 'X2045', 'X2020', 'T30058', 'T30423', 'X40003', 'X1062', 'X2037', 'T30230',
+                       'X40088', 'T40803', 'T2050', 'T1511', 'T30058', 'T30423', 'T0046', 'T45065', 'U50112', 'U50043',
+                       'ISO/IEC 17025:1999', 'T40090', 'VT WS004190', 'T2010', 'T2044', 'T2031', 'X2054', 'X1063',
+                       'T2052', 'T0119', 'T1159', 'T30279', 'X2034', 'X2029', 'X2007', 'T30420', 'T45106', 'T1001'
                        ]
         match_found = False
 
@@ -2915,6 +2931,38 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     ))
                 else:
                     print('error 10')
+            elif note_raw.endswith('[EKSPERT Maret Ots; 9705; 9706]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Maret Ots', 'Ekspert', expert_sources_ids_map),
+                    value='Ekspert',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '9705'),
+                    value='9705',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '9706'),
+                    value='9706',
+                    name=''
+                ))
+                if type == 'word':
+                    lexeme_notes.append(data_classes.Lexemenote(
+                        value=note_raw.replace(' [EKSS; VSL-2012]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                elif type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [EKSS; VSL-2012]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 11')
             elif note_raw.endswith('[EKSS; VSL-2012]'):
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'EKSS'),
@@ -2942,6 +2990,106 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     ))
                 else:
                     print('error 11')
+            elif note_raw.endswith('[X0000 § 70]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'X0000'),
+                    value='X0000',
+                    name='§ 70'
+                ))
+                if type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [X0000 § 70]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 151')
+            elif note_raw.endswith('[X0000 § 56]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'X0000'),
+                    value='X0000',
+                    name='§ 56'
+                ))
+                if type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [X0000 § 56]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 151')
+            elif note_raw.endswith('[X0000 § 95]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'X0000'),
+                    value='X0000',
+                    name='§ 95'
+                ))
+                if type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [X0000 § 95]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 151')
+            elif note_raw.endswith('[X0001 § 70]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'X0001'),
+                    value='X0001',
+                    name='§ 70'
+                ))
+                if type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [X0001 § 70]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 151')
+            elif note_raw.endswith('[2826, 23]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, '2826'),
+                    value='2826',
+                    name='23'
+                ))
+                if type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [2826, 23]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 151')
+            elif note_raw.endswith('{TL001117} [T1001][T2015]'):
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'T1001'),
+                    value='T1001',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'T2015'),
+                    value='T2015',
+                    name=''
+                ))
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'TL001117'),
+                    value='TL001117',
+                    name=''
+                ))
+                if type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace('{TL001117} [T1001][T2015]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 151')
             elif note_raw.endswith('[PH0580 1.2]'):
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'PH0580'),
@@ -3426,7 +3574,32 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     ))
                 else:
                     print('error 29')
+            elif 'LS-2020/12/15 § 2-64' in note_raw:
+                source_links.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'LS-2020/12/15'),
+                    value='LS-2020/12/15',
+                    name='§ 2-64'
+                ))
+                if type == 'word':
+
+                    lexeme_notes.append(data_classes.Lexemenote(
+                        value=note_raw.replace(' [LS-2020/12/15 § 2-64]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                elif type == 'concept':
+                    concept_notes.append(data_classes.Note(
+                        value=note_raw.replace(' [LS-2020/12/15 § 2-64]', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=source_links
+                    ))
+                else:
+                    print('error 29')
             else:
+                print('mis see on: ' + note_raw)
+
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
                         value=note_raw,
@@ -3571,6 +3744,15 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                     name=''
                 ))
                 note = 'See asendati Aafrika Liiduga. [12.06.2017]'
+            elif note_raw.endswith(' {KLA 24.11.1999}'):
+                key = ('KLA', "Terminoloog")
+                source_id = term_sources_to_ids_map.get(key)
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value='Terminoloog',
+                    name=''
+                ))
+                note = 'Kaasajastatud tekstis terminit ei esine. {24.11.1999}'
             elif note_raw.endswith('[EKSPERT Kristi Orav] [{MVS}18.01.2021]'):
                 sourcelinks_to_find_ids_to.append('EKSPERT Kristi Orav')
                 key = ('MVS', "Terminoloog")
@@ -3934,7 +4116,6 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
                     usage = usage_raw.strip()
 
                 else:
-                    print('?: ' + usage_raw)
                     usage = 'KONTROLLIDA: ' + usage_raw
                     publicity=False
 
@@ -5135,11 +5316,9 @@ def remove_lexeme_value_state_code(words):
 def split_context_to_parts(usage):
     usages = usage.split("2. ", 1)
 
-    if len(usages) == 2:
+    if len(usages) == 2 and usages[0].strip().endswith(']'):
         usages[0] = usages[0].strip()
         usages[1] = "2. " + usages[1]
-
-    if usages[0].endswith(']'):
         return usages
     else:
-        return usage
+        return [usage]
