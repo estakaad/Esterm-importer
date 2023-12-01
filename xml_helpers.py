@@ -5309,6 +5309,8 @@ def remove_lexeme_value_state_code(words):
             other_word = next((w for w in words if w.lang == word.lang and w != word), None)
             if other_word and 'l' in other_word.wordTypeCodes:
                 word.lexemeValueStateCode = None
+        elif word.lexemeValueStateCode == 'mööndav':
+            word.lexemeValueStateCode = None
 
     return words
 

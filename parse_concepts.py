@@ -440,6 +440,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
         count = sum(1 for w in words if w.lang == word.lang)
         word.lexemeValueStateCode = xml_helpers.parse_value_state_codes(word.lexemeValueStateCode, count)
 
+
         logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
                     'word value state code: %s',
                     word.value, word.lang, word.lexemePublicity, word.wordTypeCodes, word.lexemeValueStateCode)
