@@ -119,8 +119,15 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
                 note_value = ''.join(descrip_element.itertext()).strip()
 
+                if xml_helpers.does_note_contain_ampersand_in_sourcelink(note_value):
+                    print(note_value)
+                    lexeme_notes, concept_notes = xml_helpers.handle_ampersand_notes('concept', note_value,
+                                                                                     term_sources_to_ids_map)
+                    for note in concept_notes:
+                        concept.notes.append(note)
+
                 # Does note contain multiple languages?
-                if xml_helpers.does_note_contain_multiple_languages(raw_note_value):
+                elif xml_helpers.does_note_contain_multiple_languages(raw_note_value):
                     note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                     # Does note end with terminologist initials and date in curly braces?
                     if note_value.endswith('}'):
@@ -285,9 +292,35 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
             note_raw = ''.join(descripGrp.itertext()).strip()
 
-            note = xml_helpers.parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
+            if note_raw == 'An aircraft system which provides head-up guidance to the pilot during flight. ' \
+                           'It includes the display elements, sensors, computers and power supplies, ' \
+                           'indications and controls. It may receive inputs from an airborne navigation ' \
+                           'system or flight guidance system. [A&GM-4]':
+                notes.append(data_classes.Note(
+                    value='An aircraft system which provides head-up guidance to the pilot during flight. '
+                          'It includes the display elements, sensors, computers and power supplies, '
+                          'indications and controls. It may receive inputs from an airborne navigation '
+                          'system or flight guidance system.',
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=[data_classes.Sourcelink(
+                        sourceId=xml_helpers.find_source_by_name(name_to_id_map,'A&GM-4'),
+                        value='A&GM-4',
+                        name=''
+                    )]
+                ))
 
-            notes.append(note)
+            elif xml_helpers.does_note_contain_ampersand_in_sourcelink(note_raw):
+
+                print('lang level: ' + note_raw)
+                lexeme_notes, concept_notes = xml_helpers.handle_ampersand_notes('concept', note_raw,
+                                                                                 term_sources_to_ids_map)
+                for note in concept_notes:
+                    notes.append(note)
+            else:
+                note = xml_helpers.parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
+
+                notes.append(note)
 
         termGrps = languageGrp.xpath('termGrp')
 
@@ -417,7 +450,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                             word.lexemeNotes.append(note)
 
                     elif xml_helpers.does_note_contain_ampersand_in_sourcelink(lexeme_note_raw):
-                        print('lexemenote oli see')
                         lexeme_notes, concept_notes = xml_helpers.handle_ampersand_notes('word', lexeme_note_raw, term_sources_to_ids_map)
                         for note in lexeme_notes:
                             word.lexemeNotes.append(note)

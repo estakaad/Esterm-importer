@@ -3777,6 +3777,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                     name=''
                 ))
                 note = ' This is not a rolling Presidency team and should not be confused with the troika. See "troika - kolmik". [4.05.2017]'
+
             elif note_raw.endswith('[IATE; Vikipeedia] [{MVS}12.06.2017]'):
                 sourcelinks_to_find_ids_to.append('IATE')
                 sourcelinks.append(data_classes.Sourcelink(
@@ -5380,7 +5381,7 @@ def does_note_contain_ampersand_in_sourcelink(note_raw):
     regex = re.compile(pattern)
 
     if regex.search(note_raw):
-        print("ampersand: " + note_raw)
+        print('amp: ' + note_raw)
         return True
     else:
         return False
@@ -5388,7 +5389,6 @@ def does_note_contain_ampersand_in_sourcelink(note_raw):
 def handle_ampersand_notes(type_of_note, note_raw, term_sources_to_ids_map):
     lexeme_notes = []
     concept_notes = []
-    temp_sourcelinks = []
     sourcelinks = []
     date = ''
 
@@ -5403,25 +5403,32 @@ def handle_ampersand_notes(type_of_note, note_raw, term_sources_to_ids_map):
             for initials in term_initials:
                 key = (initials.strip(), "Terminoloog")
                 source_id = term_sources_to_ids_map.get(key)
-                sourcelinks.append(data_classes.Sourcelink(
-                    sourceId=source_id,
-                    value='Terminoloog',
-                    name=''
-                ))
-            date = temp_sourcelinks[1].strip(']')
+                if source_id:
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value='Terminoloog',
+                        name=''
+                    ))
+
+            if len(temp_sourcelinks) > 1:
+                date = temp_sourcelinks[1].strip(']')
     else:
         note_value = parts[0]
 
+    final_value = note_value
+    if date:
+        final_value += '[' + date + ']'
+
     if type_of_note == 'word':
         lexeme_notes.append(data_classes.Lexemenote(
-            value=note_value + '[' + date + ']',
+            value=final_value,
             lang='est',
             publicity=True,
             sourceLinks=sourcelinks
         ))
     else:
         concept_notes.append(data_classes.Note(
-            value=note_value + '[' + date + ']',
+            value=final_value,
             lang='est',
             publicity=True,
             sourceLinks=sourcelinks
