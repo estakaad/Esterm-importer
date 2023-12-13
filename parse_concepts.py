@@ -271,19 +271,13 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
             if definition.value.startswith('{'):
                 definition.value = re.sub(r'^{[^}]*}', '', definition.value)
 
-        for note in concept.notes:
-            if note.value.startswith('{'):
-                if note.publicity == True:
-                    note.value = re.sub(r'^{[^}]*}', '', note.value)
-
-
+        concept.notes.sort(key=lambda x: x.publicity, reverse=True)
 
         concepts.append(concept)
 
         logger.debug('Concept will be added to the general list of concepts.')
 
         logger.info('Finished parsing concept.')
-
 
 
     return concepts
@@ -515,6 +509,8 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
             logger.info('Added word usage: %s', str(word.usages))
         if word.lexemeNotes:
             logger.info('Added word notes: %s', str(word.lexemeNotes))
+
+        word.lexemeNotes.sort(key=lambda x: x.publicity, reverse=True)
 
     xml_helpers.remove_lexeme_value_state_code(words)
 
