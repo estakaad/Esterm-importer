@@ -12,12 +12,8 @@ logger = log_config.get_logger()
 load_dotenv()
 api_key = os.environ.get("API_KEY")
 parameters = {}
-crud_role_dataset = os.environ.get("ESTERM")
-#crud_role_dataset = os.environ.get("AVI")
 
 header = {"ekilex-api-key": api_key}
-parameters = {"crudRoleDataset": crud_role_dataset}
-
 
 def get_existing_source_id(source):
     try:
@@ -30,11 +26,10 @@ def get_existing_source_id(source):
 
         value_for_request = value_texts[0].replace('/', '*')
 
-        params = {"crudRoleDataset": crud_role_dataset}
+        #endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_for_request}"
+        endpoint = f"https://ekilex.ee/api/source/search/{value_for_request}"
 
-        endpoint = f"https://ekitest.tripledev.ee/ekilex/api/source/search/{value_for_request}"
-
-        response = requests.get(endpoint, headers=header, params=params)
+        response = requests.get(endpoint, headers=header)
 
         if response.status_code >= 200 and response.status_code < 300:
             response_data = response.json()
@@ -63,8 +58,9 @@ def get_existing_source_id(source):
 # Create a new source in Ekilex and return its ID
 def create_source(source):
     logger.debug(f'Started creating source {source}')
-    endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/create"
-    response = requests.post(endpoint, headers=header, params=parameters, json=source)
+    #endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/create"
+    endpoint = "https://ekilex.ee/api/source/create"
+    response = requests.post(endpoint, headers=header, json=source)
 
     if response.status_code >= 200 and response.status_code < 300:
         try:
@@ -168,15 +164,15 @@ def delete_created_sources(file):
     with open(file, 'r', encoding='utf-8') as file:
         source_ids = json.load(file)
 
-    endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/delete"
+    #endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/delete"
+    endpoint = "https://ekilex.ee/api/source/delete"
 
     for source_id in source_ids:
         params = {
             'sourceId': source_id,
-            'crudRoleDataset': crud_role_dataset
         }
 
-        response = requests.delete(endpoint, headers=header, params=params)
+        response = requests.delete(endpoint, headers=header)
 
         if response.status_code >= 200 and response.status_code < 300:
             logger.info(f"Successfully deleted source with ID {source_id}.")

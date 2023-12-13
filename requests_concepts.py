@@ -65,8 +65,8 @@ def import_concepts(file, dataset, max_objects=5000000):
             break
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    saved_filename = f'files/import/esterm-01-12-23/{timestamp}_concepts_saved.json'
-    not_saved_filename = f'files/import/esterm-01-12-23/{timestamp}_concepts_not_saved.json'
+    saved_filename = f'files/import/esterm-02-12-23/{timestamp}_concepts_saved.json'
+    not_saved_filename = f'files/import/esterm-02-12-23/{timestamp}_concepts_not_saved.json'
 
     with open(saved_filename, 'w', encoding='utf-8') as f:
         json.dump(concepts_saved, f, ensure_ascii=False, indent=4)
@@ -146,11 +146,11 @@ def update_word_ids(filename, dataset, concepts_dataset):
                 logger.info(f'Word {word} has does not have lexemes in ÜS (Case 2)')
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    words_without_id_file = f'files/import/esterm-01-12-23/{timestamp}_words_without_id1.json'
-    words_with_more_than_one_id_file = f'files/import/esterm-01-12-23/{timestamp}_words_with_more_than_one_id1.json'
+    words_without_id_file = f'files/import/esterm-02-12-23/{timestamp}_words_without_id1.json'
+    words_with_more_than_one_id_file = f'files/import/esterm-02-12-23/{timestamp}_words_with_more_than_one_id1.json'
 
 
-    with open(f'files/import/esterm-01-12-23/concepts_with_word_ids1.json', 'w', encoding='utf-8') as file:
+    with open(f'files/import/esterm-02-12-23/concepts_with_word_ids1.json', 'w', encoding='utf-8') as file:
         json.dump(concepts, file, indent=4, ensure_ascii=False)
 
     with open(words_without_id_file, 'w', encoding='utf-8') as f:

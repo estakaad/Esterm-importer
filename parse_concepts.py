@@ -96,24 +96,50 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                     )
                 )
 
-            if descrip_element.get('type') == 'Alamvaldkond_':
-                origin = ''.join(descrip_element.itertext()).strip()
+            if descrip_element.get('type') == 'Tunnus':
+                tunnus = ''.join(descrip_element.itertext()).strip()
                 concept.notes.append(
                     data_classes.Note(
-                        value='Alamvaldkond: ' + origin,
+                        value='Tunnus: ' + tunnus,
+                        lang='est',
+                        publicity=False
+                    )
+                )
+
+            if descrip_element.get('type') == 'Alamvaldkond_':
+                subdomain = ''.join(descrip_element.itertext()).strip()
+                subdomain = subdomain.replace('|', '; ')
+                concept.notes.append(
+                    data_classes.Note(
+                        value='Alamvaldkond: ' + subdomain,
                         lang='est',
                         publicity=True
                     )
                 )
             if descrip_element.get('type') == 'Staatus':
-                origin = ''.join(descrip_element.itertext()).strip()
-                concept.notes.append(
-                    data_classes.Note(
-                        value='Staatus: ' + origin,
-                        lang='est',
-                        publicity=True
+                concept_status = ''.join(descrip_element.itertext()).strip()
+                if concept_status in ['KTTG kinnitatud', 'KTTGs arutlusel']:
+                    concept.notes.append(
+                        data_classes.Note(
+                            value='Staatus: kinnitatud',
+                            lang='est',
+                            publicity=True,
+                            sourceLinks=[data_classes.Sourcelink(
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'KTTG'),
+                                value='KTTG',
+                                name=''
+                            )]
+                        )
                     )
-                )
+                else:
+                    concept.notes.append(
+                        data_classes.Note(
+                            value='Staatus: ' + concept_status,
+                            lang='est',
+                            publicity=True
+                        )
+                    )
+
             # Get concept notes and add to the list of concept notes.
             elif descrip_element.get('type') == 'Märkus':
                 raw_note_value = xml_helpers.get_description_value(descrip_element)
@@ -250,11 +276,15 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                 if note.publicity == True:
                     note.value = re.sub(r'^{[^}]*}', '', note.value)
 
+
+
         concepts.append(concept)
 
         logger.debug('Concept will be added to the general list of concepts.')
 
         logger.info('Finished parsing concept.')
+
+
 
     return concepts
 
