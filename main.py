@@ -60,7 +60,7 @@ with open('files/import/esterm-29-11-23/sources/expert_sources_with_ids.json', '
 
 expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)
 
-with open('files/import/esterm-29-11-23/sources/terminoloogid_with_ids.json', 'r', encoding='utf-8') as f:
+with open('files/output/sources/termid_uus.json', 'r', encoding='utf-8') as f:
     term_sources = json.load(f)
 
 term_sources_to_ids_map = expert_sources_helpers.create_terminologist_name_value_to_id_mapping(term_sources)

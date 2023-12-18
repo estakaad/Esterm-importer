@@ -94,14 +94,12 @@ def get_expert_source_id_by_name_and_type(name, type, type_desc_to_ids):
 
 
 def create_terminologist_name_value_to_id_mapping(terminologist_sources):
-    name_value_to_ids = {}
+    value_to_name_id = {}
     for source in terminologist_sources:
         source_id = source['id']
         source_name = source['valuePrese']
         source_value = source['name']
 
-        key = (source_name, source_value)
+        value_to_name_id[source_name] = (source_value, source_id)
 
-        name_value_to_ids[key] = source_id
-
-    return name_value_to_ids
+    return value_to_name_id
