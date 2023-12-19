@@ -541,8 +541,45 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                 ))
                         # elif 'AKE/ALK' in lexeme_note_raw:
                         #     print(lexeme_note_raw)
-                        # elif 'ELS/ETM' in lexeme_note_raw:
-                        #     print(lexeme_note_raw)
+                        elif 'ELS/ETM' in lexeme_note_raw:
+                            if 'EKSPERT' in lexeme_note_raw:
+                                print('ekspert: ' + lexeme_note_raw)
+                                parts = lexeme_note_raw.split('[')
+                                print(parts)
+                                expert_name = parts[1].replace('EKSPERT', '').strip().replace(']', '').replace('{', '').replace('}','')
+                                print(expert_name)
+                                sourcelinks = []
+                                sourcelinks.append(data_classes.Sourcelink(
+                                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, 'Ekspert', expert_names_to_ids_map),
+                                    value='Ekspert',
+                                    name=''
+                                ))
+                                name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
+                                sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    ))
+                                word.lexemeNotes.append(data_classes.Lexemenote(
+                                    value=parts[0] + '[' + parts[2].replace('ELS/ETM', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=sourcelinks
+                                ))
+                            else:
+                                note_value = lexeme_note_raw.replace('ELS/ETM', '').replace('{}', '').replace('{ ', '{').replace('[ ', '[')
+                                name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
+                                word.lexemeNotes.append(data_classes.Lexemenote(
+                                    value=note_value,
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+
                         elif 'MRS/MST' in lexeme_note_raw:
                             if lexeme_note_raw.endswith('}'):
                                 if '&' in lexeme_note_raw:
@@ -636,7 +673,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                     sourceLinks=note_sourcelinks
                                 ))
                         elif 'PTE/PTH' in lexeme_note_raw:
-                            print(lexeme_note_raw)
 
                             sourcelinks = []
 
