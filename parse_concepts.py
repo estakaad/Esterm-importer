@@ -349,14 +349,14 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
         for termGrp in termGrps:
 
             word = data_classes.Word(
-                value='term',
+                valuePrese='term',
                 lang='est',
                 lexemePublicity=is_public)
 
             # Get word (term) language and assign as attribute lang
             lang_term = languageGrp.xpath('language')[0].get('lang')
             word.lang = xml_helpers.match_language(lang_term)
-            word.value = termGrp.xpath('term')[0].text
+            word.valuePrese = termGrp.xpath('term')[0].text
 
             # Parse descripGrp elements of languageGrp element
             for descripGrp in termGrp.xpath('descripGrp'):
@@ -483,54 +483,16 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                 publicity=False,
                                 sourceLinks=None
                             ))
-                        elif '{ÜMT/ÜAU}' in lexeme_note_raw:
-                            if lexeme_note_raw.endswith(' {ÜMT/ÜAU}'):
-                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+                        elif 'ÜMT/ÜAU' in lexeme_note_raw:
+                            if 'EKSPERT' in lexeme_note_raw:
+                                print('ekspert: ' + lexeme_note_raw)
+                            elif 'ÜMT/ÜAU &' in lexeme_note_raw:
+                                print('&: ' + lexeme_note_raw)
+
+                                name, source_id = term_sources_to_ids_map.get('AKE/ALK', ("", None))
 
                                 word.lexemeNotes.append(data_classes.Lexemenote(
-                                    value=lexeme_note_raw.replace(' {ÜMT/ÜAU}', ''),
-                                    lang='est',
-                                    publicity=True,
-                                    sourceLinks=[data_classes.Sourcelink(
-                                    sourceId=source_id,
-                                    value=name,
-                                    name=''
-                                )]
-                                ))
-                            elif 'EKSPERT' in lexeme_note_raw:
-                                parts = lexeme_note_raw.split('[')
-                                note = parts[0]
-                                expert = parts[1].replace('EKSPERT ', '').replace(']', '').strip()
-                                date = parts[2].replace('{ÜMT/ÜAU}', '')
-                                note_sourcelinks = []
-
-                                note_sourcelinks.append(data_classes.Sourcelink(
-                                    sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert, 'Ekspert', expert_names_to_ids_map),
-                                    value='Ekspert',
-                                    name=''
-                                ))
-
-                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
-
-                                note_sourcelinks.append(data_classes.Sourcelink(
-                                    sourceId=source_id,
-                                    value=name,
-                                    name=''
-                                ))
-
-                                word.lexemeNotes.append(data_classes.Lexemenote(
-                                    value=note + '[' + date,
-                                    lang='est',
-                                    publicity=True,
-                                    sourceLinks=note_sourcelinks
-                                ))
-                            else:
-                                parts = lexeme_note_raw.split('[')
-                                note_part = parts[0]
-                                other_part = parts[1].replace('{ÜMT/ÜAU}', '')
-                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
-                                word.lexemeNotes.append(data_classes.Lexemenote(
-                                    value=note_part + '[' + other_part,
+                                    value=lexeme_note_raw.replace('AKE/ALK ', ''),
                                     lang='est',
                                     publicity=True,
                                     sourceLinks=[data_classes.Sourcelink(
@@ -539,15 +501,26 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                         name=''
                                     )]
                                 ))
-                        # elif 'AKE/ALK' in lexeme_note_raw:
-                        #     print(lexeme_note_raw)
+                            else:
+                                print('muu: ' + lexeme_note_raw)
+
+                        elif 'AKE/ALK' in lexeme_note_raw:
+                            name, source_id = term_sources_to_ids_map.get('AKE/ALK', ("", None))
+
+                            word.lexemeNotes.append(data_classes.Lexemenote(
+                                value=lexeme_note_raw.replace('AKE/ALK ', ''),
+                                lang='est',
+                                publicity=True,
+                                sourceLinks=[data_classes.Sourcelink(
+                                    sourceId=source_id,
+                                    value=name,
+                                    name=''
+                                )]
+                            ))
                         elif 'ELS/ETM' in lexeme_note_raw:
                             if 'EKSPERT' in lexeme_note_raw:
-                                print('ekspert: ' + lexeme_note_raw)
                                 parts = lexeme_note_raw.split('[')
-                                print(parts)
                                 expert_name = parts[1].replace('EKSPERT', '').strip().replace(']', '').replace('{', '').replace('}','')
-                                print(expert_name)
                                 sourcelinks = []
                                 sourcelinks.append(data_classes.Sourcelink(
                                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, 'Ekspert', expert_names_to_ids_map),
@@ -579,7 +552,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                         name=''
                                     )]
                                 ))
-
                         elif 'MRS/MST' in lexeme_note_raw:
                             if lexeme_note_raw.endswith('}'):
                                 if '&' in lexeme_note_raw:
@@ -696,8 +668,18 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                 publicity=True,
                                 sourceLinks=[sourcelinks]
                             ))
-                        # elif 'IKS/IFH' in lexeme_note_raw:
-                        #     print(lexeme_note_raw)
+                        elif 'IKS/IFH' in lexeme_note_raw:
+                            name, source_id = term_sources_to_ids_map.get('IKS/IFH', ("", None))
+                            word.lexemeNotes.append(data_classes.Lexemenote(
+                                value=lexeme_note_raw.replace('IKS/IFH ', ''),
+                                lang='est',
+                                publicity=True,
+                                sourceLinks=[data_classes.Sourcelink(
+                                sourceId=source_id,
+                                value=name,
+                                name=''
+                            )]
+                            ))
                         else:
                             lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
                                 xml_helpers.handle_notes_with_brackets('word', name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map, lexeme_note_raw)
@@ -717,7 +699,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
         logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
                     'word value state code: %s',
-                    word.value, word.lang, word.lexemePublicity, word.wordTypeCodes, word.lexemeValueStateCode)
+                    word.valuePrese, word.lang, word.lexemePublicity, word.wordTypeCodes, word.lexemeValueStateCode)
         if word.usages:
             logger.info('Added word usage: %s', str(word.usages))
         if word.lexemeNotes:

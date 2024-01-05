@@ -117,13 +117,13 @@ def update_notes(words):
 
                     notes_to_move[key].append(lexemeNote)
                     word.lexemeNotes.remove(lexemeNote)
-                    logger.debug('Removed note from word: %s', word.value)
+                    logger.debug('Removed note from word: %s', word.valuePrese)
 
     for word in words:
         key = (word.lexemeValueStateCode, word.lang)
         if key in notes_to_move:
             word.lexemeNotes.extend(notes_to_move[key])
-            logger.debug('Added note to word: %s', word.value)
+            logger.debug('Added note to word: %s', word.valuePrese)
 
     return words
 

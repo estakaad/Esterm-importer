@@ -46,7 +46,7 @@ class Usage:
 
 @dataclass
 class Word:
-    value: str
+    valuePrese: str
     lang: str
     lexemeValueStateCode: Optional[str] = None
     lexemePublicity: Optional[bool] = True
