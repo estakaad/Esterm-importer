@@ -209,6 +209,394 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                 publicity=False,
                                 sourceLinks=None
                             ))
+                        elif 'ÜMT/ÜAU' in note_value:
+                            if 'EKSPERT' in note_value:
+                                parts = note_value.split('[')
+                                note_without_date = parts[0]
+
+                                source_parts = parts[1].split('{')
+
+                                expert_name = source_parts[0].replace('EKSPERT ', '').strip()
+                                expert_name = expert_name.strip(']')
+                                date = source_parts[1].replace('ÜMT/ÜAU ', '')
+                                clean_note = note_without_date + '{' + date
+
+                                sourcelinks = []
+                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+                                sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    ))
+
+                                sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, 'Ekspert', expert_names_to_ids_map),
+                                        value='Ekspert',
+                                        name=''
+                                    ))
+                                concept.notes.append(data_classes.Note(
+                                    value=clean_note,
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=sourcelinks
+                                ))
+
+                            elif '[{ÜMT/ÜAU' in note_value:
+                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('{ÜMT/ÜAU}', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                            elif '{ÜMT/ÜAU' in note_value:
+                                if '&' in note_value:
+                                    if 'ÜMT/ÜAU & LKD' in note_value:
+                                        sourcelinks = []
+                                        name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                                sourceId=source_id,
+                                                value=name,
+                                                name=''
+                                            )
+                                        )
+
+                                        name, source_id = term_sources_to_ids_map.get('LKD', ("", None))
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                                sourceId=source_id,
+                                                value=name,
+                                                name=''
+                                            )
+                                        )
+                                        concept.notes.append(data_classes.Note(
+                                            value=note_value.replace('ÜMT/ÜAU & LKD ', ''),
+                                            lang='est',
+                                            publicity=True,
+                                            sourceLinks=sourcelinks
+                                        ))
+                                    elif 'ÜMT/ÜAU & LPK' in note_value:
+                                        sourcelinks = []
+                                        name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        )
+                                        )
+
+                                        name, source_id = term_sources_to_ids_map.get('LPK', ("", None))
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        )
+                                        )
+                                        concept.notes.append(data_classes.Note(
+                                            value=note_value.replace('ÜMT/ÜAU & LPK  ', ''),
+                                            lang='est',
+                                            publicity=True,
+                                            sourceLinks=sourcelinks
+                                        ))
+                                else:
+                                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                    concept.notes.append(data_classes.Note(
+                                        value=note_value.replace('ÜMT/ÜAU ', ''),
+                                        lang='est',
+                                        publicity=True,
+                                        sourceLinks=[data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        )]
+                                    ))
+                            elif '[ÜMT/ÜAU' in note_value:
+                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('ÜMT/ÜAU ', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                            elif '&' in note_value:
+
+                                parts = note_value.split('{')
+
+                                source_parts = parts[1].split('&')
+
+                                sourcelinks = []
+
+                                for part in source_parts:
+                                    part = part.strip()
+
+                                    if '/' in part:
+                                        name, source_id = term_sources_to_ids_map.get(part[:7], ("", None))
+                                        sourcelinks.append(
+                                            data_classes.Sourcelink(
+                                                sourceId=source_id,
+                                                value=name,
+                                                name=''
+                                            )
+                                        )
+                                    else:
+                                        name, source_id = term_sources_to_ids_map.get(part[:3], ("", None))
+                                        sourcelinks.append(
+                                            data_classes.Sourcelink(
+                                                sourceId=source_id,
+                                                value=name,
+                                                name=''
+                                            )
+                                        )
+
+                                date = note_value[-11:]
+
+                                concept.notes.append(data_classes.Note(
+                                    value=parts[0] + '{' + date,
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=sourcelinks
+                                ))
+                            else:
+                                sourcelinks = []
+                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+                                sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )
+                                )
+                                name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
+                                sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )
+                                )
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('MRS/MST ja ÜMT/ÜAU ', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=sourcelinks
+                                ))
+                        elif 'MRS/MST' in note_value:
+                            if '&' in note_value:
+                                parts = note_value.split('&')
+                                other_part = parts[1]
+
+                                other_term_initals = other_part[:4].strip()
+                                clean_note = note_value.replace('MRS/MST & ' + other_term_initals + ' ', '')
+
+                                sourcelinks = []
+
+                                name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
+                                sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    ))
+
+                                name, source_id = term_sources_to_ids_map.get(other_term_initals, ("", None))
+                                sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    ))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=clean_note,
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=sourcelinks
+                                ))
+                            elif '[{MRS/MST' in note_value:
+                                name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('{MRS/MST}', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                            elif ' {MRS/MST ' in note_value:
+                                name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('MRS/MST ', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                            else:
+                                if note_value.endswith('{MRS/MST}'):
+                                    note_value = note_value.replace(' {MRS/MST}', '')
+                                elif note_value.endswith('[EKSPERT {MRS/MST}]'):
+                                    note_value = note_value.replace(' [EKSPERT {MRS/MST}]', '')
+                                else:
+                                    note_value = note_value.replace('MRS/MST ', '')
+
+                                name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value,
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                        elif 'AKE/ALK' in note_value:
+                            name, source_id = term_sources_to_ids_map.get('AKE/ALK', ("", None))
+
+                            concept.notes.append(data_classes.Note(
+                                value=note_value.replace('AKE/ALK ', ''),
+                                lang='est',
+                                publicity=True,
+                                sourceLinks=[data_classes.Sourcelink(
+                                    sourceId=source_id,
+                                    value=name,
+                                    name=''
+                                )]
+                            ))
+                        elif 'ELS/ETM' in note_value:
+                            if '&' in note_value:
+
+                                parts = note_value.split('{')
+
+                                source_parts = parts[1].split('&')
+
+                                sourcelinks = []
+
+                                for part in source_parts:
+                                    part = part.strip()
+                                    if len(part) < 8:
+                                        name, source_id = term_sources_to_ids_map.get(part, ("", None))
+                                        sourcelinks.append(
+                                            data_classes.Sourcelink(
+                                                sourceId=source_id,
+                                                value=name,
+                                                name=''
+                                            )
+                                        )
+                                    else:
+                                        name, source_id = term_sources_to_ids_map.get(part[:3], ("", None))
+                                        sourcelinks.append(
+                                            data_classes.Sourcelink(
+                                                sourceId=source_id,
+                                                value=name,
+                                                name=''
+                                            )
+                                        )
+
+                                date = note_value[11:]
+
+                                concept.notes.append(data_classes.Note(
+                                    value=parts[0] + '{' + date,
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=sourcelinks
+                                ))
+                            elif '[{ELS/ETM}' in note_value:
+                                name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('{ELS/ETM}', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                            elif ' {ELS/ETM ' in note_value:
+                                name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('ELS/ETM ', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                            elif '[ELS/ETM' in note_value:
+                                name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('ELS/ETM ', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                            elif '[{ELS/ETM}' in note_value:
+                                name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
+
+                                concept.notes.append(data_classes.Note(
+                                    value=note_value.replace('{ELS/ETM}', ''),
+                                    lang='est',
+                                    publicity=True,
+                                    sourceLinks=[data_classes.Sourcelink(
+                                        sourceId=source_id,
+                                        value=name,
+                                        name=''
+                                    )]
+                                ))
+                            else:
+                                print('muu')
+                        elif 'PTE/PTH' in note_value:
+                            name, source_id = term_sources_to_ids_map.get('PTE/PTH', ("", None))
+
+                            concept.notes.append(data_classes.Note(
+                                value=note_value.replace('PTE/PTH ', ''),
+                                lang='est',
+                                publicity=True,
+                                sourceLinks=[data_classes.Sourcelink(
+                                    sourceId=source_id,
+                                    value=name,
+                                    name=''
+                                )]
+                            ))
+                        elif 'IKS/IFH' in note_value:
+                            name, source_id = term_sources_to_ids_map.get('IKS/IFH', ("", None))
+
+                            concept.notes.append(data_classes.Note(
+                                value=note_value.replace('IKS/IFH ', ''),
+                                lang='est',
+                                publicity=True,
+                                sourceLinks=[data_classes.Sourcelink(
+                                    sourceId=source_id,
+                                    value=name,
+                                    name=''
+                                )]
+                            ))
+
                         else:
                             # Now we've got to the proper notes which we should be able to parse
                             lexeme_notes_with_sourcelinks, concept_notes_with_sourcelinks = \
@@ -485,8 +873,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                             ))
                         elif 'ÜMT/ÜAU' in lexeme_note_raw:
                             if 'EKSPERT' in lexeme_note_raw:
-                                print('ekspert: ' + lexeme_note_raw)
-
                                 parts = lexeme_note_raw.split('[')
                                 date = parts[2].replace('{ÜMT/ÜAU}', '[')
                                 clean_note = parts[0] + date
@@ -663,17 +1049,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                         name=''
                                     )]
                                     ))
-                            elif lexeme_note_raw.endswith('[EKSPERT {MRS/MST}]'):
-                                word.lexemeNotes.append(data_classes.Lexemenote(
-                                    value=lexeme_note_raw.replace(' [EKSPERT {MRS/MST}]', ''),
-                                    lang='est',
-                                    publicity=True,
-                                    sourceLinks=[data_classes.Sourcelink(
-                                        sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Mari Sutt', 'Ekspert', expert_names_to_ids_map),
-                                        name='Ekspert',
-                                        value=''
-                                    )]
-                                ))
                             elif lexeme_note_raw.endswith(']'):
                                 name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
 
@@ -754,13 +1129,11 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
             words.append(word)
 
-    # Remove and add notes if necessary
     words = xml_helpers.update_notes(words)
 
     for word in words:
         count = sum(1 for w in words if w.lang == word.lang)
         word.lexemeValueStateCode = xml_helpers.parse_value_state_codes(word.lexemeValueStateCode, count)
-
 
         logger.info('Added word - word value: %s, word language: %s, word is public: %s, word type: %s, '
                     'word value state code: %s',
