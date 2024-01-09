@@ -51,6 +51,7 @@ class Word:
     lexemeValueStateCode: Optional[str] = None
     lexemePublicity: Optional[bool] = True
     wordTypeCodes: List[str] = field(default_factory=list)
+    lexemeTags: List[str] = field(default_factory=list)
     usages: List[Usage] = field(default_factory=list)
     lexemeNotes: List[Lexemenote] = field(default_factory=list)
     lexemeSourceLinks: List[Sourcelink] = field(default_factory=list)
@@ -67,5 +68,6 @@ class Concept:
     definitions: List[Definition] = field(default_factory=list)
     notes: List[Note] = field(default_factory=list)
     forums: List[Forum] = field(default_factory=list)
+    tags: List[str] = field(default_factory=list)
     words: List[Word] = field(default_factory=list)
     conceptIds: List[str] = field(default_factory=list)

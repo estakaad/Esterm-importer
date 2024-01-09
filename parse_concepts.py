@@ -203,12 +203,14 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                     else:
                         # Perform the check for brackets/braces in the middle of the string
                         if any(char in note_value[:-50] for char in '[]{}'):
+                            concept.tags.append('kontrolli märkust')
                             concept.notes.append(data_classes.Note(
-                                value='KONTROLLIDA: ' + note_value,
+                                value=note_value,
                                 lang='est',
                                 publicity=False,
                                 sourceLinks=None
                             ))
+
                         elif 'ÜMT/ÜAU' in note_value:
                             if 'EKSPERT' in note_value:
                                 parts = note_value.split('[')
@@ -605,6 +607,8 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
 
                             for note in concept_notes_with_sourcelinks:
                                 concept.notes.append(note)
+                                if note.value.startswith('KONTROLLIDA'):
+                                    concept.tags.append('kontrolli märkust')
 
                 logger.debug('Added concept note: %s', descrip_element_value)
 
@@ -702,6 +706,9 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
         for descripGrp in languageGrp.xpath('descripGrp[descrip/@type="Märkus"]'):
 
             note_raw = ''.join(descripGrp.itertext()).strip()
+
+            if "ELS/ETM" in note_raw:
+                print(note_raw)
 
             if note_raw == 'An aircraft system which provides head-up guidance to the pilot during flight. ' \
                            'It includes the display elements, sensors, computers and power supplies, ' \
@@ -858,6 +865,8 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
                         for note in lexeme_notes_with_sourcelinks:
                             word.lexemeNotes.append(note)
+                            if note.value.startswith('KONTROLLIDA'):
+                                word.lexemeTags.append('kontrolli ilmiku märkust')
 
                     elif xml_helpers.does_note_contain_ampersand_in_sourcelink(lexeme_note_raw):
                         lexeme_notes, concept_notes = xml_helpers.handle_ampersand_notes('word', lexeme_note_raw, term_sources_to_ids_map)
@@ -865,8 +874,9 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                             word.lexemeNotes.append(note)
                     else:
                         if any(char in lexeme_note_raw[:-50] for char in '[]{}'):
+                            word.lexemeTags.append('kontrolli ilmiku märkust')
                             word.lexemeNotes.append(data_classes.Lexemenote(
-                                value='KONTROLLIDA: ' + lexeme_note_raw,
+                                value=lexeme_note_raw,
                                 lang='est',
                                 publicity=False,
                                 sourceLinks=None
@@ -1126,6 +1136,8 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
                             for note in lexeme_notes_with_sourcelinks:
                                 word.lexemeNotes.append(note)
+                                if note.value.startswith('KONTROLLIDA'):
+                                    word.lexemeTags.append('kontrolli ilmiku märkust')
 
             words.append(word)
 
