@@ -5432,3 +5432,474 @@ def handle_ampersand_notes(type_of_note, note_raw, term_sources_to_ids_map):
         ))
 
     return lexeme_notes, concept_notes
+
+
+def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
+                                                   term_sources_to_ids_map,
+                                                   expert_names_to_ids_map,
+                                                   name_to_id_map):
+    lexemenotes = []
+    lexeme_tags = []
+
+    if 'ÜMT/ÜAU' in lexeme_note_raw:
+        if 'EKSPERT' in lexeme_note_raw:
+            parts = lexeme_note_raw.split('[')
+            date = parts[2].replace('{ÜMT/ÜAU}', '[')
+            clean_note = parts[0] + date
+            expert_name = parts[1].replace('EKSPERT ', '').strip()
+            expert_name = expert_name.strip(']')
+
+            sourcelinks = []
+            name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+            sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                )
+            )
+
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, 'Ekspert',
+                                                                                      expert_names_to_ids_map),
+                value='Ekspert',
+                name=''
+            ))
+
+            lexemenotes.append(data_classes.Lexemenote(
+                value=clean_note,
+                lang='est',
+                publicity=True,
+                sourceLinks=sourcelinks
+            ))
+        elif 'ÜMT/ÜAU &' in lexeme_note_raw:
+            name, source_id = term_sources_to_ids_map.get('AKE/ALK', ("", None))
+
+            lexemenotes.append(data_classes.Lexemenote(
+                value=lexeme_note_raw.replace('AKE/ALK ', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=[data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                )]
+            ))
+        elif '[{ÜMT/ÜAU' in lexeme_note_raw:
+
+            if '[X0036]' in lexeme_note_raw:
+
+                clean_note = lexeme_note_raw.replace('[X0036] ', '')
+                clean_note = clean_note.replace('{ÜMT/ÜAU}', '')
+
+                sourcelinks = []
+
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'X0036'),
+                    value='X0036',
+                    name=''
+                ))
+
+                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                ))
+
+                lexemenotes.append(data_classes.Lexemenote(
+                    value=clean_note,
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=sourcelinks
+                ))
+            elif '[EUR]' in lexeme_note_raw:
+
+                clean_note = lexeme_note_raw.replace('[EUR] ', '')
+                clean_note = clean_note.replace('{ÜMT/ÜAU}', '')
+
+                sourcelinks = []
+
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=find_source_by_name(name_to_id_map, 'EUR'),
+                    value='EUR',
+                    name=''
+                ))
+
+                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                ))
+
+                lexemenotes.append(data_classes.Lexemenote(
+                    value=clean_note,
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=sourcelinks
+                ))
+            elif lexeme_note_raw.count('[') > 1:
+                lexeme_tags.append('kontrolli ilmikut')
+                lexemenotes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw,
+                    lang='est',
+                    publicity=False,
+                    sourceLinks=[]
+                ))
+            else:
+                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                lexemenotes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace('{ÜMT/ÜAU}', ''),
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=[data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=name,
+                        name=''
+                    )]
+                ))
+
+        elif '{ÜMT/ÜAU' in lexeme_note_raw:
+
+            if '[' in lexeme_note_raw:
+                if 'X0000' in lexeme_note_raw:
+
+                    clean_note = lexeme_note_raw.replace('[X0000] ', '')
+                    clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                    sourcelinks = []
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, 'X0000'),
+                        value='X0000',
+                        name=''
+                    ))
+
+                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=name,
+                        name=''
+                    ))
+
+                    lexemenotes.append(data_classes.Lexemenote(
+                        value=clean_note,
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=sourcelinks
+                    ))
+                elif '[X1006]' in lexeme_note_raw:
+                    clean_note = lexeme_note_raw.replace('[X1006] ', '')
+                    clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                    sourcelinks = []
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, 'X1006'),
+                        value='X1006',
+                        name=''
+                    ))
+
+                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=name,
+                        name=''
+                    ))
+
+                    lexemenotes.append(data_classes.Lexemenote(
+                        value=clean_note,
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=sourcelinks
+                    ))
+                elif '[X30028]' in lexeme_note_raw:
+                    clean_note = lexeme_note_raw.replace('[X30028] ', '')
+                    clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                    sourcelinks = []
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, 'X30028'),
+                        value='X30028',
+                        name=''
+                    ))
+
+                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=name,
+                        name=''
+                    ))
+
+                    lexemenotes.append(data_classes.Lexemenote(
+                        value=clean_note,
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=sourcelinks
+                    ))
+                elif '[EUR]' in lexeme_note_raw:
+                    clean_note = lexeme_note_raw.replace('[EUR] ', '')
+                    clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                    sourcelinks = []
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, 'EUR'),
+                        value='EUR',
+                        name=''
+                    ))
+
+                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=name,
+                        name=''
+                    ))
+
+                    lexemenotes.append(data_classes.Lexemenote(
+                        value=clean_note,
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=sourcelinks
+                    ))
+                elif '[TER]' in lexeme_note_raw:
+                    clean_note = lexeme_note_raw.replace('[TER] ', '')
+                    clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                    sourcelinks = []
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=find_source_by_name(name_to_id_map, 'TER'),
+                        value='TER',
+                        name=''
+                    ))
+
+                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                    sourcelinks.append(data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=name,
+                        name=''
+                    ))
+
+                    lexemenotes.append(data_classes.Lexemenote(
+                        value=clean_note,
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=sourcelinks
+                    ))
+                else:
+                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                    lexemenotes.append(data_classes.Lexemenote(
+                        value=lexeme_note_raw.replace('ÜMT/ÜAU ', ''),
+                        lang='est',
+                        publicity=True,
+                        sourceLinks=[data_classes.Sourcelink(
+                            sourceId=source_id,
+                            value=name,
+                            name=''
+                        )]
+                    ))
+            else:
+                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                lexemenotes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace('ÜMT/ÜAU ', ''),
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=[data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=name,
+                        name=''
+                    )]
+                ))
+        else:
+            name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+            lexemenotes.append(data_classes.Lexemenote(
+                value=lexeme_note_raw.replace('ÜMT/ÜAU ', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=[data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                )]
+            ))
+    elif 'AKE/ALK' in lexeme_note_raw:
+        name, source_id = term_sources_to_ids_map.get('AKE/ALK', ("", None))
+
+        lexemenotes.append(data_classes.Lexemenote(
+            value=lexeme_note_raw.replace('AKE/ALK ', ''),
+            lang='est',
+            publicity=True,
+            sourceLinks=[data_classes.Sourcelink(
+                sourceId=source_id,
+                value=name,
+                name=''
+            )]
+        ))
+    elif 'ELS/ETM' in lexeme_note_raw:
+        if 'EKSPERT' in lexeme_note_raw:
+            parts = lexeme_note_raw.split('[')
+            expert_name = parts[1].replace('EKSPERT', '').strip().replace(']', '').replace('{', '').replace('}', '')
+            sourcelinks = []
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, 'Ekspert',
+                                                                                      expert_names_to_ids_map),
+                value='Ekspert',
+                name=''
+            ))
+            name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
+            sourcelinks.append(data_classes.Sourcelink(
+                sourceId=source_id,
+                value=name,
+                name=''
+            ))
+            lexemenotes.append(data_classes.Lexemenote(
+                value=parts[0] + '[' + parts[2].replace('ELS/ETM', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=sourcelinks
+            ))
+        else:
+            note_value = lexeme_note_raw.replace('ELS/ETM', '').replace('{}', '').replace('{ ', '{').replace('[ ', '[')
+            name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
+            lexemenotes.append(data_classes.Lexemenote(
+                value=note_value,
+                lang='est',
+                publicity=True,
+                sourceLinks=[data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                )]
+            ))
+    elif 'MRS/MST' in lexeme_note_raw:
+        if lexeme_note_raw.endswith('}'):
+            if '&' in lexeme_note_raw:
+                parts = lexeme_note_raw.split('{')
+                note_part = parts[0]
+                other_part = parts[1]
+
+                second_initials_and_date = other_part.split(' ')
+
+                sourcelinks = []
+
+                name, source_id = term_sources_to_ids_map.get(second_initials_and_date[0], ("", None))
+
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                ))
+
+                name, source_id = term_sources_to_ids_map.get(second_initials_and_date[2], ("", None))
+
+                sourcelinks.append(data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                ))
+
+                lexemenotes.append(data_classes.Lexemenote(
+                    value=note_part + '{' + second_initials_and_date[3],
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=sourcelinks
+                ))
+
+            else:
+                name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
+                lexemenotes.append(data_classes.Lexemenote(
+                    value=lexeme_note_raw.replace('MRS/MST ', ''),
+                    lang='est',
+                    publicity=True,
+                    sourceLinks=[data_classes.Sourcelink(
+                        sourceId=source_id,
+                        value=name,
+                        name=''
+                    )]
+                ))
+        elif lexeme_note_raw.endswith(']'):
+            name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
+
+            lexemenotes.append(data_classes.Lexemenote(
+                value=lexeme_note_raw.replace('{MRS/MST}', ''),
+                lang='est',
+                publicity=True,
+                sourceLinks=[data_classes.Sourcelink(
+                    sourceId=source_id,
+                    value=name,
+                    name=''
+                )]
+            ))
+        else:
+            note_sourcelinks = []
+            name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
+
+            note_sourcelinks.append(data_classes.Sourcelink(
+                sourceId=source_id,
+                value=name,
+                name=''
+            ))
+            name, source_id = term_sources_to_ids_map.get('SES', ("", None))
+
+            note_sourcelinks.append(data_classes.Sourcelink(
+                sourceId=source_id,
+                value=name,
+                name=''
+            ))
+            lexemenotes.append(data_classes.Lexemenote(
+                value="Vaste pärineb Kindlustusinspektsiooni kahjukindlustuse osakonna juhatajalt Priit Kask'ilt {21.11.2000}.",
+                lang='est',
+                publicity=True,
+                sourceLinks=note_sourcelinks
+            ))
+    elif 'PTE/PTH' in lexeme_note_raw:
+
+        sourcelinks = []
+
+        sourcelinks.append(data_classes.Sourcelink(
+            sourceId=find_source_by_name(name_to_id_map, 'T2023'),
+            value='T2023',
+            name=''
+        ))
+
+        name, source_id = term_sources_to_ids_map.get('PTE/PTH', ("", None))
+
+        sourcelinks.append(data_classes.Sourcelink(
+            sourceId=source_id,
+            value=name,
+            name=''
+        ))
+
+        lexemenotes.append(data_classes.Lexemenote(
+            value="Tõlgitud ka: 'jääkaine' {04.05.1999}",
+            lang='est',
+            publicity=True,
+            sourceLinks=[sourcelinks]
+        ))
+    elif 'IKS/IFH' in lexeme_note_raw:
+        name, source_id = term_sources_to_ids_map.get('IKS/IFH', ("", None))
+        lexemenotes.append(data_classes.Lexemenote(
+            value=lexeme_note_raw.replace('IKS/IFH ', ''),
+            lang='est',
+            publicity=True,
+            sourceLinks=[data_classes.Sourcelink(
+                sourceId=source_id,
+                value=name,
+                name=''
+            )]
+        ))
+
+    return lexemenotes, lexeme_tags
