@@ -925,32 +925,245 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                     )]
                                 ))
                             elif '[{ÜMT/ÜAU' in lexeme_note_raw:
-                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
 
-                                word.lexemeNotes.append(data_classes.Lexemenote(
-                                    value=lexeme_note_raw.replace('{ÜMT/ÜAU}', ''),
-                                    lang='est',
-                                    publicity=True,
-                                    sourceLinks=[data_classes.Sourcelink(
-                                        sourceId=source_id,
-                                        value=name,
+                                if '[X0036]' in lexeme_note_raw:
+
+                                    clean_note = lexeme_note_raw.replace('[X0036] ', '')
+                                    clean_note = clean_note.replace('{ÜMT/ÜAU}', '')
+
+                                    sourcelinks = []
+
+                                    sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'X0036'),
+                                        value='X0036',
                                         name=''
-                                    )]
-                                ))
+                                    ))
+
+                                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                    sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        ))
+
+                                    word.lexemeNotes.append(data_classes.Lexemenote(
+                                        value=clean_note,
+                                        lang='est',
+                                        publicity=True,
+                                        sourceLinks=sourcelinks
+                                    ))
+                                elif '[EUR]' in lexeme_note_raw:
+
+                                    clean_note = lexeme_note_raw.replace('[EUR] ', '')
+                                    clean_note = clean_note.replace('{ÜMT/ÜAU}', '')
+
+                                    sourcelinks = []
+
+                                    sourcelinks.append(data_classes.Sourcelink(
+                                        sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'EUR'),
+                                        value='EUR',
+                                        name=''
+                                    ))
+
+                                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                    sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        ))
+
+                                    word.lexemeNotes.append(data_classes.Lexemenote(
+                                        value=clean_note,
+                                        lang='est',
+                                        publicity=True,
+                                        sourceLinks=sourcelinks
+                                    ))
+
+                                elif lexeme_note_raw.count('[') > 1:
+                                    word.lexemeTags.append('kontrolli ilmiku märkust')
+                                    word.lexemeNotes.append(data_classes.Lexemenote(
+                                        value=lexeme_note_raw,
+                                        lang='est',
+                                        publicity=False,
+                                        sourceLinks=[]
+                                    ))
+                                else:
+                                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                    word.lexemeNotes.append(data_classes.Lexemenote(
+                                        value=lexeme_note_raw.replace('{ÜMT/ÜAU}', ''),
+                                        lang='est',
+                                        publicity=True,
+                                        sourceLinks=[data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        )]
+                                    ))
 
                             elif '{ÜMT/ÜAU' in lexeme_note_raw:
-                                name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
 
-                                word.lexemeNotes.append(data_classes.Lexemenote(
-                                    value=lexeme_note_raw.replace('ÜMT/ÜAU ', ''),
-                                    lang='est',
-                                    publicity=True,
-                                    sourceLinks=[data_classes.Sourcelink(
-                                        sourceId=source_id,
-                                        value=name,
-                                        name=''
-                                    )]
-                                ))
+                                if '[' in lexeme_note_raw:
+                                    if 'X0000' in lexeme_note_raw:
+
+                                        clean_note = lexeme_note_raw.replace('[X0000] ', '')
+                                        clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                                        sourcelinks = []
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'X0000'),
+                                            value='X0000',
+                                            name=''
+                                        ))
+
+                                        name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        ))
+
+                                        word.lexemeNotes.append(data_classes.Lexemenote(
+                                            value=clean_note,
+                                            lang='est',
+                                            publicity=True,
+                                            sourceLinks=sourcelinks
+                                        ))
+                                    elif '[X1006]' in lexeme_note_raw:
+                                        clean_note = lexeme_note_raw.replace('[X1006] ', '')
+                                        clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                                        sourcelinks = []
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'X1006'),
+                                            value='X1006',
+                                            name=''
+                                        ))
+
+                                        name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        ))
+
+                                        word.lexemeNotes.append(data_classes.Lexemenote(
+                                            value=clean_note,
+                                            lang='est',
+                                            publicity=True,
+                                            sourceLinks=sourcelinks
+                                        ))
+                                    elif '[X30028]' in lexeme_note_raw:
+                                        clean_note = lexeme_note_raw.replace('[X30028] ', '')
+                                        clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                                        sourcelinks = []
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'X30028'),
+                                            value='X30028',
+                                            name=''
+                                        ))
+
+                                        name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        ))
+
+                                        word.lexemeNotes.append(data_classes.Lexemenote(
+                                            value=clean_note,
+                                            lang='est',
+                                            publicity=True,
+                                            sourceLinks=sourcelinks
+                                        ))
+                                    elif '[EUR]' in lexeme_note_raw:
+                                        clean_note = lexeme_note_raw.replace('[EUR] ', '')
+                                        clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                                        sourcelinks = []
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'EUR'),
+                                            value='EUR',
+                                            name=''
+                                        ))
+
+                                        name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        ))
+
+                                        word.lexemeNotes.append(data_classes.Lexemenote(
+                                            value=clean_note,
+                                            lang='est',
+                                            publicity=True,
+                                            sourceLinks=sourcelinks
+                                        ))
+                                    elif '[TER]' in lexeme_note_raw:
+                                        clean_note = lexeme_note_raw.replace('[TER] ', '')
+                                        clean_note = clean_note.replace('ÜMT/ÜAU ', '')
+
+                                        sourcelinks = []
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'TER'),
+                                            value='TER',
+                                            name=''
+                                        ))
+
+                                        name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                        sourcelinks.append(data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        ))
+
+                                        word.lexemeNotes.append(data_classes.Lexemenote(
+                                            value=clean_note,
+                                            lang='est',
+                                            publicity=True,
+                                            sourceLinks=sourcelinks
+                                        ))
+                                    else:
+                                        print(lexeme_note_raw)
+                                        name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                        word.lexemeNotes.append(data_classes.Lexemenote(
+                                            value=lexeme_note_raw.replace('ÜMT/ÜAU ', ''),
+                                            lang='est',
+                                            publicity=True,
+                                            sourceLinks=[data_classes.Sourcelink(
+                                                sourceId=source_id,
+                                                value=name,
+                                                name=''
+                                            )]
+                                        ))
+                                else:
+                                    name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
+
+                                    word.lexemeNotes.append(data_classes.Lexemenote(
+                                        value=lexeme_note_raw.replace('ÜMT/ÜAU ', ''),
+                                        lang='est',
+                                        publicity=True,
+                                        sourceLinks=[data_classes.Sourcelink(
+                                            sourceId=source_id,
+                                            value=name,
+                                            name=''
+                                        )]
+                                    ))
                             else:
                                 name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
 
