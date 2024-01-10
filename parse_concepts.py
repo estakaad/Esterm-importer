@@ -150,15 +150,22 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                                                                      term_sources_to_ids_map)
                     for note in concept_notes:
                         if note.value.startswith('KONTROLLIDA: '):
-                            concept.tags.append('kontrolli mõistet')
+                            concept.tags.append('term kontrolli mõistet')
                             note.value = note.value.replace('KONTROLLIDA: ', '')
                         concept.notes.append(note)
 
                 # Does note contain multiple languages?
                 elif xml_helpers.does_note_contain_multiple_languages(raw_note_value):
+                    if note_value.startswith('{') and note_value.endswith('}'):
+                        concept.notes.append(data_classes.Note(
+                            value=note_value.strip('{}'),
+                            lang='est',
+                            publicity=False,
+                            sourceLinks=None
+                        ))
                     #note_value = xml_helpers.edit_note_with_multiple_languages(raw_note_value)
                     # Does note end with terminologist initials and date in curly braces?
-                    if note_value.endswith('}'):
+                    elif note_value.endswith('}'):
                         # Multiple initials
                         if '&' in note_value:
 
@@ -195,9 +202,8 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
 
                         # One set of initials
                         else:
-                            print(note_value)
                             if 'EKSPERT' in note_value:
-                                concept.tags.append('kontrolli mõistet')
+                                concept.tags.append('term kontrolli mõistet')
                                 concept.notes.append(
                                     data_classes.Note(
                                         value=note_value,
@@ -260,7 +266,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
 
                         # Perform the check for brackets/braces in the middle of the string
                         if any(char in note_value[:-50] for char in '[]{}'):
-                            concept.tags.append('kontrolli mõistet')
+                            concept.tags.append('term kontrolli mõistet')
                             concept.notes.append(data_classes.Note(
                                 value=note_value.replace('KONTROLLIDA: ', ''),
                                 lang='est',
@@ -290,7 +296,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                 for note in concept_notes_with_sourcelinks:
                                     concept.notes.append(note)
                                     if note.value.startswith('KONTROLLIDA'):
-                                        concept.tags.append('kontrolli mõistet')
+                                        concept.tags.append('term kontrolli mõistet')
                                         note.value =  note.value.replace('KONTROLLIDA: ', '')
 
                 logger.debug('Added concept note: %s', descrip_element_value)
@@ -550,7 +556,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                         for note in lexeme_notes_with_sourcelinks:
                             word.lexemeNotes.append(note)
                             if note.value.startswith('KONTROLLIDA'):
-                                word.lexemeTags.append('kontrolli ilmikut')
+                                word.lexemeTags.append('term kontrolli ilmikut')
                     elif xml_helpers.does_note_contain_ampersand_in_sourcelink(lexeme_note_raw):
                         lexeme_notes, concept_notes = xml_helpers.handle_ampersand_notes('word', lexeme_note_raw, term_sources_to_ids_map)
                         for note in lexeme_notes:
@@ -559,7 +565,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                         term_pairs = ['ÜMT/ÜAU', 'AKE/ALK', 'ELS/ETM', 'MRS/MST', 'PTE/PTH', 'IKS/IFH']
 
                         if any(char in lexeme_note_raw[:-50] for char in '[]{}'):
-                            word.lexemeTags.append('kontrolli ilmikut')
+                            word.lexemeTags.append('term kontrolli ilmikut')
                             word.lexemeNotes.append(data_classes.Lexemenote(
                                 value=lexeme_note_raw,
                                 lang='est',
@@ -594,7 +600,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
                                 for note in lexeme_notes_with_sourcelinks:
                                     if note.value.startswith('KONTROLLIDA'):
-                                        word.lexemeTags.append('kontrolli ilmikut')
+                                        word.lexemeTags.append('term kontrolli ilmikut')
                                         note.value = note.value.replace('KONTROLLIDA: ', '')
                                     word.lexemeNotes.append(note)
 
