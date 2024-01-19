@@ -151,7 +151,6 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                     for note in concept_notes:
                         if note.value.startswith('KONTROLLIDA: '):
                             concept.tags.append('term kontrolli mõistet')
-                            note.value = note.value.replace('KONTROLLIDA: ', '')
                         concept.notes.append(note)
 
                 # Does note contain multiple languages?
@@ -206,7 +205,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                 concept.tags.append('term kontrolli mõistet')
                                 concept.notes.append(
                                     data_classes.Note(
-                                        value=note_value,
+                                        value='KONTROLLIDA: ' + note_value,
                                         lang='est',
                                         publicity=False,
                                         sourceLinks=[]
@@ -268,7 +267,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                         if any(char in note_value[:-50] for char in '[]{}'):
                             concept.tags.append('term kontrolli mõistet')
                             concept.notes.append(data_classes.Note(
-                                value=note_value.replace('KONTROLLIDA: ', ''),
+                                value='KONTROLLIDA: ' + note_value,
                                 lang='est',
                                 publicity=False,
                                 sourceLinks=None
@@ -297,7 +296,6 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                     concept.notes.append(note)
                                     if note.value.startswith('KONTROLLIDA'):
                                         concept.tags.append('term kontrolli mõistet')
-                                        note.value =  note.value.replace('KONTROLLIDA: ', '')
 
                 logger.debug('Added concept note: %s', descrip_element_value)
 
@@ -475,7 +473,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
 
                         if usage_object.value.startswith('KONTROLLIDA:'):
                             word.lexemeTags.append('kontrolli ilmikut')
-                            usage_object.value = usage_object.value.replace('KONTROLLIDA: ', '')
 
                         if usage_object:
                             if usage_object.sourceLinks:
@@ -567,7 +564,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                         if any(char in lexeme_note_raw[:-50] for char in '[]{}'):
                             word.lexemeTags.append('term kontrolli ilmikut')
                             word.lexemeNotes.append(data_classes.Lexemenote(
-                                value=lexeme_note_raw,
+                                value='KONTROLLIDA: ' + lexeme_note_raw,
                                 lang='est',
                                 publicity=False,
                                 sourceLinks=None
@@ -601,7 +598,6 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                 for note in lexeme_notes_with_sourcelinks:
                                     if note.value.startswith('KONTROLLIDA'):
                                         word.lexemeTags.append('term kontrolli ilmikut')
-                                        note.value = note.value.replace('KONTROLLIDA: ', '')
                                     word.lexemeNotes.append(note)
 
 

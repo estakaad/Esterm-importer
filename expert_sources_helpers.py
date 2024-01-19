@@ -72,7 +72,7 @@ def create_name_and_type_to_id_mapping_for_expert_sources(expert_sources):
     for source in expert_sources:
         source_id = source['id']
         source_name = source['name']
-        source_description = source['comment']
+        source_description = source['valuePrese']
 
         if source_description == source_name or source_description.startswith(f"{source_name} – "):
             key = (source_name, source_description)

@@ -51,17 +51,17 @@ expert_info_for_api_calls = 'files/import/esterm-19-01-2024/eksperdid_sources_wi
 #     expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file, environment)
 # #
 # # # # # # # # 5. Map source names to their ID-s
-with open('files/import/esterm-10-01-2024/sources_and_unknown_sources_VIST6IGE.json', 'r', encoding='utf-8') as f:
+with open('files/import/esterm-19-01-2024/allikad/sources_and_unknown_sources.json', 'r', encoding='utf-8') as f:
     updated_sources = json.load(f)
 
 name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
 
-with open('files/import/esterm-10-01-2024/eksperdid_sources_with_ids.json', 'r', encoding='utf-8') as f:
+with open('files/import/esterm-19-01-2024/eksperdid/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
     expert_sources = json.load(f)
 
 expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)
 
-with open('files/import/esterm-10-01-2024/terminoloogid_sources_with_ids.json', 'r', encoding='utf-8') as f:
+with open('files/import/esterm-19-01-2024/termid/terminoloogid_sources_with_ids.json', 'r', encoding='utf-8') as f:
     term_sources = json.load(f)
 
 term_sources_to_ids_map = expert_sources_helpers.create_terminologist_name_value_to_id_mapping(term_sources)
