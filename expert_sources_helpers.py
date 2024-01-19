@@ -49,7 +49,7 @@ def create_experts_sources(output_json, expert_info_from_esterm, expert_info_for
     csv_data = []
     with open(expert_info_from_esterm, "r", encoding='utf-8') as csv_file:
         csv_reader = csv.reader(csv_file)
-        next(csv_reader)  # skip header
+        next(csv_reader)
         for row in csv_reader:
             csv_data.append({"type": row[0], "name": row[1]})
 
@@ -59,9 +59,9 @@ def create_experts_sources(output_json, expert_info_from_esterm, expert_info_for
         api_dict = {"type": "PERSON", "public": False}
         name = entry["name"]
         api_dict["name"] = entry["type"]
-        api_dict["description"] = name
+        api_dict["valuePrese"] = name
         if name in json_dict:
-            api_dict["description"] += " – " + json_dict[name]
+            api_dict["valuePrese"] += " – " + json_dict[name]
         api_list.append(api_dict)
 
     with open(expert_info_for_api_calls, "w", encoding='utf-8') as api_file:

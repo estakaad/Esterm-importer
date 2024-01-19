@@ -56,10 +56,10 @@ def get_existing_source_id(source):
 
 
 # Create a new source in Ekilex and return its ID
-def create_source(source):
+def create_source(source, environment):
     logger.debug(f'Started creating source {source}')
-    #endpoint = "https://ekitest.tripledev.ee/ekilex/api/source/create"
-    endpoint = "https://ekilex.ee/api/source/create"
+    endpoint = os.environ.get(environment) + '/api/source/create'
+
     response = requests.post(endpoint, headers=header, json=source)
 
     if response.status_code >= 200 and response.status_code < 300:
@@ -78,7 +78,7 @@ def create_source(source):
     return None
 
 def assign_ids_to_expert_sources(
-        expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_sources_file):
+        expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_sources_file, environment):
 
     updated_sources = []
     ids_of_created_expert_sources = []
@@ -89,7 +89,7 @@ def assign_ids_to_expert_sources(
         data = json.load(f)
 
         for source in data:
-            source_id = create_source(source)
+            source_id = create_source(source, environment)
             if source_id:
                 logger.info(f'Created expert source with ID {source_id}')
                 source['id'] = source_id

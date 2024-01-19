@@ -13,7 +13,7 @@ logger.propagate = False
 
 def set_up_requests(dataset, environment):
     api_key = os.environ.get("API_KEY")
-    crud_role_dataset = os.environ.get(dataset)
+    crud_role_dataset = dataset
 
     header = {"ekilex-api-key": api_key}
     parameters = {"crudRoleDataset": crud_role_dataset}
@@ -33,7 +33,7 @@ def import_concepts(file, dataset, saved_concepts_filename, not_saved_concepts_f
     for concept in data:
 
         try:
-            concept_id = save_concept(concept, dataset, environment)
+            concept_id = save_concept(session, concept, dataset, environment)
 
             if concept_id:
                 concept['id'] = concept_id
@@ -107,7 +107,7 @@ def update_word_ids(concepts_without_word_ids_file, dataset, concepts_dataset,
         words = concept.get('words', [])
         for word in words:
             try:
-                word_ids = get_word_id(word['valuePrese'], word['lang'], dataset, concepts_dataset, environment)
+                word_ids = get_word_id(session, word['valuePrese'], word['lang'], dataset, concepts_dataset, environment)
             except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError):
                 logger.info(f"Connection timed out for {word['value']}. Moving on to the next word.")
                 continue
