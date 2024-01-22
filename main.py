@@ -15,11 +15,11 @@ environment = 'TEST'
 # # 1. Compile JSON with expert sources. Contains
 # # - EKSPERT, PÄRING, CONSILIUM, DELEST, DGT, PARLAMENT type sources from esterm.xml
 # # - metadata from eksperdid.xlsx
-# # # # # # # # # # # # # #
-input_excel = 'files/input/ekspertide_lisainfo.xlsx'
-output_json = 'files/import/esterm-19-01-2024/eksperdid.json'
-expert_info_from_esterm = 'files/input/eksperdid_estermist.csv'
-expert_info_for_api_calls = 'files/import/esterm-19-01-2024/eksperdid_sources_without_ids.json'
+# # # # # # # # # # # # # # #
+# input_excel = 'files/input/ekspertide_lisainfo.xlsx'
+# output_json = 'files/import/esterm-19-01-2024/eksperdid.json'
+# expert_info_from_esterm = 'files/input/eksperdid_estermist.csv'
+# expert_info_for_api_calls = 'files/import/esterm-19-01-2024/eksperdid_sources_without_ids.json'
 #
 # expert_sources_helpers.excel_to_json(input_excel, output_json)
 # expert_sources_helpers.create_experts_sources(output_json, expert_info_from_esterm, expert_info_for_api_calls)
@@ -51,22 +51,22 @@ expert_info_for_api_calls = 'files/import/esterm-19-01-2024/eksperdid_sources_wi
 #     expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file, environment)
 # #
 # # # # # # # # 5. Map source names to their ID-s
-with open('files/import/esterm-19-01-2024/allikad/sources_and_unknown_sources.json', 'r', encoding='utf-8') as f:
+with open('files/import/esterm-22-01-2024/allikad/sources_and_unknown_sources.json', 'r', encoding='utf-8') as f:
     updated_sources = json.load(f)
 
 name_to_id_map = xml_helpers.create_name_to_id_mapping(updated_sources)
 
-with open('files/import/esterm-19-01-2024/eksperdid/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
+with open('files/import/esterm-22-01-2024/eksperdid/expert_sources_with_ids.json', 'r', encoding='utf-8') as f:
     expert_sources = json.load(f)
 
 expert_names_to_ids_map = expert_sources_helpers.create_name_and_type_to_id_mapping_for_expert_sources(expert_sources)
 
-with open('files/import/esterm-19-01-2024/termid/terminoloogid_sources_with_ids.json', 'r', encoding='utf-8') as f:
+with open('files/import/esterm-22-01-2024/termid/terminoloogid_sources_with_ids.json', 'r', encoding='utf-8') as f:
     term_sources = json.load(f)
 
 term_sources_to_ids_map = expert_sources_helpers.create_terminologist_name_value_to_id_mapping(term_sources)
 #
-# # # # 6. Export concepts from XML. Returns files/output/concepts.json and files/output/aviation_concepts.json
+# # # # 6. Export concepts from XML. Returns files/output/concepts.json
 parse_concepts.transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
 # 7. Check if word exists. If it does, add its ID

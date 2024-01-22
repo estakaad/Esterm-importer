@@ -15,7 +15,6 @@ logger = log_config.get_logger()
 # Parse the whole Esterm XML and return aviation concepts, all other concepts and the sources of the concepts
 def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map):
     concepts = []
-
     # For testing #
     counter = 1
 
@@ -85,6 +84,10 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                     domain = domain.strip()
                     if domain:
                         concept.domains.append(data_classes.Domain(code=domain, origin='lenoch'))
+
+            if descrip_element.get('type') == 'Mõistetüüp':
+                tag_name = xml_helpers.map_concept_type_to_tag_name(''.join(descrip_element.itertext()).strip())
+                concept.tags.append(tag_name)
 
             if descrip_element.get('type') == 'Päritolu':
                 origin = ''.join(descrip_element.itertext()).strip()
@@ -356,7 +359,6 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
         logger.debug('Concept will be added to the general list of concepts.')
 
         logger.info('Finished parsing concept.')
-
 
     return concepts
 

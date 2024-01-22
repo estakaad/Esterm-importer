@@ -6298,3 +6298,24 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
         ))
 
     return lexemenotes, lexeme_tags
+
+def map_concept_type_to_tag_name(concept_type):
+    tag_name = ''
+    if concept_type == 'termin':
+        tag_name = 'term termin'
+    elif concept_type == 'ametinimetus':
+        tag_name = 'term ametinimetus'
+    elif concept_type == 'tõlkeprobleem':
+        tag_name =  'term tõlkeprobleem'
+    elif concept_type == 'õigusakti pealkiri':
+        tag_name = 'term õigusakti pealkiri'
+    elif concept_type == 'organisatsioon|asutus':
+        tag_name = 'term organisatsioon/asutus'
+    elif concept_type == 'dokumendi pealkiri':
+        tag_name = 'term dokumendi pealkiri'
+    elif concept_type == 'organisatsioon, asutus':
+        tag_name = 'term organisatsioon/asutus'
+    else:
+        return tag_name
+
+    return tag_name
