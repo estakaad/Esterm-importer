@@ -172,7 +172,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
-                                            name=name.strip(']')))
+                                            sourceLinkName=name.strip(']')))
             elif 'PÄRING' in part:
                 if part == 'PÄRING':
                     source_links.append(
@@ -180,7 +180,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring',
                                                                                                   expert_names_to_ids_map),
                             value='Päring',
-                            name=''))
+                            sourceLinkName=''))
                 else:
                     expert_name = part.replace('PÄRING ', '')
                     expert_type = 'Päring'
@@ -190,7 +190,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                                                                                   expert_type,
                                                                                                   expert_names_to_ids_map),
                             value='Päring',
-                            name=''))
+                            sourceLinkName=''))
 
             elif 'DGT' in part:
                 expert_name = part.replace('DGT', '').strip().strip('{}')
@@ -201,7 +201,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                         sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
                                                                                               expert_names_to_ids_map),
                         value='DGT',
-                        name=''))
+                        sourceLinkName=''))
 
             elif 'PARLAMENT' in part:
                 expert_name = part.replace('PARLAMENT', '').strip(' {}')
@@ -212,7 +212,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                         sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
                                                                                               expert_names_to_ids_map),
                         value='Parlament',
-                        name=''))
+                        sourceLinkName=''))
 
             elif 'CONSILIUM' in part:
                 expert_name = part.replace('CONSILIUM', '').strip(' {}')
@@ -222,7 +222,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                         sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
                                                                                               expert_names_to_ids_map),
                         value='Consilium',
-                        name=''))
+                        sourceLinkName=''))
 
             elif 'EKSPERT' in part:
 
@@ -233,7 +233,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                         sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
                                                                                               expert_names_to_ids_map),
                         value='Ekspert',
-                        name=''))
+                        sourceLinkName=''))
 
             elif ',' in part:
                 value = re.split(r',', part, 1)[0].strip()
@@ -241,31 +241,31 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
-                                            name=name.strip(']')))
+                                            sourceLinkName=name.strip(']')))
 
             elif part.startswith('EASA NPA 2008-22D. '):
                 value = 'EASA NPA 2008-22D'
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
-                                            name=part.replace('EASA NPA 2008-22D. ', '')))
+                                            sourceLinkName=part.replace('EASA NPA 2008-22D. ', '')))
             elif part.startswith('WP, '):
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'WP'),
                                             value='WP',
-                                            name=part.replace('WP, ', '')))
+                                            sourceLinkName=part.replace('WP, ', '')))
             elif part.startswith('BRITANNICA '):
                 value = 'BRITANNICA'
                 name = part.replace('BRITANNICA ', '')
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
-                                            name=name.strip(']')))
+                                            sourceLinkName=name.strip(']')))
             elif part.endswith('Finantsinspektsioon'):
                 source_links.append(
                     data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Finantsinspektsioon', 'Ekspert', expert_names_to_ids_map),
                                             value='Ekspert',
-                                            name=''
+                                            sourceLinkName=''
                                             ))
             elif part.startswith('T40766 '):
                 value = 'T40766'
@@ -273,12 +273,12 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                             value=value,
-                                            name=name.strip(']')))
+                                            sourceLinkName=name.strip(']')))
             else:
                 source_links.append(
                     data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, part),
                                             value=part,
-                                            name=name.strip(']')))
+                                            sourceLinkName=name.strip(']')))
     elif source_value:
 
         if '§' in source_value:
@@ -287,7 +287,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
             source_links.append(
                 data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                         value=value,
-                                        name=name.strip(']')))
+                                        sourceLinkName=name.strip(']')))
         elif 'PÄRING' in source_value:
             parts = full_text.strip().split('PÄRING', 1)
             if parts:
@@ -300,14 +300,14 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                                                                                                   expert_type,
                                                                                                   expert_names_to_ids_map),
                             value='Päring',
-                            name=''))
+                            sourceLinkName=''))
                 else:
                     source_links.append(
                         data_classes.Sourcelink(
                             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring',
                                                                                                   expert_names_to_ids_map),
                             value='Päring',
-                            name=''))
+                            sourceLinkName=''))
 
 
         elif 'DGT' in source_value:
@@ -319,7 +319,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
                                                                                           expert_names_to_ids_map),
                     value='DGT',
-                    name=''))
+                    sourceLinkName=''))
 
         elif 'PARLAMENT' in source_value:
             expert_name = source_value.replace('PARLAMENT ', '').strip(' {}')
@@ -330,7 +330,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
                                                                                           expert_names_to_ids_map),
                     value='Parlament',
-                    name=''))
+                    sourceLinkName=''))
 
         elif 'CONSILIUM' in source_value:
             parts = full_text.split('CONSILIUM', 1)
@@ -342,7 +342,7 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                         sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
                                                                                               expert_names_to_ids_map),
                         value='Consilium',
-                        name=''))
+                        sourceLinkName=''))
 
         elif 'EKSPERT' in source_value:
 
@@ -353,37 +353,37 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type,
                                                                                           expert_names_to_ids_map),
                     value='Ekspert',
-                    name=''))
+                    sourceLinkName=''))
         elif ',' in source_value:
             value = re.split(r',', source_value, 1)[0].strip()
             name = re.split(r',', source_value, 1)[1].strip()
             source_links.append(
                 data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                         value=value,
-                                        name=name.strip(']')))
+                                        sourceLinkName=name.strip(']')))
         elif source_value.startswith('EASA NPA 2008-22D. '):
             value = 'EASA NPA 2008-22D'
             source_links.append(
                 data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                         value=value,
-                                        name=source_value.replace('EASA NPA 2008-22D. ', '')))
+                                        sourceLinkName=source_value.replace('EASA NPA 2008-22D. ', '')))
         elif source_value.startswith('WP, '):
             source_links.append(
                 data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, 'WP'),
                                         value='WP',
-                                        name=source_value.replace('WP, ', '')))
+                                        sourceLinkName=source_value.replace('WP, ', '')))
         elif source_value.startswith('BRITANNICA '):
             value = 'BRITANNICA'
             name = source_value.replace('BRITANNICA ', '')
             source_links.append(
                 data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                         value=value,
-                                        name=name.strip(']')))
+                                        sourceLinkName=name.strip(']')))
         elif source_value.endswith('Finantsinspektsioon'):
             source_links.append(
                 data_classes.Sourcelink(sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Finantsinspektsioon', 'Ekspert', expert_names_to_ids_map),
                                         value='Ekspert',
-                                        name=''
+                                        sourceLinkName=''
                                         ))
         elif source_value.startswith('T40766 '):
             value = 'T40766'
@@ -391,12 +391,12 @@ def extract_usage_and_its_sourcelink(element, updated_sources, expert_names_to_i
             source_links.append(
                 data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, value),
                                         value=value,
-                                        name=name.strip(']')))
+                                        sourceLinkName=name.strip(']')))
         else:
             source_links.append(
                 data_classes.Sourcelink(sourceId=find_source_by_name(updated_sources, source_value),
                                         value=source_value,
-                                        name=name.strip(']')))
+                                        sourceLinkName=name.strip(']')))
     else:
         print('Kontekstil pole viidet: ' + full_text)
 
@@ -617,13 +617,13 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
                             source_links_for_definition.append(data_classes.Sourcelink(
                                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, expert_type, expert_names_to_ids_map),
                                 value=expert_type,
-                                name=''
+                                sourceLinkName=''
                             ))
                         else:
                             source_links_for_definition.append(data_classes.Sourcelink(
                                 sourceId=find_source_by_name(name_to_id_map, value),
                                 value=value,
-                                name=name
+                                sourceLinkName=name
                             ))
 
                 else:
@@ -636,163 +636,163 @@ def handle_definition(definition_element_value, name_to_id_map, language, expert
                                                                                                   expert_type,
                                                                                                   expert_names_to_ids_map),
                             value=expert_type,
-                            name=''
+                            sourceLinkName=''
                         ))
                     elif name.startswith('TKP, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'TKP'),
                             value='TKP',
-                            name=name.replace('TKP, ', '')
+                            sourceLinkName=name.replace('TKP, ', '')
                         ))
                     elif name.startswith('WBS, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'WBS'),
                             value='WBS',
-                            name=name.replace('WBS, ', '')
+                            sourceLinkName=name.replace('WBS, ', '')
                         ))
                     elif name.startswith('ARV, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'ARV'),
                             value='ARV',
-                            name=name.replace('ARV, ', '')
+                            sourceLinkName=name.replace('ARV, ', '')
                         ))
                     elif name.startswith('T0057 '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'T0057 '),
                             value='T0057 ',
-                            name=name.replace('T0057 ', '')
+                            sourceLinkName=name.replace('T0057 ', '')
                         ))
                     elif name.startswith('VSL, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'VSL'),
                             value='VSL',
-                            name=name.replace('VSL, ', '')
+                            sourceLinkName=name.replace('VSL, ', '')
                         ))
                     elif name.startswith('IATE, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'IATE'),
                             value='IATE',
-                            name=name.replace('IATE, ', '')
+                            sourceLinkName=name.replace('IATE, ', '')
                         ))
                     elif name.startswith('CDB, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'CDB'),
                             value='CDB',
-                            name=name.replace('CDB, ', '')
+                            sourceLinkName=name.replace('CDB, ', '')
                         ))
                     elif name.startswith('TTD, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'TTD'),
                             value='TTD',
-                            name=name.replace('TTD, ', '')
+                            sourceLinkName=name.replace('TTD, ', '')
                         ))
                     elif name.startswith('SIL, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'SIL'),
                             value='SIL',
-                            name=name.replace('SIL, ', '')
+                            sourceLinkName=name.replace('SIL, ', '')
                         ))
                     elif name.startswith('TER, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'TER'),
                             value='TER',
-                            name=name.replace('TER, ', '')
+                            sourceLinkName=name.replace('TER, ', '')
                         ))
                     elif name.startswith('BRIONLINE, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'BRIONLINE'),
                             value='BRIONLINE',
-                            name=name.replace('BRIONLINE, ', '')
+                            sourceLinkName=name.replace('BRIONLINE, ', '')
                         ))
                     elif name.startswith('Jane'):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, name),
                             value=name,
-                            name=''
+                            sourceLinkName=''
                         ))
                     elif name.startswith('ESR, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'ESR'),
                             value='ESR',
-                            name=name.replace('ESR, ', '')
+                            sourceLinkName=name.replace('ESR, ', '')
                         ))
                     elif name.startswith('PDE, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'PDE'),
                             value='PDE',
-                            name=name.replace('PDE, ', '')
+                            sourceLinkName=name.replace('PDE, ', '')
                         ))
                     elif value == 'A' and name == 'Dictionary':
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'A Dictionary of Business and Management'),
                             value='A Dictionary of Business and Management',
-                            name=''
+                            sourceLinkName=''
                         ))
                     elif value == 'New' and name == 'Oxford':
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'New Oxford American Dictionary'),
                             value='New Oxford American Dictionary',
-                            name=''
+                            sourceLinkName=''
                         ))
                     elif value == 'The' and name == 'Canadian':
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'The Canadian Oxford Dictionary'),
                             value='The Canadian Oxford Dictionary',
-                            name=''
+                            sourceLinkName=''
                         ))
                     elif value == 'American' and name == 'Heritage®':
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'American Heritage® Dictionary of the English Language'),
                             value='American Heritage® Dictionary of the English Language',
-                            name=''
+                            sourceLinkName=''
                         ))
                     elif name.startswith('VÕS, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'VÕS'),
                             value='VÕS',
-                            name=name.replace('VÕS, ', '')
+                            sourceLinkName=name.replace('VÕS, ', '')
                         ))
                     elif name.startswith('AKS, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'AKS'),
                             value='AKS',
-                            name=name.replace('AKS, ', '')
+                            sourceLinkName=name.replace('AKS, ', '')
                         ))
                     elif name.startswith('ODC, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'ODC'),
                             value='ODC',
-                            name=name.replace('ODC, ', '')
+                            sourceLinkName=name.replace('ODC, ', '')
                         ))
                     elif name.startswith('ÕS, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'ÕS'),
                             value='ÕS',
-                            name=name.replace('ÕS, ', '')
+                            sourceLinkName=name.replace('ÕS, ', '')
                         ))
                     elif name.startswith('BRI, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'BRI'),
                             value='BRI',
-                            name=name.replace('BRI, ', '')
+                            sourceLinkName=name.replace('BRI, ', '')
                         ))
                     elif name.startswith('OMD, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'OMD'),
                             value='OMD',
-                            name=name.replace('OMD, ', '')
+                            sourceLinkName=name.replace('OMD, ', '')
                         ))
                     elif name.startswith('MED, '):
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, 'MED'),
                             value='MED',
-                            name=name.replace('MED, ', '')
+                            sourceLinkName=name.replace('MED, ', '')
                         ))
                     else:
                         source_links_for_definition.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, value),
                             value=value,
-                            name=name
+                            sourceLinkName=name
                         ))
         else:
             continue
@@ -1444,7 +1444,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     source_links.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, part),
                         value=part,
-                        name=''
+                        sourceLinkName=''
                     ))
             elif ';' in sourcelink_value:
                 parts = sourcelink_value.split("; ")
@@ -1452,13 +1452,13 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     source_links.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, part),
                         value=part,
-                        name=''
+                        sourceLinkName=''
                     ))
             else:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
                     value=sourcelink_value,
-                    name=''
+                    sourceLinkName=''
                 ))
 
             if type == 'word':
@@ -1503,7 +1503,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             source_links.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
                 value=sourcelink_value,
-                name=''
+                sourceLinkName=''
             ))
 
             if type == 'word':
@@ -1543,7 +1543,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'AC 100-001/03'),
             value='AC 100-001/03',
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -1559,12 +1559,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'MET-juhend'),
             value='MET-juhend',
-            name=''
+            sourceLinkName=''
         ))
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'AIP-GEN2.2-2017/06'),
             value='AIP-GEN2.2-2017/06',
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
@@ -1588,20 +1588,20 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'ELS/ETM'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         source_links.append(
             data_classes.Sourcelink(
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Andres Lipand', 'Ekspert', expert_sources_ids_map),
                 value='Ekspert',
-                name=''
+                sourceLinkName=''
             )
         )
         if type == 'word':
@@ -1619,14 +1619,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             data_classes.Sourcelink(
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Jaan Sootak', 'Ekspert', expert_sources_ids_map),
                 value='Ekspert',
-                name=''
+                sourceLinkName=''
             )
         )
         source_links.append(
             data_classes.Sourcelink(
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Jaan Ginter', 'Ekspert', expert_sources_ids_map),
                 value='Ekspert',
-                name=''
+                sourceLinkName=''
             )
         )
         if type == 'word':
@@ -1644,14 +1644,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'MLR'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
@@ -1668,14 +1668,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'ATM'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
@@ -1692,14 +1692,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'KMU'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
@@ -1716,14 +1716,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'RRS'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value='RRS',
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
@@ -1747,14 +1747,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'AJK'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
@@ -1771,14 +1771,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'KMR'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
@@ -1795,14 +1795,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'MLR'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             lexeme_notes.append(data_classes.Lexemenote(
@@ -1828,7 +1828,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Tiina Annus', 'Ekspert',
                                                                                   expert_sources_ids_map),
             value='Ekspert',
-            name=''
+            sourceLinkName=''
         ))
         lexeme_notes.append(data_classes.Lexemenote(
             value=note_raw.replace(' {Tiina Annus}', ''),
@@ -1842,7 +1842,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value='ÕTK juristid',
-            name=''
+            sourceLinkName=''
         ))
         lexeme_notes.append(data_classes.Lexemenote(
             value=note_raw.replace(' {ÕTK juristid}', ''),
@@ -1863,7 +1863,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -1888,7 +1888,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -1913,7 +1913,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -1938,14 +1938,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'MR'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -1970,14 +1970,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'KTS'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -2002,14 +2002,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'LPK'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -2035,14 +2035,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'MLR'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'concept':
@@ -2060,14 +2060,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         key = 'MVS'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         if type == 'word':
             note = note_raw.replace('{ÜMT/ÜAU}', '')
@@ -2084,7 +2084,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Päring', 'Päring', expert_sources_ids_map),
             value='Päring',
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -2107,7 +2107,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Ekspert', 'Ekspert', expert_sources_ids_map),
             value='Ekspert',
-            name=''
+            sourceLinkName=''
         ))
 
         if type == 'word':
@@ -2131,7 +2131,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, '4053'),
             value='4053',
-            name='ISDN'
+            sourceLinkName='ISDN'
         ))
 
         if type == 'word':
@@ -2147,7 +2147,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, '7458'),
             value='7458',
-            name='9.4'
+            sourceLinkName='9.4'
         ))
 
         if type == 'word':
@@ -2163,7 +2163,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'SKY'),
             value='SKY',
-            name='Monopulse Secondary Surveillance Radar (MSSR)'
+            sourceLinkName='Monopulse Secondary Surveillance Radar (MSSR)'
         ))
 
         if type == 'word':
@@ -2179,7 +2179,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'ZABMW'),
             value='ZABMW',
-            name='tõlge'
+            sourceLinkName='tõlge'
         ))
 
         if type == 'word':
@@ -2195,7 +2195,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'ZABMW'),
             value='ZABMW',
-            name='перевод'
+            sourceLinkName='перевод'
         ))
 
         if type == 'word':
@@ -2211,7 +2211,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'X2060'),
             value='X2060',
-            name='2.1'
+            sourceLinkName='2.1'
         ))
 
         if type == 'word':
@@ -2227,7 +2227,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'PH0580'),
             value='PH0580',
-            name='1.2'
+            sourceLinkName='1.2'
         ))
 
         if type == 'word':
@@ -2243,7 +2243,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, '2208'),
             value='2208',
-            name='deficit'
+            sourceLinkName='deficit'
         ))
 
         if type == 'word':
@@ -2259,7 +2259,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'TTD'),
             value='TTD',
-            name='folded yarn'
+            sourceLinkName='folded yarn'
         ))
 
         if type == 'word':
@@ -2275,7 +2275,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'T30239'),
             value='T30239',
-            name='1.2'
+            sourceLinkName='1.2'
         ))
 
         if type == 'word':
@@ -2291,7 +2291,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'NWE'),
             value='NWE',
-            name='Fig'
+            sourceLinkName='Fig'
         ))
 
         if type == 'word':
@@ -2307,7 +2307,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'T61134'),
             value='T61134',
-            name='1.4'
+            sourceLinkName='1.4'
         ))
 
         if type == 'word':
@@ -2323,7 +2323,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'OCW'),
             value='OCW',
-            name='pupitre'
+            sourceLinkName='pupitre'
         ))
 
         if type == 'word':
@@ -2371,7 +2371,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             source_links.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=source,
-                name=''
+                sourceLinkName=''
             ))
 
             if type == 'word':
@@ -2412,13 +2412,13 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                         sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert',
                                                                                               expert_sources_ids_map),
                         value='Ekspert',
-                        name=''
+                        sourceLinkName=''
                     ))
                 else:
                     source_links.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
                         value=sourcelink_value,
-                        name=sourcelink_name
+                        sourceLinkName=sourcelink_name
                     ))
 
             elif ';' in sourcelink_value:
@@ -2430,7 +2430,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert',
                                                                                                   expert_sources_ids_map),
                             value='Ekspert',
-                            name=''
+                            sourceLinkName=''
                         ))
                     elif bool(re.match(r'^[A-Z]{3}\s\d', source)):
                         match = re.match(r'^([A-Z]{3})', source)
@@ -2440,14 +2440,14 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                             source_links.append(data_classes.Sourcelink(
                                 sourceId=source_id,
                                 value=name,
-                                name=''
+                                sourceLinkName=''
                             ))
                         note_value = note_value + ' [' + source.replace(match.group(1), '').strip() + ']'
                     else:
                         source_links.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, source.strip()),
                             value=source.strip(),
-                            name=''
+                            sourceLinkName=''
                         ))
             elif '§' in sourcelink_value:
                 source_elements = sourcelink_value.split('§')
@@ -2455,58 +2455,58 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, source_elements[0]),
                     value=source_elements[0],
-                    name='§ ' + source_elements[1]
+                    sourceLinkName='§ ' + source_elements[1]
                 ))
             elif 'ConvRT ' in sourcelink_value:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'ConvRT'),
                     value='ConvRT',
-                    name=sourcelink_value.replace('ConvRT ', '')
+                    sourceLinkName=sourcelink_value.replace('ConvRT ', '')
                 ))
             elif '91946 ' in sourcelink_value:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '91946'),
                     value='91946',
-                    name=sourcelink_value.replace('91946 ', '')
+                    sourceLinkName=sourcelink_value.replace('91946 ', '')
                 ))
             elif 'MDBW ' in sourcelink_value:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'MDBW'),
                     value='MDBW',
-                    name=sourcelink_value.replace('MDBW ', '')
+                    sourceLinkName=sourcelink_value.replace('MDBW ', '')
                 ))
             elif 'TechoDic ' in sourcelink_value:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'TechoDic'),
                     value='TechoDic',
-                    name=sourcelink_value.replace('TechoDic ', '')
+                    sourceLinkName=sourcelink_value.replace('TechoDic ', '')
                 ))
             elif 'EKSPERT' in sourcelink_value:
                 name = sourcelink_value.replace('EKSPERT ', '').strip().strip('{}')
                 source_links.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert', expert_sources_ids_map),
                     value='Ekspert',
-                    name=sourcelink_name if sourcelink_name else ''
+                    sourceLinkName=sourcelink_name if sourcelink_name else ''
                 ))
             elif 'DGT' in sourcelink_value:
                 name = sourcelink_value.replace('DGT ', '').strip().strip('{}')
                 source_links.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'DGT', expert_sources_ids_map),
                     value='DGT',
-                    name=''
+                    sourceLinkName=''
                 ))
             elif 'PÄRING' in sourcelink_value:
                 name = sourcelink_value.replace('PÄRING ', '').strip().strip('{}')
                 source_links.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Päring', expert_sources_ids_map),
                     value='Päring',
-                    name=''
+                    sourceLinkName=''
                 ))
             else:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
                     value=sourcelink_value,
-                    name=sourcelink_name if sourcelink_name else ''
+                    sourceLinkName=sourcelink_name if sourcelink_name else ''
                 ))
 
 
@@ -2531,19 +2531,19 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
         source_links.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'RS-2011/12'),
             value='RS-2011/12',
-            name=''
+            sourceLinkName=''
         ))
         source_links.append(data_classes.Sourcelink(
             sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Kristi Kuldma', 'Ekspert', expert_sources_ids_map),
             value='Ekspert',
-            name=''
+            sourceLinkName=''
         ))
         key = 'KKA'
         name, source_id = term_sources_to_ids_map.get(key, ("", None))
         source_links.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
         lexeme_notes.append(data_classes.Lexemenote(
             value='RS-2011/12-s ebatäpselt sõnastatud. Mõeldud on linna-, linnalähiliinide või piirkondlikke '
@@ -2585,7 +2585,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=term_name.strip(),
-                    name=''
+                    sourceLinkName=''
                 ))
 
             if '§' in sourcelink_value:
@@ -2593,19 +2593,19 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, parts[0].strip()),
                     value=parts[0].strip(),
-                    name='§ ' + parts[1].strip()
+                    sourceLinkName='§ ' + parts[1].strip()
                 ))
             elif 'ENE, ' in sourcelink_value:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'ENE'),
                     value='ENE',
-                    name=sourcelink_value.replace('ENE, ', '')
+                    sourceLinkName=sourcelink_value.replace('ENE, ', '')
                 ))
             elif 'T1382, ' in sourcelink_value:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'T1382'),
                     value='T1382',
-                    name=sourcelink_value.replace('TI382, ', '')
+                    sourceLinkName=sourcelink_value.replace('TI382, ', '')
                 ))
             elif ';' in sourcelink_value:
                 parts = sourcelink_value.split('; ')
@@ -2613,7 +2613,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     source_links.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, part.strip()),
                         value=part.strip(),
-                        name=''
+                        sourceLinkName=''
                     ))
             elif "EKSPERT" in sourcelink_value:
                 name = sourcelink_value.replace("EKSPERT ", '')
@@ -2622,13 +2622,13 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert',
                                                                                           expert_sources_ids_map),
                     value='Ekspert',
-                    name=''
+                    sourceLinkName=''
                 ))
             else:
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, sourcelink_value),
                     value=sourcelink_value,
-                    name=''
+                    sourceLinkName=''
                 ))
 
             if type == 'word':
@@ -2689,7 +2689,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
 
             if 'EKSPERT' in source:
@@ -2698,26 +2698,26 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert',
                                                                                           expert_sources_ids_map),
                     value='Ekspert',
-                    name=''
+                    sourceLinkName=''
                 ))
             else:
                 if "MER, " in source:
                     source_links.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, 'MER'),
                         value='MER',
-                        name=source.replace('MER, ', '')
+                        sourceLinkName=source.replace('MER, ', '')
                     ))
                 elif "KNV " in source:
                     source_links.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, 'KNV'),
                         value='KNV',
-                        name=source.replace('KNV ', '')
+                        sourceLinkName=source.replace('KNV ', '')
                     ))
                 elif "T61134 " in source:
                     source_links.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, 'T61134'),
                         value='T61134',
-                        name=source.replace('T61134 ', '')
+                        sourceLinkName=source.replace('T61134 ', '')
                     ))
                 elif ";" in source:
                     sources = source.split(';')
@@ -2726,13 +2726,13 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                         source_links.append(data_classes.Sourcelink(
                             sourceId=find_source_by_name(name_to_id_map, source),
                             value=source,
-                            name=''
+                            sourceLinkName=''
                         ))
                 else:
                     source_links.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, source),
                         value=source,
-                        name=''
+                        sourceLinkName=''
                     ))
             if type == 'word':
                 lexeme_notes.append(data_classes.Lexemenote(
@@ -2769,7 +2769,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
             source_links.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             ))
 
             if type == 'word':
@@ -2814,7 +2814,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     source_links.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     ))
             else:
                 if len(term_initals) >= 4:
@@ -2841,7 +2841,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                         source_links.append(data_classes.Sourcelink(
                             sourceId=source_id,
                             value=name,
-                            name=''
+                            sourceLinkName=''
                         ))
                 else:
                     term_initals = term_initals[:3]
@@ -2851,7 +2851,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                     source_links.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     ))
             if type == 'word':
                 lexeme_notes.append(data_classes.Lexemenote(
@@ -2898,7 +2898,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, end_str),
                     value=end_str,
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -2927,7 +2927,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, sourcelink_part),
                     value=sourcelink_part,
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -2949,17 +2949,17 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'ÕS-2013'),
                     value='ÕS-2013',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'EKSS'),
                     value='EKSS',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'VSL-2012'),
                     value='VSL-2012',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -2981,17 +2981,17 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type('Maret Ots', 'Ekspert', expert_sources_ids_map),
                     value='Ekspert',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '9705'),
                     value='9705',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '9706'),
                     value='9706',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -3013,12 +3013,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'EKSS'),
                     value='EKSS',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'VSL-2012'),
                     value='VSL-2012',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -3040,7 +3040,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'X0000'),
                     value='X0000',
-                    name='§ 70'
+                    sourceLinkName='§ 70'
                 ))
                 if type == 'concept':
                     concept_notes.append(data_classes.Note(
@@ -3055,7 +3055,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'X0000'),
                     value='X0000',
-                    name='§ 56'
+                    sourceLinkName='§ 56'
                 ))
                 if type == 'concept':
                     concept_notes.append(data_classes.Note(
@@ -3070,7 +3070,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'X0000'),
                     value='X0000',
-                    name='§ 95'
+                    sourceLinkName='§ 95'
                 ))
                 if type == 'concept':
                     concept_notes.append(data_classes.Note(
@@ -3085,7 +3085,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'X0001'),
                     value='X0001',
-                    name='§ 70'
+                    sourceLinkName='§ 70'
                 ))
                 if type == 'concept':
                     concept_notes.append(data_classes.Note(
@@ -3100,7 +3100,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '2826'),
                     value='2826',
-                    name='23'
+                    sourceLinkName='23'
                 ))
                 if type == 'concept':
                     concept_notes.append(data_classes.Note(
@@ -3115,17 +3115,17 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'T1001'),
                     value='T1001',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'T2015'),
                     value='T2015',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'TL001117'),
                     value='TL001117',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'concept':
                     concept_notes.append(data_classes.Note(
@@ -3140,7 +3140,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'PH0580'),
                     value='PH0580',
-                    name='1.2'
+                    sourceLinkName='1.2'
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -3162,7 +3162,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '3656'),
                     value='3656',
-                    name='228'
+                    sourceLinkName='228'
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -3184,12 +3184,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '90786'),
                     value='90786',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '90788'),
                     value='90788',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -3211,12 +3211,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'M-W'),
                     value='M-W',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'COED12'),
                     value='COED12',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -3238,12 +3238,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'CHA'),
                     value='CHA',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'X2027'),
                     value='X0227',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -3265,12 +3265,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'ICAO-AN2/10/44'),
                     value='ICAO-AN2/10/44',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '32012R0923'),
                     value='32012R0923',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
                     lexeme_notes.append(data_classes.Lexemenote(
@@ -3292,12 +3292,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'COO'),
                     value='COO',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '89534'),
                     value='89534',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
 
@@ -3320,7 +3320,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'LS-2015/12'),
                     value='LS-2015/12',
-                    name='§ 69'
+                    sourceLinkName='§ 69'
                 ))
                 if type == 'word':
 
@@ -3343,12 +3343,12 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'MKNK'),
                     value='MKNK',
-                    name=''
+                    sourceLinkName=''
                 ))
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '89823'),
                     value='89823',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
 
@@ -3371,7 +3371,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'GG019'),
                     value='GG019',
-                    name='177'
+                    sourceLinkName='177'
                 ))
                 if type == 'word':
 
@@ -3394,7 +3394,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'GG019'),
                     value='GG019',
-                    name='241'
+                    sourceLinkName='241'
                 ))
                 if type == 'word':
 
@@ -3417,7 +3417,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'MAV'),
                     value='MAV',
-                    name='432'
+                    sourceLinkName='432'
                 ))
                 if type == 'word':
 
@@ -3440,7 +3440,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'MAV'),
                     value='MAV',
-                    name='516'
+                    sourceLinkName='516'
                 ))
                 if type == 'word':
 
@@ -3463,7 +3463,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'MAV'),
                     value='MAV',
-                    name='238'
+                    sourceLinkName='238'
                 ))
                 if type == 'word':
 
@@ -3486,7 +3486,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'Keelenõuvakk, 2005'),
                     value='Keelenõuvakk, 2005',
-                    name=''
+                    sourceLinkName=''
                 ))
                 if type == 'word':
 
@@ -3509,7 +3509,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '1936'),
                     value='1936',
-                    name='201'
+                    sourceLinkName='201'
                 ))
                 if type == 'word':
 
@@ -3532,7 +3532,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '2211'),
                     value='2211',
-                    name='143'
+                    sourceLinkName='143'
                 ))
                 if type == 'word':
 
@@ -3555,7 +3555,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '9496'),
                     value='9496',
-                    name='85'
+                    sourceLinkName='85'
                 ))
                 if type == 'word':
 
@@ -3578,7 +3578,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '7752'),
                     value='7752',
-                    name='15'
+                    sourceLinkName='15'
                 ))
                 if type == 'word':
 
@@ -3601,7 +3601,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'LS-2020/12/15'),
                     value='LS-2020/12/15',
-                    name='§ 2-64'
+                    sourceLinkName='§ 2-64'
                 ))
                 if type == 'word':
 
@@ -3624,7 +3624,7 @@ def handle_notes_with_brackets(type, name_to_id_map, expert_sources_ids_map, ter
                 source_links.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'LS-2020/12/15'),
                     value='LS-2020/12/15',
-                    name='§ 2-64'
+                    sourceLinkName='§ 2-64'
                 ))
                 if type == 'word':
 
@@ -3692,7 +3692,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'tegemist katusterminiga kõikide veoliikide jaoks [07.03.2016]'
             elif note_raw.endswith('[Vikipeedia] [{MVS}15.02.2017]'):
@@ -3702,7 +3702,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'Selle asutasid 3. mail 1960 alternatiiviks Euroopa Majandusühendusele riigid, ' \
                            'kes viimasesse ei kuulunud. Tänaseks on sellesse organisatsiooni jäänud üksnes neli ' \
@@ -3715,7 +3715,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'Varasemas relvaseaduses RelvS-2015/03 oli sõjaväerelv defineeritud kui relv, mis on ' \
                        'põhiliselt ette nähtud Kaitseväele ja Kaitseliidule lahingutegevuseks ning Kaitseväele, ' \
@@ -3734,14 +3734,14 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 key = 'SES'
                 name, source_id = term_sources_to_ids_map.get(key, ("", None))
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'Poolhaagis on asjatu piirang, "axle system" võib esineda ka täishaagisel ja autol. [16.11.2018]'
             elif note_raw.endswith('[TER-PLUS] [{MVS}05.05.2017]'):
@@ -3751,7 +3751,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'On a terminology record, it is a type of textual support that helps establish the textual ' \
                        'match between languages by stating the delimiting characteristics of a concept. [05.05.2017]'
@@ -3762,7 +3762,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'Eesti keeles ei eristata akronüüme hääldusviisi järgi. [02.03.2017]'
             elif note_raw.endswith('[IATE] [{KKA}4.05.2017]'):
@@ -3772,7 +3772,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = ' This is not a rolling Presidency team and should not be confused with the troika. See "troika - kolmik". [4.05.2017]'
 
@@ -3781,14 +3781,14 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'Vikipeedia'),
                     value='Vikipeedia',
-                    name=''
+                    sourceLinkName=''
                 ))
                 key = 'MVS'
                 name, source_id = term_sources_to_ids_map.get(key, ("", None))
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'See asendati Aafrika Liiduga. [12.06.2017]'
             elif note_raw.endswith(' {KLA 24.11.1999}'):
@@ -3797,7 +3797,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'Kaasajastatud tekstis terminit ei esine. {24.11.1999}'
             elif note_raw.endswith('[EKSPERT Kristi Orav] [{MVS}18.01.2021]'):
@@ -3807,7 +3807,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'Amet keskendub liikuvuse parendamisele, et inimesed ja kaubad saaksid võimalikult sujuvalt ' \
                        'liikuda ühe või mitme transpordiliigi ja teenuse abil ühest kohast teise. Transpordiametis ' \
@@ -3822,7 +3822,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
                 note = 'RHK-10 (ICD-10) näitab, mis tüüpi infarktiga on tegemist, nt põrnainfarkt, kilpnäärmeinfarkt, ' \
                        'neerupealise infarkt, äge seljaajuinfarkt, äge müokardiinfarkt, peaajuinfarkt, maksainfarkt, ' \
@@ -3837,14 +3837,14 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert', expert_names_to_ids_map),
                     value='Ekspert',
-                    name=''
+                    sourceLinkName=''
                 ))
             elif source.startswith('PÄRING '):
                 name = source.replace('PÄRING ', '')
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Päring', expert_names_to_ids_map),
                     value='Päring',
-                    name=''
+                    sourceLinkName=''
                 ))
             elif source.startswith('{'):
                 parts = source.split('}')
@@ -3855,19 +3855,19 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
             elif source.startswith('88710 '):
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, '88710'),
                     value='88710',
-                    name=source.replace('88710 ', '')
+                    sourceLinkName=source.replace('88710 ', '')
                 ))
             elif source.startswith('EME '):
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'EME'),
                     value='EME',
-                    name=source.replace('EME ', '')
+                    sourceLinkName=source.replace('EME ', '')
                 ))
             elif '§' in source:
                 parts = source.split('§')
@@ -3876,7 +3876,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif 'WIKIPEDIA ' in source:
                 value = 'WIKIPEDIA'
@@ -3884,7 +3884,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif 'Vikipeedia ' in source:
                 value = 'Vikipeedia'
@@ -3892,7 +3892,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif 'ICAO-ENVR-2019 ' in source:
                 value = 'ICAO-ENVR-2019'
@@ -3900,7 +3900,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif 'BRITANNICA ' in source:
                 value = 'BRITANNICA'
@@ -3908,7 +3908,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif 'PBAZC ' in source:
                 value = 'PBAZC'
@@ -3916,7 +3916,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif '88182 ' in source:
                 value = '88182'
@@ -3924,7 +3924,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif '88020 ' in source:
                 value = '88020'
@@ -3932,7 +3932,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif ' 88020' in source:
                 value = '88020'
@@ -3940,7 +3940,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif 'LOG-S ' in source:
                 value = 'LOG-S'
@@ -3948,7 +3948,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif 'LTK ' in source:
                 value = 'LTK'
@@ -3956,7 +3956,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif 'ZABMW ' in source:
                 value = 'ZABMW'
@@ -3964,7 +3964,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('EVS-EN 45020:2008'):
                 value = 'EVS-EN 45020:2008'
@@ -3972,7 +3972,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('88200 '):
                 value = '88200'
@@ -3980,7 +3980,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('88798 '):
                 value = '88798'
@@ -3988,7 +3988,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('78200 '):
                 value = '78200'
@@ -3996,7 +3996,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('88894 '):
                 value = '88894'
@@ -4004,7 +4004,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('KALAPEEDIA '):
                 value = 'KALAPEEDIA'
@@ -4012,7 +4012,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('EE-online '):
                 value = 'EE-online'
@@ -4020,7 +4020,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('8796 '):
                 value = '8796'
@@ -4028,7 +4028,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('88213 '):
                 value = '88213'
@@ -4036,7 +4036,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif source.startswith('NWE '):
                 value = 'NWE'
@@ -4044,7 +4044,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             elif ' lk ' in source:
                 parts = source.split(' lk ')
@@ -4053,7 +4053,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
             else:
                 value = source
@@ -4061,7 +4061,7 @@ def parse_lang_level_note(note_raw, name_to_id_map, expert_names_to_ids_map, ter
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
 
             return data_classes.Note(
@@ -4137,7 +4137,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, value),
                     value=value,
-                    name=name
+                    sourceLinkName=name
                 ))
 
                 return data_classes.Usage(
@@ -4172,14 +4172,14 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert', expert_names_to_ids_map),
                 value='Ekspert',
-                name=''
+                sourceLinkName=''
             ))
         elif source.startswith('PÄRING '):
             name = source.replace('PÄRING ', '')
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Päring', expert_names_to_ids_map),
                 value='Päring',
-                name=''
+                sourceLinkName=''
             ))
         elif source.startswith('{'):
             parts = source.split('}')
@@ -4190,7 +4190,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             ))
         elif source.startswith('X0007'):
             value = 'X0007'
@@ -4198,7 +4198,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0010'):
             value = 'X0010'
@@ -4206,7 +4206,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0001'):
             value = 'X0001'
@@ -4214,7 +4214,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0002'):
             value = 'X0002'
@@ -4222,7 +4222,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30026'):
             value = 'X30026'
@@ -4230,7 +4230,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X1041'):
             value = 'X1041'
@@ -4238,7 +4238,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X1060'):
             value = 'X1060'
@@ -4246,7 +4246,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2013'):
             value = 'X2013'
@@ -4254,7 +4254,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2058'):
             value = 'X2058'
@@ -4262,7 +4262,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2035'):
             value = 'X2035'
@@ -4270,7 +4270,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2053'):
             value = 'X2053'
@@ -4278,7 +4278,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2049'):
             value = 'X2049'
@@ -4286,7 +4286,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2049'):
             value = 'X2049'
@@ -4294,7 +4294,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2056'):
             value = 'X2056'
@@ -4302,7 +4302,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30004'):
             value = 'X30004'
@@ -4310,7 +4310,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2051'):
             value = 'X2051'
@@ -4318,7 +4318,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30023'):
             value = 'X30023'
@@ -4326,7 +4326,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30005'):
             value = 'X30005'
@@ -4334,7 +4334,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30073'):
             value = 'X30073'
@@ -4342,7 +4342,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T60600'):
             value = 'T60600'
@@ -4350,7 +4350,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T70294'):
             value = 'T70294'
@@ -4358,7 +4358,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T60600'):
             value = 'T60600'
@@ -4366,7 +4366,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T60600'):
             value = 'T60600'
@@ -4374,7 +4374,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2064'):
             value = 'X2064'
@@ -4382,7 +4382,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2063'):
             value = 'X2063'
@@ -4390,7 +4390,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2060'):
             value = 'X2060'
@@ -4398,7 +4398,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30073'):
             value = 'X30073'
@@ -4406,7 +4406,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30050'):
             value = 'X30050'
@@ -4414,7 +4414,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30030'):
             value = 'X30030'
@@ -4422,7 +4422,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30006'):
             value = 'X30006'
@@ -4430,7 +4430,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30073'):
             value = 'X30073'
@@ -4438,7 +4438,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2004'):
             value = 'X2004'
@@ -4446,7 +4446,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0001'):
             value = 'X0001'
@@ -4454,7 +4454,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0010'):
             value = 'X0010'
@@ -4462,7 +4462,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X1003'):
             value = 'X1003'
@@ -4470,7 +4470,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T70284'):
             value = 'T70284'
@@ -4478,7 +4478,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('K80050'):
             value = 'K80050'
@@ -4486,7 +4486,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X1045'):
             value = 'X1045'
@@ -4494,7 +4494,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0007'):
             value = 'X0007'
@@ -4502,7 +4502,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'B 737 OM':
             value = source
@@ -4510,7 +4510,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X1015'):
             value = 'X1015'
@@ -4518,7 +4518,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2013'):
             value = 'X2013'
@@ -4526,7 +4526,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2035'):
             value = 'X2035'
@@ -4534,7 +4534,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2026'):
             value = 'X2026'
@@ -4542,7 +4542,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2061'):
             value = 'X2061'
@@ -4550,7 +4550,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2014'):
             value = 'X2014'
@@ -4558,7 +4558,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2006'):
             value = 'X2006'
@@ -4566,7 +4566,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2065'):
             value = 'X2065'
@@ -4574,7 +4574,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0001'):
             value = 'X0001'
@@ -4582,7 +4582,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0010'):
             value = 'X0010'
@@ -4590,7 +4590,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0007'):
             value = 'X0007'
@@ -4598,7 +4598,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2035'):
             value = 'X2035'
@@ -4606,7 +4606,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30003'):
             value = 'X30003'
@@ -4614,7 +4614,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30038'):
             value = 'X30038'
@@ -4622,7 +4622,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2065'):
             value = 'X2065'
@@ -4630,7 +4630,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T1130'):
             value = 'T1130'
@@ -4638,7 +4638,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30073'):
             value = 'X30073'
@@ -4646,7 +4646,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2004'):
             value = 'X2004'
@@ -4654,7 +4654,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X40070'):
             value = 'X40070'
@@ -4662,7 +4662,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('77574'):
             value = '77574'
@@ -4670,7 +4670,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('PART '):
             value = source
@@ -4678,7 +4678,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('MKM 8.06.2005 nr 66 '):
             value = 'MKM 8.06.2005 nr 66'
@@ -4686,7 +4686,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('EVS-ISO '):
             value = source
@@ -4694,7 +4694,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('FCL '):
             value = source
@@ -4702,7 +4702,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('ZABMW'):
             value = 'ZABMW'
@@ -4710,7 +4710,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('LOG-S '):
             value = 'LOG-S'
@@ -4718,7 +4718,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('77574 '):
             value = '77574'
@@ -4726,7 +4726,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X1044'):
             value = 'X1044'
@@ -4734,7 +4734,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2004'):
             value = 'X2004'
@@ -4742,7 +4742,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2038'):
             value = 'X2038'
@@ -4750,7 +4750,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X1064'):
             value = 'X1064'
@@ -4758,7 +4758,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T61134'):
             value = 'T61134'
@@ -4766,7 +4766,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('10524'):
             value = '10524'
@@ -4774,7 +4774,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('Aquatic '):
             value = source
@@ -4782,7 +4782,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('EE-online '):
             value = 'EE-online'
@@ -4790,7 +4790,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('ISO '):
             value = source
@@ -4798,7 +4798,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'MKM 22.10.2009 nr 103':
             value = source
@@ -4806,7 +4806,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'MKM 08.06.2005 nr 66 Lisa 5':
             value = source
@@ -4814,7 +4814,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'MKM 8.03.2011 nr 20 lisa 7':
             value = source
@@ -4822,7 +4822,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'LLT AS-WWW':
             value = source
@@ -4830,7 +4830,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('77574 '):
             value = '77574'
@@ -4838,7 +4838,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('LENNU '):
             value = source
@@ -4846,7 +4846,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('JAR-FCL '):
             value = source
@@ -4854,7 +4854,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('AC '):
             value = source
@@ -4862,7 +4862,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('ICAO '):
             value = source
@@ -4870,7 +4870,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('Eesti seitsmes kliimaaruanne'):
             value = 'Eesti seitsmes kliimaaruanne'
@@ -4878,7 +4878,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('Eesti vajab püsivat ärikeskkonna revolutsiooni'):
             value = 'Eesti vajab püsivat ärikeskkonna revolutsiooni'
@@ -4886,7 +4886,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('Choosing a Business Model That Will Grow Your Company'):
             value = 'Choosing a Business Model That Will Grow Your Company'
@@ -4894,7 +4894,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('SKY '):
             value = 'SKY'
@@ -4902,7 +4902,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('JAR-OPS '):
             value = source
@@ -4910,7 +4910,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'MKM 8.03.2011 nr 20':
             value = source
@@ -4918,7 +4918,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T2109'):
             value = 'T2109'
@@ -4926,7 +4926,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2059'):
             value = 'X2059'
@@ -4934,7 +4934,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30040'):
             value = 'X30040'
@@ -4942,7 +4942,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X1064'):
             value = 'X1064'
@@ -4950,7 +4950,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X40030'):
             value = 'X40030'
@@ -4958,7 +4958,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('66790'):
             value = '66790'
@@ -4966,7 +4966,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T1134'):
             value = 'T1134'
@@ -4974,7 +4974,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30007'):
             value = 'X30007'
@@ -4982,7 +4982,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30027'):
             value = 'X30027'
@@ -4990,7 +4990,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30025'):
             value = 'X30025'
@@ -4998,7 +4998,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30024'):
             value = 'X30024'
@@ -5006,7 +5006,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30044'):
             value = 'X30044'
@@ -5014,7 +5014,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30057'):
             value = 'X30057'
@@ -5022,7 +5022,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T30088'):
             value = 'T30088'
@@ -5030,7 +5030,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T61134'):
             value = 'T61134'
@@ -5038,7 +5038,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0011'):
             value = 'X0011'
@@ -5046,7 +5046,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30060'):
             value = 'X30060'
@@ -5054,7 +5054,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30064'):
             value = 'X30064'
@@ -5062,7 +5062,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30075'):
             value = 'X30075'
@@ -5070,7 +5070,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X40021'):
             value = 'X40021'
@@ -5078,7 +5078,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30002'):
             value = 'X30002'
@@ -5086,7 +5086,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30031'):
             value = 'X30031'
@@ -5094,7 +5094,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30042'):
             value = 'X30042'
@@ -5102,7 +5102,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30070'):
             value = 'X30070'
@@ -5110,7 +5110,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2007'):
             value = 'X2007'
@@ -5118,7 +5118,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'MKM 21.04.2009 nr 45':
             value = source
@@ -5126,7 +5126,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'Kuritegevus Eestis 2010':
             value = source
@@ -5134,7 +5134,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X30046'):
             value = 'X30046'
@@ -5142,7 +5142,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('GG005,'):
             value = 'GG005'
@@ -5150,7 +5150,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T1132'):
             value = 'T1132'
@@ -5158,7 +5158,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X0003'):
             value = 'X0003'
@@ -5166,7 +5166,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('AMS Glossary'):
             value = source
@@ -5174,7 +5174,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('SKY '):
             value = 'SKY'
@@ -5182,7 +5182,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source == 'MKM 8.06.2005 nr 66':
             value = source
@@ -5190,7 +5190,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('EVS-EN 45020:2008 '):
             value = 'EVS-EN 45020:2008'
@@ -5198,7 +5198,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X40018'):
             value = 'X40018'
@@ -5206,7 +5206,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2012'):
             value = 'X2012'
@@ -5214,7 +5214,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T1400'):
             value = 'T1400'
@@ -5222,7 +5222,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('T30158'):
             value = 'T30158'
@@ -5230,7 +5230,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('X2055'):
             value = 'X2055'
@@ -5238,7 +5238,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('MKM 8.03.2011 nr 20 '):
             value = 'MKM 8.03.2011 nr 20'
@@ -5246,7 +5246,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('Harju Elu '):
             value = source
@@ -5254,7 +5254,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('Kuritegevus Eestis '):
             value = source
@@ -5262,7 +5262,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('1459 '):
             value = '1459'
@@ -5270,7 +5270,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('EVS-EN '):
             value = source
@@ -5278,7 +5278,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('SAR '):
             value = source
@@ -5286,7 +5286,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif source.startswith('Glossary-Accident '):
             value = source
@@ -5294,7 +5294,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif '§' in source:
             parts = source.split('§')
@@ -5303,7 +5303,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif ',' in source:
             parts = source.split(',')
@@ -5312,7 +5312,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif ' ' in source:
             parts = source.split(' ')
@@ -5321,7 +5321,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
         elif '[https' in source:
             print('https kontekstis')
@@ -5331,7 +5331,7 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=find_source_by_name(name_to_id_map, value),
                 value=value,
-                name=name
+                sourceLinkName=name
             ))
 
     # There is not a sourcelink
@@ -5404,7 +5404,7 @@ def handle_ampersand_notes(type_of_note, note_raw, term_sources_to_ids_map):
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     ))
 
             if len(temp_sourcelinks) > 1:
@@ -5457,14 +5457,14 @@ def handle_note_with_double_initials_in_concept_level(note_value,
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             ))
 
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, 'Ekspert',
                                                                                       expert_names_to_ids_map),
                 value='Ekspert',
-                name=''
+                sourceLinkName=''
             ))
             conceptnotes.append(data_classes.Note(
                 value=clean_note,
@@ -5482,7 +5482,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         elif '{ÜMT/ÜAU' in note_value:
@@ -5493,7 +5493,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     )
                     )
 
@@ -5501,7 +5501,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     )
                     )
                     conceptnotes.append(data_classes.Note(
@@ -5516,7 +5516,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     )
                     )
 
@@ -5524,7 +5524,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     )
                     )
                     conceptnotes.append(data_classes.Note(
@@ -5543,7 +5543,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                     sourceLinks=[data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     )]
                 ))
         elif '[ÜMT/ÜAU' in note_value:
@@ -5556,7 +5556,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         elif '&' in note_value:
@@ -5576,7 +5576,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                         data_classes.Sourcelink(
                             sourceId=source_id,
                             value=name,
-                            name=''
+                            sourceLinkName=''
                         )
                     )
                 else:
@@ -5585,7 +5585,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                         data_classes.Sourcelink(
                             sourceId=source_id,
                             value=name,
-                            name=''
+                            sourceLinkName=''
                         )
                     )
 
@@ -5603,14 +5603,14 @@ def handle_note_with_double_initials_in_concept_level(note_value,
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             )
             )
             name, source_id = term_sources_to_ids_map.get('MRS/MST', ("", None))
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             )
             )
 
@@ -5634,14 +5634,14 @@ def handle_note_with_double_initials_in_concept_level(note_value,
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             ))
 
             name, source_id = term_sources_to_ids_map.get(other_term_initals, ("", None))
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             ))
 
             conceptnotes.append(data_classes.Note(
@@ -5660,7 +5660,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         elif ' {MRS/MST ' in note_value:
@@ -5673,7 +5673,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         else:
@@ -5693,7 +5693,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
     elif 'AKE/ALK' in note_value:
@@ -5706,7 +5706,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
             sourceLinks=[data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             )]
         ))
     elif 'ELS/ETM' in note_value:
@@ -5726,7 +5726,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                         data_classes.Sourcelink(
                             sourceId=source_id,
                             value=name,
-                            name=''
+                            sourceLinkName=''
                         )
                     )
                 else:
@@ -5735,7 +5735,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                         data_classes.Sourcelink(
                             sourceId=source_id,
                             value=name,
-                            name=''
+                            sourceLinkName=''
                         )
                     )
 
@@ -5757,7 +5757,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         elif ' {ELS/ETM ' in note_value:
@@ -5770,7 +5770,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         elif '[ELS/ETM' in note_value:
@@ -5783,7 +5783,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         elif '[{ELS/ETM}' in note_value:
@@ -5796,7 +5796,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         else:
@@ -5811,7 +5811,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
             sourceLinks=[data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             )]
         ))
     elif 'IKS/IFH' in note_value:
@@ -5824,7 +5824,7 @@ def handle_note_with_double_initials_in_concept_level(note_value,
             sourceLinks=[data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             )]
         ))
     return conceptnotes
@@ -5849,7 +5849,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
             sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )
             )
 
@@ -5857,7 +5857,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, 'Ekspert',
                                                                                       expert_names_to_ids_map),
                 value='Ekspert',
-                name=''
+                sourceLinkName=''
             ))
 
             lexemenotes.append(data_classes.Lexemenote(
@@ -5876,7 +5876,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         elif '[{ÜMT/ÜAU' in lexeme_note_raw:
@@ -5891,7 +5891,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'X0036'),
                     value='X0036',
-                    name=''
+                    sourceLinkName=''
                 ))
 
                 name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
@@ -5899,7 +5899,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
 
                 lexemenotes.append(data_classes.Lexemenote(
@@ -5918,7 +5918,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=find_source_by_name(name_to_id_map, 'EUR'),
                     value='EUR',
-                    name=''
+                    sourceLinkName=''
                 ))
 
                 name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
@@ -5926,7 +5926,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
 
                 lexemenotes.append(data_classes.Lexemenote(
@@ -5953,7 +5953,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourceLinks=[data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     )]
                 ))
 
@@ -5970,7 +5970,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, 'X0000'),
                         value='X0000',
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
@@ -5978,7 +5978,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     lexemenotes.append(data_classes.Lexemenote(
@@ -5996,7 +5996,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, 'X1006'),
                         value='X1006',
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
@@ -6004,7 +6004,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     lexemenotes.append(data_classes.Lexemenote(
@@ -6022,7 +6022,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, 'X30028'),
                         value='X30028',
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
@@ -6030,7 +6030,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     lexemenotes.append(data_classes.Lexemenote(
@@ -6048,7 +6048,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, 'EUR'),
                         value='EUR',
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
@@ -6056,7 +6056,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     lexemenotes.append(data_classes.Lexemenote(
@@ -6074,7 +6074,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=find_source_by_name(name_to_id_map, 'TER'),
                         value='TER',
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     name, source_id = term_sources_to_ids_map.get('ÜMT/ÜAU', ("", None))
@@ -6082,7 +6082,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourcelinks.append(data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     ))
 
                     lexemenotes.append(data_classes.Lexemenote(
@@ -6101,7 +6101,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                         sourceLinks=[data_classes.Sourcelink(
                             sourceId=source_id,
                             value=name,
-                            name=''
+                            sourceLinkName=''
                         )]
                     ))
             else:
@@ -6114,7 +6114,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourceLinks=[data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     )]
                 ))
         else:
@@ -6127,7 +6127,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
     elif 'AKE/ALK' in lexeme_note_raw:
@@ -6140,7 +6140,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
             sourceLinks=[data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             )]
         ))
     elif 'ELS/ETM' in lexeme_note_raw:
@@ -6152,13 +6152,13 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(expert_name, 'Ekspert',
                                                                                       expert_names_to_ids_map),
                 value='Ekspert',
-                name=''
+                sourceLinkName=''
             ))
             name, source_id = term_sources_to_ids_map.get('ELS/ETM', ("", None))
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             ))
             lexemenotes.append(data_classes.Lexemenote(
                 value=parts[0] + '[' + parts[2].replace('ELS/ETM', ''),
@@ -6176,7 +6176,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
     elif 'MRS/MST' in lexeme_note_raw:
@@ -6195,7 +6195,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
 
                 name, source_id = term_sources_to_ids_map.get(second_initials_and_date[2], ("", None))
@@ -6203,7 +6203,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourcelinks.append(data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 ))
 
                 lexemenotes.append(data_classes.Lexemenote(
@@ -6222,7 +6222,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                     sourceLinks=[data_classes.Sourcelink(
                         sourceId=source_id,
                         value=name,
-                        name=''
+                        sourceLinkName=''
                     )]
                 ))
         elif lexeme_note_raw.endswith(']'):
@@ -6235,7 +6235,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
                 sourceLinks=[data_classes.Sourcelink(
                     sourceId=source_id,
                     value=name,
-                    name=''
+                    sourceLinkName=''
                 )]
             ))
         else:
@@ -6245,14 +6245,14 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
             note_sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             ))
             name, source_id = term_sources_to_ids_map.get('SES', ("", None))
 
             note_sourcelinks.append(data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             ))
             lexemenotes.append(data_classes.Lexemenote(
                 value="Vaste pärineb Kindlustusinspektsiooni kahjukindlustuse osakonna juhatajalt Priit Kask'ilt {21.11.2000}.",
@@ -6267,7 +6267,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
         sourcelinks.append(data_classes.Sourcelink(
             sourceId=find_source_by_name(name_to_id_map, 'T2023'),
             value='T2023',
-            name=''
+            sourceLinkName=''
         ))
 
         name, source_id = term_sources_to_ids_map.get('PTE/PTH', ("", None))
@@ -6275,7 +6275,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
         sourcelinks.append(data_classes.Sourcelink(
             sourceId=source_id,
             value=name,
-            name=''
+            sourceLinkName=''
         ))
 
         lexemenotes.append(data_classes.Lexemenote(
@@ -6293,7 +6293,7 @@ def handle_note_with_double_initials_in_term_level(lexeme_note_raw,
             sourceLinks=[data_classes.Sourcelink(
                 sourceId=source_id,
                 value=name,
-                name=''
+                sourceLinkName=''
             )]
         ))
 

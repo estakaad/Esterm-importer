@@ -46,9 +46,9 @@ environment = 'TEST'
 # expert_sources_without_ids_filename = 'files/import/esterm-19-01-2024/termid/terminoloogid_sources_without_ids.json'
 # expert_sources_with_ids_filename = 'files/import/esterm-19-01-2024/termid/terminoloogid_sources_with_ids.json'
 # ids_of_created_expert_sources_file = 'files/import/esterm-19-01-2024/termid/terminoloogid_ids.json'
-#
-# updated_expert_sources_file = requests_sources.assign_ids_to_expert_sources(
-#     expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file, environment)
+# #
+# # updated_expert_sources_file = requests_sources.assign_ids_to_expert_sources(
+# #     expert_sources_without_ids_filename, expert_sources_with_ids_filename, ids_of_created_expert_sources_file, environment)
 # #
 # # # # # # # # 5. Map source names to their ID-s
 with open('files/import/esterm-22-01-2024/allikad/sources_and_unknown_sources.json', 'r', encoding='utf-8') as f:
@@ -70,17 +70,13 @@ term_sources_to_ids_map = expert_sources_helpers.create_terminologist_name_value
 parse_concepts.transform_esterm_to_json(name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
 # 7. Check if word exists. If it does, add its ID
-# concepts_without_word_ids_file = 'files/import/esterm-11-01-2024/concepts.json'
-# words_without_id_file = f'files/import/esterm-11-01-2024/words_without_id.json'
-# words_with_more_than_one_id_file = f'files/import/esterm-11-01-2024/words_with_more_than_one_id.json'
-# concepts_with_word_ids_file = f'files/import/esterm-11-01-2024/concepts_with_word_ids.json'
 #
-# concepts_without_word_ids_file = 'files/import/esterm-19-01-2024/concepts_without_word_ids.json'
-# words_without_id_file = f'files/import/esterm-19-01-2024/words_without_id.json'
-# words_with_more_than_one_id_file = f'files/import/esterm-19-01-2024/words_with_more_than_one_id.json'
-# concepts_with_word_ids_file = f'files/import/esterm-19-01-2024/concepts_with_word_ids.json'
+# concepts_without_word_ids_file = 'files/import/esterm-22-01-2024/concepts_without_word_ids.json'
+# words_without_id_file = f'files/import/esterm-22-01-2024/words_without_id.json'
+# words_with_more_than_one_id_file = f'files/import/esterm-22-01-2024/words_with_more_than_one_id.json'
+# concepts_with_word_ids_file = f'files/import/esterm-22-01-2024/concepts_with_word_ids.json'
 #
-# requests_concepts.update_word_ids(concepts_without_word_ids_file, 'eki', 'est1901',
+# requests_concepts.update_word_ids(concepts_without_word_ids_file, 'eki', 'est2201',
 #                                   words_without_id_file, words_with_more_than_one_id_file,
 #                                   concepts_with_word_ids_file, environment)
 #

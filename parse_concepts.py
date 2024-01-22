@@ -130,7 +130,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                             sourceLinks=[data_classes.Sourcelink(
                                 sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'KTTG'),
                                 value='KTTG',
-                                name=''
+                                sourceLinkName=''
                             )]
                         )
                     )
@@ -187,7 +187,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                 sourcelinks.append(data_classes.Sourcelink(
                                     sourceId=source_id,
                                     value=name,
-                                    name=''
+                                    sourceLinkName=''
                                 ))
 
                             note_value = note_value.replace(' &  ', '')
@@ -231,7 +231,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                 source = data_classes.Sourcelink(
                                     sourceId=source_id,
                                     value=name,
-                                    name=''
+                                    sourceLinkName=''
                                 )
                                 concept.notes.append(
                                     data_classes.Note(
@@ -410,7 +410,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                     sourceLinks=[data_classes.Sourcelink(
                         sourceId=xml_helpers.find_source_by_name(name_to_id_map,'A&GM-4'),
                         value='A&GM-4',
-                        name=''
+                        sourceLinkName=''
                     )]
                 ))
 
@@ -521,7 +521,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                 data_classes.Sourcelink(
                                     sourceId=source_id,
                                     value=name,
-                                    name=''
+                                    sourceLinkName=''
                                 )
                             )
                         elif expert_type:
@@ -530,7 +530,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                 data_classes.Sourcelink(
                                     sourceId=sourceid,
                                     value=expert_type,
-                                    name=''
+                                    sourceLinkName=''
                                 )
                             )
                         else:
@@ -540,7 +540,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                 data_classes.Sourcelink(
                                     sourceId=sourceid,
                                     value=value,
-                                    name=name
+                                    sourceLinkName=name
                                 )
                             )
 
