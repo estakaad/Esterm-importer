@@ -17,8 +17,8 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
     concepts = []
     # For testing #
     counter = 1
-
     for conceptGrp in root.xpath('/mtf/conceptGrp'):
+
         # # # # # For testing
         # if counter % 10000 == 0:
         #    logger.info(f'counter: {counter}')
@@ -27,7 +27,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
         # counter += 1
         # End
 
-        concept = data_classes.Concept(datasetCode='est1101',
+        concept = data_classes.Concept(datasetCode='est2802',
                                        manualEventOn=None,
                                        manualEventBy=None,
                                        firstCreateEventOn=None,
@@ -114,14 +114,14 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                 subdomain = subdomain.replace('|', '; ')
                 concept.notes.append(
                     data_classes.Note(
-                        value='Alamvaldkond: ' + subdomain,
+                        value='Valdkond ICAO lisade põhjal loodud klassifikaatori järgi: ' + subdomain,
                         lang='est',
                         publicity=True
                     )
                 )
             if descrip_element.get('type') == 'Staatus':
                 concept_status = ''.join(descrip_element.itertext()).strip()
-                if concept_status in ['KTTG kinnitatud', 'KTTGs arutlusel']:
+                if concept_status == 'KTTG kinnitatud':
                     concept.notes.append(
                         data_classes.Note(
                             value='Staatus: kinnitatud',
@@ -132,6 +132,54 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                 value='KTTG',
                                 sourceLinkName=''
                             )]
+                        )
+                    )
+                elif concept_status == 'KTTGs arutlusel':
+                    concept.notes.append(
+                        data_classes.Note(
+                            value='Staatus: arutlusel',
+                            lang='est',
+                            publicity=True,
+                            sourceLinks=[data_classes.Sourcelink(
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'KTTG'),
+                                value='KTTG',
+                                sourceLinkName=''
+                            )]
+                        )
+                    )
+                elif concept_status == 'komisjonis arutlusel':
+                    concept.notes.append(
+                        data_classes.Note(
+                            value='Staatus: arutlusel',
+                            lang='est',
+                            publicity=True,
+                            sourceLinks=[data_classes.Sourcelink(
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'LTK'),
+                                value='LTK',
+                                sourceLinkName=''
+                            )]
+                        )
+                    )
+                elif concept_status == 'komisjoni kinnitatud':
+                    concept.notes.append(
+                        data_classes.Note(
+                            value='Staatus: kinnitatud',
+                            lang='est',
+                            publicity=True,
+                            sourceLinks=[data_classes.Sourcelink(
+                                sourceId=xml_helpers.find_source_by_name(name_to_id_map, 'LTK'),
+                                value='LTK',
+                                sourceLinkName=''
+                            )]
+                        )
+                    )
+                elif concept_status == 'terminiprobleem':
+                    concept.notes.append(
+                        data_classes.Note(
+                            value='Staatus: terminiprobleem',
+                            lang='est',
+                            publicity=False,
+                            sourceLinks=[]
                         )
                     )
                 else:
@@ -241,6 +289,16 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
                                         sourceLinks=[source]
                                     )
                                 )
+                    elif 'ekspert' in note_value.lower():
+                        concept.tags.append('term kontrolli mõistet')
+                        concept.notes.append(
+                            data_classes.Note(
+                                value='KONTROLLIDA: ' + note_value,
+                                lang='est',
+                                publicity=True,
+                                sourceLinks=None
+                            )
+                        )
                     else:
                         concept.notes.append(
                             data_classes.Note(
@@ -345,6 +403,15 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
             concept.notes.append(concept_note_from_lang)
 
         concept.notes = [note for note in concept.notes if isinstance(note, data_classes.Note) and note.value.strip()]
+
+        if concept.manualEventOn == '30.12.2004':
+            xml_helpers.make_old_comments_not_public(concept)
+
+        # Make defence concepts not public
+        for d in concept.domains:
+            if d.code.startswith('DE'):
+                print(concept.conceptIds)
+                xml_helpers.make_defence_concepts_not_public(concept)
 
         # Concept should be ready by now!
 
@@ -474,7 +541,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                         usage_object = xml_helpers.parse_context_like_note(usage, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids_map)
 
                         if usage_object.value.startswith('KONTROLLIDA:'):
-                            word.lexemeTags.append('kontrolli ilmikut')
+                            word.lexemeTags.append('term kontrolli ilmikut')
 
                         if usage_object:
                             if usage_object.sourceLinks:

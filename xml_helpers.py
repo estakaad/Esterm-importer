@@ -470,15 +470,9 @@ def find_source_by_name(name_to_ids_map, name):
     if source_ids is None:
         logger.warning(f"Warning: Source ID for '{name}' not found.")
 
-        if name is not None:
-            caller_name = inspect.currentframe().f_back.f_code.co_name
-            #print(f"Called from: {caller_name}")
-            #print(name)
-
         # If none found, return ID of test source or otherwise concept won't be saved in Ekilex
-        return '53385'
+        return '63760'
 
-    # Now check for length
     if len(source_ids) == 1:
         logger.info(f"Source ID for '{name}' is {source_ids[0]}")
         return source_ids[0]
@@ -4168,6 +4162,8 @@ def parse_context_like_note(usage_raw, name_to_id_map, expert_names_to_ids_map, 
 
     for source in sourcelinks_to_find_ids_to:
         if source.startswith('EKSPERT '):
+            if '{' in source:
+                source = source.replace('{', '').replace('}', '')
             name = source.replace('EKSPERT ', '')
             sourcelinks.append(data_classes.Sourcelink(
                 sourceId=expert_sources_helpers.get_expert_source_id_by_name_and_type(name, 'Ekspert', expert_names_to_ids_map),
@@ -6319,3 +6315,67 @@ def map_concept_type_to_tag_name(concept_type):
         return tag_name
 
     return tag_name
+
+def make_old_comments_not_public(concept):
+    sourcelink_values = [
+        'TÄPSUSTADA',
+        'Õigustoimetaja',
+        'Tõlkija',
+        'Tehniline toimetaja',
+        'Keeletoimetaja',
+        'Terminoloog',
+        'SKP',
+        'TKV',
+        'KNM',
+        'MSN',
+        'KNN',
+        'MR',
+        'RJS',
+        'Ekspert'
+    ]
+
+    for concept_note in concept.notes:
+        if concept_note.sourceLinks:
+            for sourcelink in concept_note.sourceLinks:
+                if isinstance(sourcelink, list):
+                    for item in sourcelink:
+                        if item.value in sourcelink_values:
+                            #print(concept.conceptIds)
+                            concept_note.publicity = False
+                else:
+                    if sourcelink.value in sourcelink_values:
+                        #print(concept.conceptIds)
+                        concept_note.publicity = False
+        else:
+            break
+
+    for word in concept.words:
+        for lexeme_note in word.lexemeNotes:
+            if lexeme_note.sourceLinks:
+                for sourcelink in lexeme_note.sourceLinks:
+                    if isinstance(sourcelink, list):
+                        for item in sourcelink:
+                            if item.value in sourcelink_values:
+                                lexeme_note.publicity = False
+                    else:
+                        if sourcelink.value in sourcelink_values:
+                            lexeme_note.publicity = False
+            else:
+                break
+
+
+def make_defence_concepts_not_public(concept):
+
+    # Make concept notes not public
+    for concept_note in concept.notes:
+        concept_note.publicity = False
+
+    # Make words not public
+    for word in concept.words:
+        word.lexemePublicity = False
+        # Make lexeme notes not public
+        for l in word.lexemeNotes:
+            l.publicity = False
+        # Make lexeme usages not public
+        for u in word.usages:
+            u.publicity = False
