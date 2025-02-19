@@ -6366,6 +6366,8 @@ def make_old_comments_not_public(concept):
 
 def make_defence_concepts_not_public(concept):
 
+    concept.tags.append('term valdk DE')
+
     # Make concept notes not public
     for concept_note in concept.notes:
         concept_note.publicity = False

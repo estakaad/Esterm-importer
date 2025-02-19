@@ -27,7 +27,7 @@ def parse_mtf(root, name_to_id_map, expert_names_to_ids_map, term_sources_to_ids
         # counter += 1
         # End
 
-        concept = data_classes.Concept(datasetCode='est2802',
+        concept = data_classes.Concept(datasetCode='est0503',
                                        manualEventOn=None,
                                        manualEventBy=None,
                                        firstCreateEventOn=None,
@@ -544,6 +544,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                             word.lexemeTags.append('term kontrolli ilmikut')
 
                         if usage_object:
+                            print(usage_object.lang)
                             if usage_object.sourceLinks:
                                 if usage_object.sourceLinks[0].value.startswith('http'):
                                     value = usage_object.value + ' [' + usage_object.sourceLinks[0].value + ']'
@@ -558,6 +559,7 @@ def parse_words(conceptGrp, name_to_id_map, expert_names_to_ids_map, term_source
                                     word.usages.append(usage_object)
                             else:
                                 word.usages.append(usage_object)
+                            print(usage_object)
 
                 if descrip_type == 'Allikaviide':
 
