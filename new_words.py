@@ -1,13 +1,15 @@
 import pandas as pd
 import json
-import re
+from collections import defaultdict
 
+# File paths
 file_path = "files/input/keeltega_estermist.xlsx"
 sources_csv = "files/input/estermi_allikad.csv"
-output_json = "files/output/keeltega_estermist.json"
-unique_sources_json = "files/output/unique_sources.json"
-updated_sources_json = "files/output/updated_unique_sources.json"
+meaning_notes_json = "files/output/meaning_notes.json"
+structured_meanings_json = "files/output/structured_meanings.json"
+skipped_meanings_json = "files/output/skipped_meanings.json"
 
+# Language mapping function
 def map_languages(code):
     lang_map = {
         "fr": "fra", "de": "deu", "fi": "fin", "la": "lat",
@@ -18,132 +20,188 @@ def map_languages(code):
     }
     return lang_map.get(code, code)
 
+# Read the Excel file
 df = pd.read_excel(file_path)
+df.columns = df.columns.str.strip()  # Remove extra spaces
 
-unique_sources = set()
+# Ensure required columns exist
+required_columns = {"meaning_id", "meaning_note_id", "value"}
+missing_columns = required_columns - set(df.columns)
+if missing_columns:
+    raise ValueError(f"Missing required columns: {missing_columns}")
 
-def parse_value(meaning_id, text):
+# Read sources CSV
+df_sources = pd.read_csv(sources_csv, delimiter=';', dtype=str)
+source_mapping = {row["name"]: row["id"] for _, row in df_sources.iterrows()}
+
+# Load already existing words (destination content)
+existing_words_df = pd.read_csv("files/input/olemasolevad_samas_keeles.csv", sep=";", quotechar='"', dtype=str)
+existing_words_df.columns = existing_words_df.columns.str.strip()  # Clean column names
+print(existing_words_df.head())
+
+# Print column names for debugging
+print("Columns in existing_words_df:", existing_words_df.columns.tolist())
+
+# Create a lookup set for filtering
+existing_word_set = set(
+    (row["id"], row["value"].strip(), row["lang"].strip())
+    for _, row in existing_words_df.iterrows()
+)
+
+
+meaning_notes = []  # Stores meaning notes separately
+structured_meanings = []  # Stores structured data
+skipped_meanings = []  # Stores meanings with unknown sources or invalid language codes
+
+def parse_value(meaning_id, note_id, text):
+
     words = []
-    entries = re.split(r'\n|;', text)
+    note_value = None
+    text = str(text).strip()
+
+    # Extract text after the last ']' as a note if applicable
+    last_bracket_pos = text.rfind("]")
+    if last_bracket_pos != -1 and last_bracket_pos < len(text) - 1:
+        note_value = text[last_bracket_pos + 1:].strip()
+        text = text[:last_bracket_pos + 1].strip()
+
+    entries = text.split("\n")  # Split by newlines to separate different language entries
 
     for entry in entries:
         entry = entry.strip()
         if not entry:
             continue
 
-        match = re.match(r'([A-Z]{2}):\s*(.+)', entry)
-        if match:
-            lang = match.group(1).lower()
-            remaining_text = match.group(2).strip()
+        parts = entry.split(":", 1)  # Split by colon to get language and word-source section
+        if len(parts) != 2:
+            continue  # Skip malformed entries
 
-            words_list = re.split(r'\s*\[[^\]]*\]', remaining_text)
-            source_links = re.findall(r'\[(.*?)\]', remaining_text)
+        lang_code = parts[0].strip().lower()  # Extract language code
+        mapped_lang = map_languages(lang_code)
 
-            for source in source_links:
-                unique_sources.add(source)
+        # Skip this meaning if language code is not exactly three characters long
+        if len(mapped_lang) != 3:
+            return None
 
-            formatted_sourcelinks = []
-            for source in source_links:
-                if source.startswith("WPG-"):
-                    sourcelinkname = source[4:]
-                    formatted_sourcelinks.append({
-                        "sourceId": None,
-                        "value": "WPG",
-                        "sourcelinkName": sourcelinkname
-                    })
-                elif source.startswith("GG008-"):
-                    sourcelinkname = source[6:]
-                    formatted_sourcelinks.append({
-                        "sourceId": None,
-                        "value": "GG008",
-                        "sourcelinkName": sourcelinkname
-                    })
-                elif source.startswith("EUR,"):
-                    sourcelinkname = source[4:]
-                    formatted_sourcelinks.append({
-                        "sourceId": None,
-                        "value": "EUR",
-                        "sourcelinkName": sourcelinkname.strip()
-                    })
-                elif source.startswith("ENE,"):
-                    sourcelinkname = source[4:]
-                    formatted_sourcelinks.append({
-                        "sourceId": None,
-                        "value": "ENE",
-                        "sourcelinkName": sourcelinkname.strip()
-                    })
-                elif source.startswith("2670,"):
-                    sourcelinkname = source[5:]
-                    formatted_sourcelinks.append({
-                        "sourceId": None,
-                        "value": "2670",
-                        "sourcelinkName": sourcelinkname.strip()
-                    })
-                else:
-                    formatted_sourcelinks.append({
-                        "sourceId": None,
+        word_and_sourcelinks = parts[1].strip()  # Extract words and sources
+
+        first_bracket_index = word_and_sourcelinks.find("[")
+        if first_bracket_index == -1:
+            words_list = [word_and_sourcelinks.strip()]  # No sources found
+            sources = []
+        else:
+            words_list = word_and_sourcelinks[:first_bracket_index].strip().split(";")  # Split words
+            sources = word_and_sourcelinks[first_bracket_index:].strip()  # Extract sources
+
+        words_list = [word.strip() for word in words_list if word]  # Clean up spaces
+
+        separate_sources = sources.split("[") if sources else []
+        sourcelink_values = [s.strip().strip("]") for s in separate_sources if s.strip()]
+
+        word_entries = []
+        for word in words_list:
+            if not (word and len(word) > 30 and ' - ' in word):
+                # Skip word if it already exists in destination
+                if (str(meaning_id), word, mapped_lang) in existing_word_set:
+                    continue
+
+                sourcelinks = [
+                    {
+                        "sourceId": source_mapping.get(source, None),
                         "value": source,
                         "sourcelinkName": None
-                    })
+                    }
+                    for source in sourcelink_values
+                ] if sourcelink_values else []
 
-            for word in words_list:
-                word = word.strip()
-                if word:
-                    words.append({
-                        "value": word,
-                        "lang": map_languages(lang),
-                        "sourcelinks": formatted_sourcelinks
-                    })
+                word_entries.append({
+                    "valuePrese": word,
+                    "lang": mapped_lang,
+                    "lexemeValueStateCode": None,
+                    "public": True,
+                    "wordTypeCodes": [],
+                    "usages": [],
+                    "lexemeNotes": [],
+                    "lexemeSourceLinks": sourcelinks
+                })
+
+        words.extend(word_entries)
 
     return {
-        "meaningid": meaning_id,
-        "words": words
+        "meaning_id": meaning_id,
+        "meaning_note_id": note_id,
+        "words": words,
+        "note_value": note_value if note_value else None
     }
 
-# Convert all rows
-result = [parse_value(row["id"], row["value"]) for _, row in df.iterrows()]
+# Process all meanings
+for _, row in df.iterrows():
+    parsed = parse_value(row["meaning_id"], row["meaning_note_id"], row["value"])
 
-# Convert unique sources into structured JSON
-unique_sources_list = [{"name": source, "sourceId": None} for source in sorted(unique_sources)]
+    # Skip if parsing returned None (invalid language code)
+    if parsed is None:
+        continue
 
-# Save parsed words JSON
-with open(output_json, "w", encoding="utf-8") as f:
-    json.dump(result, f, indent=4, ensure_ascii=False)
+    # Save meaning notes separately
+    meaning_notes.append({
+        "meaning_note_id": parsed["meaning_note_id"],
+        "value": parsed["note_value"]
+    })
 
-# Save unique sources JSON (before matching with source IDs)
-with open(unique_sources_json, "w", encoding="utf-8") as f:
-    json.dump(unique_sources_list, f, indent=4, ensure_ascii=False)
+    # Check if any word has an unknown source ID
+    has_unknown_source = any(
+        any(sourcelink["sourceId"] is None for sourcelink in word["lexemeSourceLinks"])
+        for word in parsed["words"]
+    )
 
-# Load sources CSV
-df_sources = pd.read_csv(sources_csv, delimiter=';', dtype=str)
+    structured_entry = {
+        "meaningId": parsed["meaning_id"],
+        "datasetCode": "esterm",
+        "words": parsed["words"],
+        "notes": [ {
+            "id": parsed["meaning_note_id"],
+            "value": row["value"],
+            "valuePrese": row["value"],
+            "publicity": False
+        }] if parsed["meaning_note_id"] else []
+    }
 
-# Create a mapping of source name → sourceId
-source_mapping = {row["name"]: row["id"] for _, row in df_sources.iterrows()}
+    if has_unknown_source:
+        skipped_meanings.append(structured_entry)
+    else:
+        structured_meanings.append(structured_entry)
 
-# Update sourceId if a match is found in source_mapping
-for source in unique_sources_list:
-    source_name = source["name"]
-    if source_name in source_mapping:
-        source["sourceId"] = source_mapping[source_name]
+# Save meaning notes JSON
+with open(meaning_notes_json, "w", encoding="utf-8") as f:
+    json.dump(meaning_notes, f, indent=4, ensure_ascii=False)
 
-sourcelink_values_without_matches = []
+# Save structured meanings JSON (only valid sources)
+with open(structured_meanings_json, "w", encoding="utf-8") as f:
+    json.dump(structured_meanings, f, indent=4, ensure_ascii=False)
 
-for entry in result:
+# Save skipped meanings JSON
+with open(skipped_meanings_json, "w", encoding="utf-8") as f:
+    json.dump(skipped_meanings, f, indent=4, ensure_ascii=False)
+
+# Calculate statistics
+total_meanings = len(structured_meanings)
+skipped_meanings_count = len(skipped_meanings)
+total_words = sum(len(entry["words"]) for entry in structured_meanings)
+
+# Count words per language
+language_counts = defaultdict(int)
+for entry in structured_meanings:
     for word in entry["words"]:
-        for sourcelink in word["sourcelinks"]:
-            sourcelink["sourceId"] = source_mapping.get(sourcelink["value"], None)
-            if sourcelink["sourceId"] is None:
-                sourcelink_values_without_matches.append(sourcelink["value"])
+        language_counts[word["lang"]] += 1
 
-sourcelink_values_without_matches_unique = set(sourcelink_values_without_matches)
-print(sourcelink_values_without_matches_unique)
-print(str(len(sourcelink_values_without_matches_unique)))
+# Print statistics
+print(f"Count of meanings in structured meanings: {total_meanings}")
+print(f"Count of meanings in skipped meanings: {skipped_meanings_count}")
+print(f"Total count of words in structured meanings: {total_words}")
+print("Count of different language words in structured meanings:")
+for lang, count in sorted(language_counts.items()):
+    print(f"  {lang}: {count}")
 
-with open(updated_sources_json, "w", encoding="utf-8") as f:
-    json.dump(unique_sources_list, f, indent=4, ensure_ascii=False)
-
-with open(output_json, "w", encoding="utf-8") as f:
-    json.dump(result, f, indent=4, ensure_ascii=False)
-
-print(f"JSON data saved to {output_json}")
-print(f"Unique sources saved to {updated_sources_json}")
+print(f"Meaning notes JSON saved to {meaning_notes_json}")
+print(f"Structured meanings JSON saved to {structured_meanings_json}")
+print(f"Skipped meanings JSON saved to {skipped_meanings_json}")
